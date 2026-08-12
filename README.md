@@ -152,10 +152,7 @@ Alguns arquivos JSON podem ser criados automaticamente quando o painel é utiliz
 Os artigos que podem entrar na fila editorial são descobertos em bases biomédicas:
 
 - **PubMed**;
-- **Europe PMC**;
-- **Embase**, quando a API está autorizada para a conta/instituição.
-
-O Embase é opcional. Se a API não estiver disponível, o coletor continua funcionando com PubMed e Europe PMC.
+- **Europe PMC**.
 
 ## 6.2 Fontes de enriquecimento
 
@@ -170,9 +167,9 @@ Essas fontes **não devem introduzir sozinhas novos artigos na fila editorial**.
 Essa separação é importante:
 
 ```text
-PubMed / Europe PMC / Embase
-             ↓
-      DESCOBERTA BIOMÉDICA
+PubMed / Europe PMC
+        ↓
+DESCOBERTA BIOMÉDICA
              ↓
         deduplicação
              ↓
@@ -274,36 +271,8 @@ Se usar outro nome, lembre-se de que o revisor procura por `artigos_coletados.js
 
 ---
 
-# 8. Embase
 
-O Embase exige mais do que possuir uma chave genérica da Elsevier. O acesso programático à API pode depender de *entitlement* institucional e, em alguns casos, de token institucional.
-
-Configure no `.env`:
-
-```env
-EMBASE_API_KEY=
-EMBASE_INSTTOKEN=
-ATIVAR_EMBASE=1
-```
-
-Antes da coleta, pode-se testar:
-
-```bash
-python coletor_artigos.py --testar-embase
-```
-
-Interpretação prática:
-
-- `HTTP 200`: acesso programático confirmado;
-- `HTTP 401`: credencial inválida ou não reconhecida;
-- `HTTP 403`: a credencial chegou à API, mas o acesso ao Embase não está autorizado para aquela conta/instituição;
-- `HTTP 429`: limite temporário de requisições.
-
-Um login institucional que funciona no site do Embase não garante automaticamente acesso à API.
-
----
-
-# 9. Tradução-base
+# 8. Tradução-base
 
 Antes da geração dos textos em português, o revisor cria uma **tradução-base fixa** do resumo original.
 
@@ -315,11 +284,11 @@ Google Translate via deep-translator
 
 Gemini e Groq **não são usados como tradutores** nessa etapa.
 
-## 9.1 Por que a tradução é separada das LLMs?
+## 8.1 Por que a tradução é separada das LLMs?
 
 A separação melhora a padronização experimental. O mesmo abstract pode reutilizar a mesma tradução-base mesmo que modelos generativos diferentes sejam acionados posteriormente.
 
-## 9.2 Cache persistente
+## 8.2 Cache persistente
 
 As traduções ficam em:
 
@@ -335,7 +304,7 @@ Consequências:
 - gerar novamente o mesmo artigo pode reutilizar exatamente a mesma tradução-base;
 - se o abstract mudar, uma nova tradução é produzida.
 
-## 9.3 Falhas do Google Translate
+## 8.3 Falhas do Google Translate
 
 A aplicação tenta novamente em caso de falha usando intervalos aproximados de:
 
@@ -349,7 +318,7 @@ Se todas as tentativas falharem, o rascunho não deve prosseguir usando uma LLM 
 
 ---
 
-# 10. Ficha Estruturada de Evidência
+# 9. Ficha Estruturada de Evidência
 
 Depois da tradução-base, uma LLM extrai uma representação estruturada do conteúdo relevante do resumo.
 
@@ -379,11 +348,11 @@ As ideias de representação biomédica estruturada e rastreabilidade são inspi
 
 ---
 
-# 11. Os três modos de leitura
+# 10. Os três modos de leitura
 
 O Jornal Cienc.IA publica três formas de acessar o mesmo conteúdo científico.
 
-## 11.1 Divulgação científica — N1
+## 10.1 Divulgação científica — N1
 
 Voltada ao público geral adulto.
 
@@ -400,7 +369,7 @@ Características esperadas:
 
 O N1 pode usar uma linguagem mais natural e jornalística que o resumo técnico, mas continua sujeito à regra *source-only*.
 
-## 11.2 Leitura Facilitada — N2
+## 10.2 Leitura Facilitada — N2
 
 O N2 é destinado a adultos que se beneficiam de menor complexidade textual e menor carga de inferência.
 
@@ -460,7 +429,7 @@ termos_evitar_quando_possivel
 
 Se um termo é essencial e não pode ser explicado com segurança usando a própria fonte, ele deve ser mantido e sinalizado para revisão humana.
 
-## 11.3 Resumo científico em português
+## 10.3 Resumo científico em português
 
 É a forma de leitura mais próxima do abstract original.
 
@@ -477,7 +446,7 @@ Esse texto **não é a leitura simplificada**. Ele serve também como apoio ao r
 
 ---
 
-# 12. Checagem automática do N2
+# 11. Checagem automática do N2
 
 Antes da auditoria final de fidelidade, o N2 passa por uma checagem específica.
 
@@ -500,7 +469,7 @@ Após um reparo, o texto é rechecado antes de seguir para a auditoria de Fideli
 
 ---
 
-# 13. Fidelidade Intelectual
+# 12. Fidelidade Intelectual
 
 A plataforma utiliza uma medida operacional denominada **Fidelidade Intelectual (FI)**.
 
@@ -546,7 +515,7 @@ Além disso, julgamentos negativos devem possuir rastreabilidade: o auditor deve
 
 ---
 
-# 14. Status editorial gerado pela auditoria
+# 13. Status editorial gerado pela auditoria
 
 A auditoria pode produzir status como:
 
@@ -564,7 +533,7 @@ Um rascunho bloqueado pode exigir uma **justificativa explícita de publicação
 
 ---
 
-# 15. MiniLM e recuperação semântica
+# 14. MiniLM e recuperação semântica
 
 Modelo padrão:
 
@@ -615,7 +584,7 @@ Por isso, a plataforma compara sentenças/trechos em vez de codificar resumos lo
 
 ---
 
-# 16. Métricas estruturais de simplificação
+# 15. Métricas estruturais de simplificação
 
 O sistema também calcula sinais experimentais relacionados à redução de complexidade textual, como mudanças em:
 
@@ -637,7 +606,7 @@ A avaliação com leitores humanos continua necessária para sustentar alegaçõ
 
 ---
 
-# 17. Modelos generativos
+# 16. Modelos generativos
 
 O revisor utiliza Gemini como família principal e Groq como fallback final.
 
@@ -667,7 +636,7 @@ Para um experimento comparativo, um rascunho que misturou modelos não deve ser 
 
 ---
 
-# 18. Proveniência registrada no painel
+# 17. Proveniência registrada no painel
 
 Sempre que disponível, o revisor informa o modelo usado em cada etapa:
 
@@ -686,7 +655,7 @@ Essa rastreabilidade deve ser preservada nos testes do TCC.
 
 ---
 
-# 19. Requisitos
+# 18. Requisitos
 
 Recomenda-se Python 3.10 ou superior.
 
@@ -708,7 +677,7 @@ Na primeira utilização do Sentence Transformers, o modelo MiniLM pode precisar
 
 ---
 
-# 20. Ambiente virtual recomendado
+# 19. Ambiente virtual recomendado
 
 ## Windows / PowerShell
 
@@ -754,7 +723,7 @@ python -m pip install -U streamlit python-dotenv requests google-genai groq deep
 
 ---
 
-# 21. Configuração do `.env`
+# 20. Configuração do `.env`
 
 Crie um arquivo `.env` na raiz do projeto.
 
@@ -769,11 +738,6 @@ USER_EMAIL=seu_email@exemplo.com
 # Opcionais
 NCBI_API_KEY=
 SEMANTIC_SCHOLAR_KEY=
-
-# Embase / Elsevier
-EMBASE_API_KEY=
-EMBASE_INSTTOKEN=
-ATIVAR_EMBASE=1
 
 # Enriquecimento bibliográfico
 ATIVAR_ENRIQUECIMENTO=1
@@ -824,7 +788,7 @@ Se uma chave real já tiver sido exposta em arquivo compartilhado, histórico Gi
 
 ---
 
-# 22. Como iniciar a plataforma do zero
+# 21. Como iniciar a plataforma do zero
 
 A ordem recomendada é:
 
@@ -884,7 +848,7 @@ http://localhost:8000/index.html
 
 ---
 
-# 23. Como usar o painel editorial
+# 22. Como usar o painel editorial
 
 O revisor organiza os artigos em quatro estados principais.
 
@@ -973,7 +937,7 @@ Pode ser reconsiderado posteriormente.
 
 ---
 
-# 24. Arquivos de dados
+# 23. Arquivos de dados
 
 ## `artigos_coletados.json`
 
@@ -1001,7 +965,7 @@ Cache persistente das traduções-base. É especialmente importante para manter 
 
 ---
 
-# 25. Portal público
+# 24. Portal público
 
 O portal foi pensado para permitir que um mesmo artigo seja lido em níveis diferentes.
 
@@ -1022,7 +986,7 @@ A Leitura Facilitada não substitui a Divulgação Científica. Ela é uma forma
 
 ---
 
-# 26. Reavaliação versus regeneração
+# 25. Reavaliação versus regeneração
 
 Essa diferença é importante para os testes.
 
@@ -1054,7 +1018,7 @@ Isso é especialmente importante quando o prompt de simplificação é alterado 
 
 ---
 
-# 27. Reiniciar os dados para uma nova rodada experimental
+# 26. Reiniciar os dados para uma nova rodada experimental
 
 Antes de apagar qualquer arquivo, faça uma cópia de segurança.
 
@@ -1082,7 +1046,7 @@ Só reinicie o cache de traduções se a metodologia do experimento exigir delib
 
 ---
 
-# 28. Erros e problemas comuns
+# 27. Erros e problemas comuns
 
 ## Google Translate retorna erro 500/502/503/504
 
@@ -1108,11 +1072,6 @@ Quando a mensagem contém um intervalo de espera, o revisor registra esse perío
 
 A solução normalmente é aguardar a liberação da cota ou revisar o plano/limites da API.
 
-## Embase retorna 403
-
-Isso normalmente indica problema de autorização/entitlement da API, e não necessariamente chave digitada incorretamente.
-
-Verifique acesso institucional, VPN quando aplicável e autorização da Elsevier para uso programático.
 
 ## MiniLM não carrega
 
@@ -1146,7 +1105,7 @@ Excluir rascunho → Gerar rascunho novamente
 
 ---
 
-# 29. O que a plataforma NÃO afirma
+# 28. O que a plataforma NÃO afirma
 
 Para evitar interpretações metodológicas incorretas, o Jornal Cienc.IA não deve afirmar que:
 
@@ -1161,7 +1120,7 @@ Para evitar interpretações metodológicas incorretas, o Jornal Cienc.IA não d
 
 ---
 
-# 30. Limitações atuais
+# 29. Limitações atuais
 
 A implementação possui limitações importantes que devem ser descritas no TCC e consideradas nos experimentos:
 
@@ -1180,7 +1139,7 @@ Por isso, os resultados finais devem combinar análise automatizada com revisão
 
 ---
 
-# 31. Reprodutibilidade dos testes
+# 30. Reprodutibilidade dos testes
 
 Antes de iniciar a coleta oficial de resultados do TCC, recomenda-se congelar a configuração metodológica.
 
@@ -1199,7 +1158,6 @@ regra de uma rodada de reparo
 definição e fórmula de FI utilizadas
 limiar da prioridade editorial
 fontes de descoberta utilizadas
-estado do Embase
 ```
 
 Depois de iniciar a rodada experimental, alterações relevantes no pipeline devem ser registradas como uma nova configuração experimental e não devem ser misturadas silenciosamente aos resultados anteriores.
@@ -1208,7 +1166,7 @@ Também registre a proveniência efetiva de cada rascunho. Se houve fallback ent
 
 ---
 
-# 32. Fluxo recomendado para avaliação de cada artigo
+# 31. Fluxo recomendado para avaliação de cada artigo
 
 Para cada artigo selecionado:
 
@@ -1234,7 +1192,7 @@ A ordem reforça que a pontuação automática não substitui a conferência do 
 
 ---
 
-# 33. Fluxo rápido de uso
+# 32. Fluxo rápido de uso
 
 Depois que o ambiente estiver configurado:
 
@@ -1265,11 +1223,11 @@ Portal público: http://localhost:8000/index.html
 
 ---
 
-# 34. Resumo da arquitetura atual
+# 33. Resumo da arquitetura atual
 
 ```text
 ┌────────────────────────────────────────────┐
-│ PubMed + Europe PMC + Embase opcional      │
+│ PubMed + Europe PMC                        │
 │         descoberta biomédica               │
 └──────────────────────┬─────────────────────┘
                        ↓
@@ -1317,7 +1275,7 @@ Portal público: http://localhost:8000/index.html
 
 ---
 
-# 35. Frase metodológica central
+# 34. Frase metodológica central
 
 > **No Jornal Cienc.IA, simplificar não significa dizer menos; significa exigir menos esforço linguístico para compreender aquilo que continua cientificamente necessário.**
 
