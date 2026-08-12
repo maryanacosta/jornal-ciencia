@@ -1,0 +1,72 @@
+# ============================================
+# JORNAL CIENC.IA
+# Arquivos que não devem ir para o Git
+# ============================================
+
+# Variáveis de ambiente e chaves de API
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ambientes virtuais
+venv/
+.venv/
+env/
+ENV/
+
+# Cache
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Streamlit
+.streamlit/secrets.toml
+
+# IDE
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Arquivos temporários
+*.tmp
+*.temp
+~*
+*.bak
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Downloads e arquivos temporários
+downloads/
+downloaded_files/
+temp/
+tmp/
+
+# Build/distribuição
+build/
+dist/
+*.egg-info/
+
+# Arquivos locais de cobertura/teste
+.coverage
+htmlcov/
+
+# Chaves/certificados
+*.key
+*.pem
+*.p12
+*.pfx

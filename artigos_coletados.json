@@ -1,0 +1,462 @@
+{
+  "gerado_em": "2026-08-11T20:44:57.414413",
+  "versao_pipeline": "4.2",
+  "parametros": {
+    "min_prioridade": 60.0,
+    "limite_busca_por_fonte": 200,
+    "criterio_selecao": "Todos os artigos elegíveis com score_prioridade_editorial maior ou igual ao limiar mínimo; não há máximo de selecionados por tema.",
+    "fontes_descoberta": [
+      "PubMed",
+      "Europe PMC",
+      "Embase (quando autorizado)"
+    ],
+    "fontes_enriquecimento": [
+      "Semantic Scholar",
+      "OpenAlex",
+      "Crossref"
+    ],
+    "embase": "Fonte biomédica de descoberta habilitada quando EMBASE_API_KEY está configurada e a assinatura institucional possui entitlement para a Embase API. A chave nunca é gravada no arquivo de saída.",
+    "cochrane": "Fonte especializada recomendada para consulta editorial/revisões, mas não integrada automaticamente nesta versão por não haver uma API pública aberta equivalente às fontes biomédicas usadas aqui.",
+    "score": "prioridade editorial = desenho (0-50) + atualidade (0-20) + impacto bibliométrico logarítmico (0-20) + acesso (0-10) + relevância na fonte (0-10)",
+    "aviso": "O score é operacional e não substitui avaliação crítica da evidência, risco de viés, certeza da evidência ou adequação à pergunta clínica."
+  },
+  "temas": {
+    "stress": {
+      "total_descobertos_biomedicos": 400,
+      "total_selecionados": 11,
+      "por_fonte_descoberta": {
+        "PubMed": 200,
+        "EuropePMC": 200,
+        "Embase": 0
+      },
+      "resultados_consultados_para_enriquecimento": {
+        "SemanticScholar": 0,
+        "OpenAlex": 200,
+        "Crossref": 100
+      },
+      "artigos": [
+        {
+          "paper_id": "pmid_42569817",
+          "doi": "10.1111/bjhp.70099",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Procrastination, stress, and self-rated health: A multi-sample meta-analysis.",
+          "abstract": "Despite a growing evidence base indicating that trait procrastination increases risk for specific outcomes reflecting poor health, there is less evidence examining the implications of procrastination for overall health status, or investigating the contributing factors involved. Guided by the cognitive process model of self-rated health (SRH), and the procrastination-health model, the current study extended previous research and theory by quantifying the link between trait procrastination and SRH across multiple samples and testing the contributions of stress. Additionally, we explored the link between chronic procrastination and the SRH-future SRH discrepancy. Thirty-six cross-sectional samples (N = 8603) completed measures of trait procrastination, current and future SRH. A subset completed measures of perceived stress. Random effects meta-analyses were conducted on the raw and semi-partial correlations of procrastination with SRH and FSRH, controlling for perceived stress. Moderator analyses were conducted where warranted. Procrastination scores were examined in relation to the discrepancy between current and future SRH. Trait procrastination was significantly associated with poor SRH (ravg = .21; 95% CIs [.19, .23]), and to a lesser extent, poor future SRH (ravg = .13; 95% CIs [.09, .18]). The semi-partial effects were reduced but significant for SRH, and non-significant for future SRH. Procrastination was modestly associated with the discrepancy between current and future SRH, reflecting an expectation that health would improve slightly over the next 10 years. The current findings indicate that chronic procrastination is associated with poor overall health status that can be explained in part by higher levels of stress.",
+          "ano": 2026,
+          "autores": "Sirois FM, Monaghan C.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "MetaAnalysis",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42569817/",
+          "score_prioridade_editorial": 76.4,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 4.4
+          },
+          "tipo_principal": "MetaAnalysis",
+          "desenho_estudo_rotulo": "Meta-análise",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42470164",
+          "doi": "10.1002/smi.70209",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "The Association Between Mindfulness and Perceived Stress: A Meta-Analysis.",
+          "abstract": "This study consolidated the association of mindfulness with perceived stress found across studies. A meta-analysis examined the relationship between mindfulness and perceived stress in 56 samples, which included a total of 24,494 participants. The weighted effect size of r(55) = -0.40, 95% CI [-0.36, 0-44], p = 0.0001, showed that greater mindfulness was associated with less perceived stress. Studies assessing mindfulness using the Mindful Attention Awareness Scale or the Five Facet Mindfulness Questionnaire showed substantial effect sizes, as did studies assessing stress using the Perceived Stress Scale. Even though the present meta-analysis does not show causality, the results suggest a possible bidirectional relationship between mindfulness and perceived stress. The nonjudgmental awareness comprising mindfulness may facilitate an appraisal of life events and challenges that results in events and challenges as being perceived as less stressful. Lower perceived stress may free cognitive resources that promote mindfulness.",
+          "ano": 2026,
+          "autores": "Schutte NS, Rock AJ.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "MetaAnalysis",
+            "Review",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42470164/",
+          "score_prioridade_editorial": 75.0,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "MetaAnalysis",
+          "desenho_estudo_rotulo": "Meta-análise",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42530025",
+          "doi": "10.1080/10253890.2026.2709368",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Antidepressant-like effects of valproic acid in rodents go back to the 1980s: a comment to enrich the reviewed evidence by Goudarzi et al. (2026) \"Valproic acid effects on stress-induced depression-like behavior in rodent models: a systematic review and meta-analysis\".",
+          "abstract": "In a recent review and meta-analysis, Goudarzi et al. (Stress, 2026 Dec 31; 29(1):2641561) show that valproic acid (VPA) exhibits antidepressant (AD)-like effects in several procedures involving the induction of depression-like symptoms by prior sub-chronic or chronic stress in laboratory rats or mice. In their review, the authors included reports of experimental studies (covering only from 2007 to 2024), using several validated depression-like behaviors, such as decreased sucrose preference, increased immobility in the forced swim test (FST), decreased activity in the open field test, and/or impaired novel object recognition memory. The meta-analysis of the 19 included studies showed that sub-chronic/chronic VPA treatment improves most of these depression-like symptoms. The present \"Comment\" article aims to highlight that the first demonstrations of VPA AD-like and passive coping-reducing effects date back to the 1980s. Our group was the first to demonstrate AD-like effects of sub-acute and chronic VPA treatments in the forced swim test in rats (in 1988). These effects were partially antagonized by pre-test injections of the GABA-A receptor complex antagonists bicuculline and picrotoxin, thus suggesting that VPA-induced passive coping reduction was at least partly mediated by enhancement of GABA-A neurotransmission. Shortly thereafter (1989), the AD-like effects of VPA were confirmed in the FST in mice. These reports from the late 1980s, showing positive effects of VPA on the FST in rats and mice, constitute relevant precedents that further strengthen the profile of AD-like effects of VPA reported by Goudarzi et al.",
+          "ano": 2026,
+          "autores": "Fernández-Teruel A.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "MetaAnalysis",
+            "SystematicReview",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42530025/",
+          "score_prioridade_editorial": 75.0,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "MetaAnalysis",
+          "desenho_estudo_rotulo": "Meta-análise",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42563456",
+          "doi": "10.1111/nicc.70617",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "The Effects of Virtual Reality Applications on Perceived Stress, Anxiety and Fatigue Among Nurses Working in the Intensive Care Unit.",
+          "abstract": "<h4>Background</h4>Intensive care unit (ICU) nurses experience high levels of stress, anxiety and fatigue. Conventional coping strategies are often difficult to implement during busy shifts. Virtual reality (VR) may offer a practical, non-pharmacological alternative; however, evidence of its effectiveness in ICU nurses remains limited.<h4>Aim</h4>This study aimed to determine the effects of a VR application on perceived stress, state anxiety and fatigue among ICU nurses.<h4>Study design</h4>This parallel-group randomised controlled trial was conducted between June and December 2025 in the adult ICUs of a public hospital in eastern Turkey. Nurses were randomly assigned to an intervention group, which used a VR application during work breaks, or to a control group, which had standard rest periods. Data were collected before and after the intervention using the Demographic Information Form, the Perceived Stress Scale-10 (PSS-10), the State-Trait Anxiety Inventory-State Form (STAI-S) and the Fatigue Severity Scale (FSS).<h4>Results</h4>A total of 60 nurses completed the study (intervention = 30, control = 30). At baseline, there were no significant differences between the intervention and control groups on any outcome measure (all p > 0.05). From pre-test to post-test, the intervention group showed marked reductions in perceived stress, state anxiety and fatigue, whereas the control group remained essentially unchanged. Post-intervention between-group differences were statistically significant for perceived stress (t = -5.326), state anxiety (t = -4.814) and fatigue (t = -13.587) (all p < 0.001). Two-way mixed ANOVA revealed significant group × time interactions for perceived stress (F = 13.525, p < 0.001, ηp<sup>2</sup> = 0.189), state anxiety (F = 14.072, p < 0.001, ηp<sup>2</sup> = 0.195) and fatigue (F = 91.192, p < 0.001, ηp<sup>2</sup> = 0.611).<h4>Conclusion</h4>The VR application was associated with lower levels of perceived stress, state anxiety and fatigue among ICU nurses compared with standard rest periods. However, because the study was conducted in a single hospital and the follow-up period was short, the findings should be interpreted with caution.<h4>Relevance to clinical practice</h4>Short VR sessions during work breaks may help reduce stress, anxiety and fatigue, supporting ICU nurses' well-being and resilience.",
+          "ano": 2026,
+          "autores": "Bahcecioglu Turan G, Gür F, Özer Z.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42563456/",
+          "score_prioridade_editorial": 73.85,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 6.85
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42529893",
+          "doi": "10.1111/nicc.70613",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Effects of an Online Meditation Programme on Stress and Fatigue in Critical Care Nurses: A Randomised Controlled Trial.",
+          "abstract": "<h4>Background</h4>Critical care nurses are frequently exposed to high levels of occupational stress and fatigue because of demanding workloads, emotional burden and the need for sustained vigilance in complex clinical environments.<h4>Aim</h4>To evaluate the effects of an online meditation programme on perceived stress and fatigue among intensive care nurses.<h4>Study design</h4>This single-centre, two-arm, pre-test/post-test randomised controlled trial was conducted in a hospital in Türkiye between December 2021 and January 2022 using a convenience sample of eligible intensive care nurses. Nurses were randomly assigned to the intervention and control groups. The intervention group participated in a six-week online meditation programme delivered via WhatsApp, consisting of 20-min sessions three times per week.<h4>Results</h4>Forty nurses completed the study and were included in the final analysis (20 in the intervention group and 20 in the control group). Baseline perceived stress and fatigue scores were similar between groups. At post-test, the intervention group had significantly lower perceived stress scores than the control group (25.50 ± 4.22 vs. 30.90 ± 7.50, p = 0.008) and significantly lower fatigue severity scores (3.06 ± 0.65 vs. 3.99 ± 0.77, p < 0.001).<h4>Conclusions</h4>A brief online meditation programme may be a feasible supportive intervention for reducing stress and fatigue among intensive care nurses; however, larger multi-centre trials are needed to confirm these findings.<h4>Relevance to clinical practice</h4>Remotely delivered meditation may offer an accessible and low-cost adjunct to staff well-being initiatives in intensive care settings, particularly for nurses working rotating shifts, but it should complement rather than replace organisational approaches to workforce well-being.",
+          "ano": 2026,
+          "autores": "Güngör S, Atik D.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42529893/",
+          "score_prioridade_editorial": 73.15,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 6.15
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42437334",
+          "doi": "10.36721/pjps.2026.39.9.268.1",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Etomidate combined with TAPB in ovarian cancer surgery: A controlled study on hemodynamics and immune response.",
+          "abstract": "<h4>Background</h4>Selecting appropriate anesthetic agents and techniques that ensure hemodynamic stability and attenuate perioperative stress responses is crucial for ovarian cancer surgery.<h4>Objectives</h4>This study aimed to evaluate the effects of etomidate combined with transversus abdominis plane block (TAPB) on perioperative hemodynamics, inflammatory and oxidative stress responses and immune function in patients undergoing radical resection of ovarian cancer.<h4>Methods</h4>A total of 80 patients were randomly assigned to receive total intravenous anesthesia (TIVA) alone or TIVA combined with TAPB. Hemodynamic parameters, serum inflammatory markers, oxidative stress indicators, pain mediators, immune cell subsets and adverse reactions were compared between the two groups.<h4>Results</h4>Perioperative hemodynamic parameters changed dynamically in both groups, with heart rate and mean arterial pressure increasing intraoperatively and decreasing postoperatively. However, the research group had significantly lower heart rate and mean arterial pressure than the control group during the peak intraoperative period (P<0.001), indicating improved hemodynamic stability. Preoperative levels of inflammatory, oxidative stress, pain-related and immune indexes were comparable between groups (P>0.05). At 24 h postoperatively, the research group showed significantly reduced serum levels of high-sensitivity C-reactive protein, tumor necrosis factor-α, malondialdehyde, cortisol, prostaglandin E2 and substance P compared with the control group (all P<0.05), reflecting attenuation of systemic inflammation, oxidative stress and nociceptive activation. Postoperative immune function was better preserved in the research group, as evidenced by higher CD3+ and CD4+ cell counts and CD4+/CD8+ ratio, along with a lower CD8+ level (P<0.05). The overall incidence of adverse reactions was low and did not differ significantly between groups (4.4% vs 8.9%, P>0.05).<h4>Conclusion</h4>Etomidate combined with transversus abdominis plane block provides stable anesthesia and modulates perioperative inflammatory and immune responses while reducing postoperative biochemical pain mediator levels, thereby supporting a safer and more physiologically balanced recovery following ovarian cancer surgery.",
+          "ano": 2026,
+          "autores": "Xie J, Li X, Jian F.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42437334/",
+          "score_prioridade_editorial": 70.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42400189",
+          "doi": "10.1111/aphw.70188",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "The effect of a stress mindset intervention on academic motivation among junior high school students.",
+          "abstract": "In recent years, stress mindset-how individuals perceive and respond to stress-has drawn increasing attention from researchers. Studies have begun to explore its mechanisms of influence on students' mental health and academic achievement. A randomized controlled trial was conducted in a middle school in China. Two classes were randomly assigned to the intervention group and received a specially designed \"Stress Mindset\" course based on the B.E.S.T. principle, whereas the remaining two classes served as the control group. A total of 155 students participated, including 78 in the intervention group. The average age of participants was 12.25 years, with 49.70% females. Bayesian Causal Forest (BCF) analysis showed that, compared to the control group, the intervention group exhibited a 0.46 standard deviation increase in stress-is-enhancing mindset (95% confidence interval [CI] = [.18, .71]). No significant improvements were observed for other variables. A mediation model supported the intervention mechanism: Group assignment (independent variable) predicted changes in academic motivation through the change in stress-is-enhancing mindset (B = .12, SE = .05, and 95% CI [.03, .25]). Process evaluation and qualitative feedback from researchers indicated high satisfaction and acceptability of the intervention. The stress mindset intervention effectively promoted a shift in students' perception of stress as enhancing, offering a novel paradigm for future intervention research. The findings offer a novel paradigm for future intervention research.",
+          "ano": 2026,
+          "autores": "Wu Y, Zhao Y, Chen S, Pan Y, Xiang J, Chen Y.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42400189/",
+          "score_prioridade_editorial": 70.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42478935",
+          "doi": "10.2196/83618",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Characterizing Digital Mindfulness Intervention Utilization and Weekly Assessments in Caregivers of Persons Living With Dementia: Secondary Analysis of a Randomized Controlled Trial.",
+          "abstract": "<h4>Background</h4>Caregivers of persons living with dementia are at increased risk of reporting high stress. Mindfulness-based interventions (MBIs) teach caregivers mindfulness skills and are effective at reducing stress. Digital MBIs are a feasible way to improve access to MBIs for caregivers of persons living with dementia. Yet, caregiver improvement with digital MBI utilization is less defined in the literature.<h4>Objective</h4>The goal of this secondary data analysis was to characterize weekly mindfulness and stress ratings among caregivers of persons living with dementia and to examine how digital MBI utilization impacted these ratings throughout 12 weeks of a feasibility trial.<h4>Methods</h4>Participants were eligible for this secondary analysis if they were randomized to the digital MBI condition (Healthy Minds Program for Caregivers [HMP-C], n=46) and completed weekly ratings over the 12-week trial. At baseline and at the end of each week of the trial, participants rated their mindfulness and stress in the past week from 0 to 10. Weekly HMP-C utilization was defined as the time spent using HMP-C in the week prior to the weekly ratings. Descriptive statistics and visualizations were used to characterize mindfulness and stress ratings. Generalized linear mixed models were used to estimate the effect of mindfulness on stress and the effect of HMP-C utilization on stress and mindfulness throughout the trial (α=.05).<h4>Results</h4>Baseline mindfulness and stress ratings were 4 (IQR 3-6, range 0-8) and 7 (IQR 6.5-8, range 4-10), respectively. Stress had the greatest decrease between baseline and week 3 (-2 points on average), whereas mindfulness had the greatest increase between baseline and week 4 (+2.5 points on average). There was a significant fixed effect of baseline mindfulness on baseline stress (β=.5, P<.001), with a significant interaction between mindfulness and study week (β=.05, P=.001), suggesting that this relationship was attenuated over time. There was variability in baseline stress (τ00=2.04) and the relationship between mindfulness and stress (τ₁₁=0.08), with a high correlation (ρ01=0.86), suggesting that those with high baseline stress benefited most from increases in mindfulness. For every 10 minutes of HMP-C utilization between baseline and week 1, mindfulness and stress ratings were 0.14 points higher (P<.001) and 0.14 points lower (P<.001), respectively. Despite a significant interaction between HMP-C utilization and study week in both models, the effect size was small (mindfulness: β=.02, P<.001; stress: β=.01, P=.013), suggesting that this relationship was sustained over time.<h4>Conclusions</h4>Mindfulness and stress changed mostly during the first 3 to 4 weeks of the trial. During this time of mindfulness skill acquisition, mindfulness and stress were most significantly negatively associated, especially among those with high baseline stress. The consistent relationship between HMP-C utilization and mindfulness and stress suggests that continued use of HMP-C may be helpful for skill maintenance.",
+          "ano": 2026,
+          "autores": "Williams MP, Simon DM, Seward M, Tatar RG, Huberty J, Vranceanu AM, Plys E.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42478935/",
+          "score_prioridade_editorial": 70.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_35302658",
+          "doi": "10.1111/nph.18102",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "The effects of arbuscular mycorrhizal fungal species and taxonomic groups on stressed and unstressed plants: a global meta-analysis.",
+          "abstract": "The great majority of plants gain access to soil nutrients and enhance their performance under stressful conditions through symbiosis with arbuscular mycorrhizal fungi (AMF). The benefits that AMF confer vary among species and taxonomic groups. However, a comparative analysis of the different benefits among AMF has not yet been performed. We conducted a global meta-analysis of recent studies testing the benefits of individual AMF species and main taxonomic groups in terms of plant performance (growth and nutrition). Separately, we examined AMF benefits to plants facing biotic (pathogens, parasites, and herbivores) and abiotic (drought, salinity, and heavy metals) stress. AMF had stronger positive effects on phosphorus nutrition than on plant growth and nitrogen nutrition and the effects on the growth of plants facing biotic and abiotic stresses were similarly positive. While the AMF taxonomic groups showed positive effects on plant performance either with or without stress, Diversisporales were the most beneficial to plants without stress and Gigasporales to plants facing biotic stress. Our results provide a comprehensive analysis of the benefits of different AMF species and taxonomic groups on plant performance and useful insights for their management and use as bio-inoculants for agriculture and restoration.",
+          "ano": 2022,
+          "autores": "Nicolás Marro; Gabriel Grilli; Florencia Soteras; et al.",
+          "periodico": "The New phytologist",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "MetaAnalysis"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35302658/",
+          "score_prioridade_editorial": 69.0,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 14.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "MetaAnalysis",
+          "desenho_estudo_rotulo": "Meta-análise",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_32311073",
+          "doi": "10.1002/dev.21974",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "A Caretaker Acute Stress Paradigm: Effects on behavior and physiology of caretaker and infant.",
+          "abstract": "While experimental stress paradigms of infants (arm restraint; the Still-Face) are powerful tools for infant research, no study has experimentally stressed mothers to observe its independent effects on infant stress regulation. Extant caretaker/maternal stress studies essentially are correlational and confounded by other conditions (e.g., depression). Here, we present a standard procedure, the Caregiver Acute Stress Paradigm (CASP), for stressing mothers during en face interactions with their infants. We hypothesized that infants of the stressed mothers would be more distressed than infants of non-stressed mothers. A total of 106 four-month-old infants and their mothers were randomly assigned to the experimental stress or non-stress manipulation. Confirming our hypothesis, infants of the stressed mothers were significantly more likely to become distressed and require terminating the procedure. While objective ratings of maternal behavior showed no difference between groups, mother in the stress condition self-rated the episode following the caretaker stress significantly lower than mothers in the non-stress group. The self-ratings in the maternal stress-group were reflected in infant cortisol. The findings indicate that CASP is an effective experimental paradigm for exploring the independent effects of an acute stress on caretakers, including effects of conditions, such as poverty or mental illness.",
+          "ano": 2021,
+          "autores": "Ed Tronick; Isabelle Mueller; Jennifer DiCorcia; et al.",
+          "periodico": "Developmental psychobiology",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "RCT"
+          ],
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7572457/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/32311073/",
+          "score_prioridade_editorial": 68.5,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 12.5,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 8.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "Texto completo aberto identificado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_28186615",
+          "doi": "10.1111/evo.13201",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Environmental stress correlates with increases in both genetic and residual variances: A meta-analysis of animal studies.",
+          "abstract": "Adaptive evolutionary responses are determined by the strength of selection and amount of genetic variation within traits, however, both are known to vary across environmental conditions. As selection is generally expected to be strongest under stressful conditions, understanding how the expression of genetic variation changes across stressful and benign environmental conditions is crucial for predicting the rate of adaptive change. Although theory generally predicts increased genetic variation under stress, previous syntheses of the field have found limited support for this notion. These studies have focused on heritability, which is dependent on other environmentally sensitive, but nongenetic, sources of variation. Here, we aim to complement these studies with a meta-analysis in which we examine changes in coefficient of variation (CV) in maternal, genetic, and residual variances across stressful and benign conditions. Confirming previous analyses, we did not find any clear direction in how heritability changes across stressful and benign conditions. However, when analyzing CV, we found higher genetic and residual variance under highly stressful conditions in life-history traits but not in morphological traits. Our findings are of broad significance to contemporary evolution suggesting that rapid evolutionary adaptive response may be mediated by increased evolutionary potential in stressed populations.",
+          "ano": 2017,
+          "autores": "Piotr K Rowiński; Björn Rogell",
+          "periodico": "Evolution; international journal of organic evolution",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "MetaAnalysis"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/28186615/",
+          "score_prioridade_editorial": 62.55,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 6.5,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 4.05
+          },
+          "tipo_principal": "MetaAnalysis",
+          "desenho_estudo_rotulo": "Meta-análise",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        }
+      ]
+    }
+  },
+  "total_artigos": 11
+}

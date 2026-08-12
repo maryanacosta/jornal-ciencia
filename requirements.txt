@@ -1,0 +1,22 @@
+# Interface editorial
+streamlit>=1.36
+pandas>=2.1
+
+# Busca federada e configuração
+requests>=2.31
+python-dotenv>=1.0
+
+# Tradução e processamento linguístico
+spacy>=3.7
+pyphen>=0.15
+deep-translator>=1.11
+
+# Similaridade temática auxiliar
+sentence-transformers>=3.0
+scikit-learn>=1.4
+torch>=2.2
+transformers>=4.41
+
+# Clientes de LLM
+Google-genai>=1.0
+groq>=0.11
