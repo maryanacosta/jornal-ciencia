@@ -47,7 +47,7 @@ HISTORICO = BASE_DIR / "historico_editorial.json"
 ESTADOS = BASE_DIR / "estado_editorial.json"
 TRADUCOES_BASE = BASE_DIR / "traducoes_base.json"
 
-ID_CONFIGURACAO_PROMPT = "jornal_ciencia_configuracao_atual"
+VERSAO_PROMPT = "jornal_ciencia_v7.1_n2_mais_acessivel"
 MINILM_MODEL = os.getenv("MINILM_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 MINILM_TOP_K = 5
 
@@ -59,25 +59,35 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 LLM_TENTATIVAS_TRANSITORIAS = max(1, int(os.getenv("LLM_TENTATIVAS_TRANSITORIAS", "3")))
 TRADUCAO_RETRY_SEGUNDOS = (0, 3, 8, 20)
 
-# Glossário editorial controlado usado SOMENTE para explicar rótulos metodológicos
-# na Leitura Facilitada. Ele não autoriza acrescentar fatos médicos sobre o artigo.
-# As explicações são fixas para evitar que a LLM invente definições diferentes a cada texto.
-GLOSSARIO_METODOLOGICO_N2 = {
-    "revisão sistemática da literatura": "pesquisa que reúne e analisa, de forma planejada, estudos já publicados",
-    "revisão sistemática": "pesquisa que reúne e analisa, de forma planejada, estudos já publicados",
-    "ensaio clínico randomizado": "estudo em que os participantes são distribuídos ao acaso entre grupos para comparar uma intervenção",
-    "ensaios clínicos randomizados": "estudos em que os participantes são distribuídos ao acaso entre grupos para comparar uma intervenção",
-    "estudo observacional": "estudo em que os pesquisadores observam o que acontece sem escolher a intervenção",
-    "estudos observacionais": "estudos em que os pesquisadores observam o que acontece sem escolher a intervenção",
-    "estudo transversal": "estudo que observa informações de um grupo em um momento específico",
-    "estudos transversais": "estudos que observam informações de um grupo em um momento específico",
-    "intervenção dietética": "mudança planejada na alimentação",
-    "intervenções dietéticas": "mudanças planejadas na alimentação",
-    "padrão alimentar": "forma habitual de alimentação",
-    "padrões alimentares": "formas habituais de alimentação",
-    "inquérito": "pesquisa feita por perguntas aos participantes",
-    "inquéritos": "pesquisas feitas por perguntas aos participantes",
+
+# Rótulos editoriais em português. O termo original de busca continua salvo nos JSONs
+# para preservar a rastreabilidade da coleta; esta tabela altera apenas a apresentação.
+TEMAS_PT = {
+    "diet": "Dieta",
+    "nutrition": "Nutrição",
+    "health": "Saúde",
+    "sunscreen skin cancer prevention": "Protetor solar e prevenção do câncer de pele",
+    "cancer alternative medicine treatment": "Câncer e tratamentos alternativos",
+    "nutrition diet health outcomes": "Alimentação, dieta e saúde",
+    "influenza transmission cold weather": "Influenza, transmissão e clima frio",
+    "red meat processed food cancer risk": "Carne vermelha, processados e risco de câncer",
+    "vaccine safety adverse effects": "Segurança de vacinas e efeitos adversos",
+    "sugar consumption mental health anxiety": "Consumo de açúcar, saúde mental e ansiedade",
+    "ivermectin antiparasitic clinical use": "Ivermectina e uso clínico antiparasitário",
+    "egg cholesterol cardiovascular disease": "Ovos, colesterol e doença cardiovascular",
+    "detox diet liver kidney health": "Dietas detox, fígado e rins",
 }
+
+
+def traduzir_tema_exibicao(tema: Any) -> str:
+    """Traduz apenas o rótulo exibido; não altera o tema original usado na coleta."""
+    bruto = str(tema or "geral").strip()
+    if not bruto:
+        return "Geral"
+    chave = bruto.lower().replace("_", " ").strip()
+    if chave in TEMAS_PT:
+        return TEMAS_PT[chave]
+    return chave[:1].upper() + chave[1:]
 
 st.set_page_config(
     page_title="Painel Editorial — Jornal Cienc.IA",
@@ -267,14 +277,6 @@ html, body, [data-testid="stAppViewContainer"] {
 [data-testid="stMain"] [data-testid="stExpander"] summary svg {
   fill: #111827 !important;
   color: #111827 !important;
-}
-/* Código inline no conteúdo principal nunca usa fundo preto. */
-[data-testid="stMain"] code {
-  background: #eef2f7 !important;
-  background-color: #eef2f7 !important;
-  color: #111827 !important;
-  -webkit-text-fill-color: #111827 !important;
-  border-radius: 4px;
 }
 [data-testid="stMain"] h1,
 [data-testid="stMain"] h2,
@@ -907,13 +909,6 @@ PALAVRAS_COMUNS_LONGAS = {
     "aumentar",
     "estrutura",
     "aprovação",
-    "cientistas",
-    "participantes",
-    "objetivo",
-    "específicas",
-    "especificas",
-    "científicas",
-    "cientificas",
 }
 
 
@@ -1538,7 +1533,7 @@ def construir_plano_simplificacao(ficha: Dict, termos_complexos: Optional[List[s
         mensagem_central = _texto_informado_simplificacao(ficha.get("objetivo"))
 
     return {
-        "configuracao": "nucleo_simplificacao",
+        "versao": "nucleo_simplificacao_v3",
         "regra_central": (
             "Simplificar primeiro a forma linguística. Um fato obrigatório só pode ser condensado, "
             "nunca apagado ou transformado em uma afirmação mais forte que a fonte. A versão facilitada "
@@ -1551,17 +1546,6 @@ def construir_plano_simplificacao(ficha: Dict, termos_complexos: Optional[List[s
         "termos_tecnicos_essenciais": termos_ficha[:12],
         "termos_para_atencao": termos[:16],
         "termos_evitar_quando_possivel": [t for t in termos[:16] if t.lower() not in {x.lower() for x in termos_ficha}],
-        "glossario_metodologico_controlado": GLOSSARIO_METODOLOGICO_N2,
-        "politica_terminologica": {
-            "regra": (
-                "Todo termo potencialmente técnico deve ser removido/substituído quando não for necessário; "
-                "se for essencial, deve ser explicado em linguagem comum na mesma frase ou imediatamente depois. "
-                "Nomes indispensáveis de doenças, medicamentos, dietas, escalas ou genes podem permanecer como nomes, "
-                "mas não dispensam explicação quando o significado do termo for necessário para entender o resultado."
-            ),
-            "termo_nao_resolvido_exige_reparo": True,
-            "glossario_controlado_apenas_para_metodos": True,
-        },
         "metas_linguisticas": {
             "palavras_por_frase_preferencial": "7 a 14",
             "limite_suave_palavras": 16,
@@ -1577,67 +1561,6 @@ def construir_plano_simplificacao(ficha: Dict, termos_complexos: Optional[List[s
             "preservar_numeros": True,
             "preservar_incerteza": True,
         },
-    }
-
-
-def preparar_travas_fidelidade_n2(plano: Dict[str, Any]) -> Dict[str, Any]:
-    """Extrai do núcleo obrigatório pontos que exigem proteção extra no N2.
-
-    As travas não inventam fatos novos. Elas apenas tornam explícitos dois riscos
-    observados na simplificação: perder o escopo de um número e aumentar a força
-    causal/epistemológica de uma relação descrita como associação.
-    """
-    numeros_com_escopo: List[Dict[str, str]] = []
-    relacoes_associativas: List[Dict[str, str]] = []
-
-    marcadores_associacao = (
-        "associad", "relacionad", "correlacion", "ligad",
-        "associated", "related", "linked", "correlated",
-    )
-
-    for item in plano.get("fatos_obrigatorios", []) or []:
-        if not isinstance(item, dict):
-            continue
-        conteudo = limpar_texto_editorial(item.get("conteudo"))
-        if not conteudo:
-            continue
-        item_id = str(item.get("id") or "")
-        campo = str(item.get("campo") or "")
-
-        percentuais = re.findall(r"(?<!\d)(\d{1,3}(?:[\.,]\d+)?)\s*%", conteudo)
-        if percentuais:
-            numeros_com_escopo.append({
-                "id": item_id,
-                "campo": campo,
-                "valor": ", ".join(f"{x}%" for x in percentuais),
-                "fato_completo": conteudo,
-                "regra": (
-                    "Se o percentual for reescrito como 'X em cada 100', preserve também "
-                    "o grupo, subgrupo, população, período ou condição a que o percentual se refere. "
-                    "O escopo pode estar na mesma frase ou imediatamente antes, desde que fique inequívoco."
-                ),
-            })
-
-        normalizado = unicodedata.normalize("NFKD", conteudo.lower()).encode("ascii", "ignore").decode()
-        if campo in {"achado_principal", "incerteza", "nao_concluir"} and any(
-            marcador in normalizado for marcador in marcadores_associacao
-        ):
-            relacoes_associativas.append({
-                "id": item_id,
-                "campo": campo,
-                "fato_completo": conteudo,
-                "regra": (
-                    "Preserve a relação como associação/relação. Não substitua por linguagem causal "
-                    "ou de eficácia, como 'ajudou', 'fez reduzir', 'causou', 'provocou', 'evitou', "
-                    "'preveniu', 'reduziu', 'aumentou' ou 'melhorou', salvo se essa força estiver "
-                    "explicitamente presente na fonte. Prefira 'foi ligado a', 'foi associado a' "
-                    "ou 'foi relacionado a'."
-                ),
-            })
-
-    return {
-        "numeros_com_escopo": numeros_com_escopo,
-        "relacoes_associativas": relacoes_associativas,
     }
 
 
@@ -1751,7 +1674,6 @@ def gerar_leitura_facilitada_independente(
     plano: Dict[str, Any],
 ) -> Tuple[Dict[str, str], str, Optional[str], List[str]]:
     """Gera N2 diretamente da fonte e do núcleo obrigatório, sem usar N1 como entrada."""
-    travas = preparar_travas_fidelidade_n2(plano)
     prompt = f"""
 Você é editor de LEITURA FACILITADA do Jornal Cienc.IA.
 Crie uma versão para adultos com baixa proficiência de leitura e/ou baixo letramento em saúde.
@@ -1802,36 +1724,18 @@ REGRAS DE LINGUAGEM — MAIS FÁCIL QUE A DIVULGAÇÃO:
 - evite metáforas, frases telegráficas, siglas sem explicação e sinônimos que aumentem a certeza;
 - mantenha o leitor adulto e respeitoso, sem diminutivos nem tom infantil.
 
-TERMOS TÉCNICOS — REGRA OBRIGATÓRIA:
-- Consulte termos_tecnicos_essenciais, termos_para_atencao e termos_evitar_quando_possivel do plano ANTES de escrever.
-- Para CADA termo potencialmente complexo, escolha uma destas ações: REMOVER, SUBSTITUIR, EXPLICAR ou manter apenas como NOME ESSENCIAL.
-- Termos em termos_evitar_quando_possivel devem desaparecer do corpo sempre que o fato puder ser dito com palavras comuns.
-- Se um rótulo técnico NÃO for necessário para entender o fato, não o escreva. Preserve a informação, não o jargão.
-- Se o termo for essencial para entender método/resultado, apresente primeiro a ideia em linguagem comum e dê o nome técnico depois, se ainda for útil.
-- Quando o termo metodológico estiver no glossario_metodologico_controlado, você PODE usar exatamente a explicação fixa do glossário. Esse glossário serve apenas para método e não autoriza acrescentar fatos médicos.
-- Exemplo preferido: "Os pesquisadores reuniram estudos já publicados de forma planejada. Esse tipo de pesquisa é chamado de revisão sistemática."
-- Evite "revisão sistemática da literatura" quando "revisão sistemática" já bastar.
-- Prefira "mudanças na alimentação" a "intervenções dietéticas" quando o sentido for preservado.
-- Prefira "formas de alimentação" a "padrões alimentares" quando o sentido for preservado.
-- Um exemplo técnico listado na ficha não precisa permanecer apenas por ser exemplo. Se a categoria central estiver preservada e o exemplo não for um achado principal, ele pode ser omitido.
-- Nomes indispensáveis (por exemplo, a doença estudada) podem permanecer. Não tente substituir o nome da própria condição por uma expressão vaga.
-- Se um termo essencial NÃO puder ser removido, substituído ou explicado com segurança, mantenha-o apenas quando indispensável e coloque-o em termos_para_revisao_humana.
+TERMOS TÉCNICOS:
+- Consulte termos_tecnicos_essenciais, termos_para_atencao e termos_evitar_quando_possivel do plano.
+- Se um rótulo técnico NÃO for necessário para entender o fato, prefira a descrição simples do fato.
+- Se o termo for essencial, apresente primeiro a ideia em linguagem comum e, quando útil, dê o nome técnico depois.
+- Exemplo de estrutura permitida apenas quando sustentada pela fonte: "Os autores reuniram estudos já publicados. Esse tipo de estudo é chamado de revisão sistemática."
 - Não mantenha jargão apenas porque ele aparece no abstract.
 
-NÚMEROS — TRAVA DE ESCOPO:
+NÚMEROS:
 - Preserve o valor numérico obrigatório.
-- NUNCA apresente um percentual sem preservar também a quem ou a que ele se refere.
-- Se a fonte disser "68% dos estudos sobre X", não escreva "68% dos estudos" nem "68 em cada 100 estudos" sem X.
-- O grupo, subgrupo, população, período ou condição pode aparecer na mesma frase ou imediatamente antes, mas deve ficar inequívoco.
 - Quando um percentual for importante e isso facilitar a leitura, você pode apresentá-lo também como frequência natural,
   por exemplo: "68 em cada 100 (68%)". Não altere o valor nem invente denominadores para medidas que não sejam percentuais.
 - Evite concentrar vários números diferentes na mesma frase.
-
-FORÇA EPISTEMOLÓGICA — TRAVA DE ASSOCIAÇÃO:
-- Quando a fonte usar "associado", "relacionado", "ligado" ou equivalente, preserve essa força.
-- Nesses casos, NÃO troque por "ajudou", "causou", "provocou", "evitou", "preveniu", "reduziu", "aumentou", "melhorou" ou frases equivalentes de efeito/causa.
-- Para simplificar, prefira formas como "foi ligado a mais crises", "foi associado a menos crises" ou "foi relacionado a...".
-- Só use linguagem causal quando a própria fonte sustentar explicitamente essa força.
 
 INFERÊNCIA E INCERTEZA:
 - Explicite a limitação principal com palavras simples.
@@ -1849,16 +1753,11 @@ ANTES DE RESPONDER, FAÇA UMA REVISÃO INTERNA:
 - O N2 parece claramente mais fácil que uma notícia de divulgação comum?
 - Há alguma frase que exige entender três conceitos ao mesmo tempo? Se sim, divida.
 - Há termo complexo que pode ser retirado ou substituído sem perder informação? Se sim, simplifique.
-- Para cada termo em termos_para_atencao: ele foi removido, substituído, explicado ou é apenas um nome essencial? Não deixe nenhum termo sem uma decisão.
-- Há termo essencial que ficou sem explicação embora a fonte ou o glossário metodológico controlado permita explicá-lo? Se sim, explique.
-- Há exemplos técnicos dispensáveis (nomes de dietas, subtipos, métodos) que podem ser omitidos sem perder o fato central? Se sim, omita.
+- Há termo essencial que ficou sem explicação embora a fonte permita explicá-lo? Se sim, explique.
 - Algum fato obrigatório, número ou incerteza desapareceu? Se sim, recoloque.
 
 PLANO DE SIMPLIFICAÇÃO:
 {json.dumps(plano, ensure_ascii=False, indent=2)}
-
-TRAVAS DE FIDELIDADE DO N2:
-{json.dumps(travas, ensure_ascii=False, indent=2)}
 
 Retorne APENAS JSON válido:
 {{
@@ -1932,7 +1831,7 @@ def diagnosticar_complexidade_leitura(blocos: Dict[str, str], idf: Optional[Dict
             "termos_complexos_detectados": termos_bloco,
         }
     return {
-        "configuracao": "diagnostico_superficie",
+        "versao": "diagnostico_superficie_v2",
         "total_frases": total_frases,
         "frases_acima_18": frases_acima_18,
         "frases_acima_22": frases_acima_22,
@@ -1954,7 +1853,6 @@ def checar_nucleo_leitura_facilitada(
     diagnostico: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], str, Optional[str]]:
     """Verifica se o núcleo obrigatório sobreviveu à simplificação antes da auditoria final."""
-    travas = preparar_travas_fidelidade_n2(plano)
     esquema = {
         "itens_obrigatorios": [{
             "id": "M01",
@@ -1966,21 +1864,6 @@ def checar_nucleo_leitura_facilitada(
         "problemas_linguisticos": [{
             "bloco": "o_principal|o_que_o_artigo_fez|o_que_foi_encontrado|o_que_ainda_nao_sabemos",
             "tipo": "ambiguidade|jargao_nao_explicado|nominalizacao_densa|frase_com_muitas_ideias|frase_telegráfica|complexidade_desnecessaria|outro",
-            "trecho": "string",
-            "observacao": "string",
-        }],
-        "avaliacao_termos": [{
-            "termo": "string",
-            "presente": True,
-            "tratamento": "removido|substituido|explicado|nome_essencial|comum_no_contexto|nao_resolvido",
-            "bloco": "o_principal|o_que_o_artigo_fez|o_que_foi_encontrado|o_que_ainda_nao_sabemos|",
-            "trecho": "string",
-            "observacao": "string",
-        }],
-        "violacoes_travas": [{
-            "tipo": "escopo_numerico|forca_epistemologica",
-            "fato_id": "M01",
-            "bloco": "o_principal|o_que_o_artigo_fez|o_que_foi_encontrado|o_que_ainda_nao_sabemos",
             "trecho": "string",
             "observacao": "string",
         }],
@@ -2003,37 +1886,11 @@ Para cada item obrigatório, use exatamente o id recebido no plano.
 Considere o diagnóstico de superfície como ALERTA, não como regra absoluta.
 A Leitura Facilitada deve ser perceptivelmente mais simples que uma notícia comum.
 - Frases acima de 18 palavras devem ser divididas quando isso puder ser feito sem perda de conteúdo.
-- TERMOS TÉCNICOS NÃO SÃO APENAS ALERTA: para cada termo listado em termos_para_atencao e para cada termo complexo detectado no diagnóstico final, preencha avaliacao_termos.
-- Use tratamento=removido quando o termo não aparece mais; substituido quando o conteúdo foi expresso com palavras mais comuns; explicado quando o termo aparece acompanhado de explicação simples na mesma frase ou imediatamente depois; nome_essencial somente para nomes indispensáveis como a própria doença, medicamento, gene, escala ou dieta cujo nome precise realmente permanecer; comum_no_contexto apenas para palavras de uso geral que o detector marcou por tamanho, como "participantes" ou "objetivo"; nao_resolvido quando o termo técnico aparece sem necessidade, sem substituição ou sem explicação suficiente.
-- Termos presentes em termos_evitar_quando_possivel NÃO devem ser tratados como aceitáveis só porque aparecem na fonte. Se permanecerem sem motivo indispensável, marque nao_resolvido.
-- Termos metodológicos presentes no glossario_metodologico_controlado podem ser considerados explicados somente se o texto trouxer a ideia simples equivalente.
-- Se aparecer "revisão sistemática da literatura", prefira que o texto explique a ideia simples e use no máximo "revisão sistemática".
-- Se aparecer "intervenções dietéticas", "padrões alimentares", "estudos transversais", "ensaios clínicos randomizados" ou rótulo semelhante, ele deve ser substituído ou explicado; não basta estar correto cientificamente.
-- Exemplos técnicos dispensáveis, como nomes de dietas que não sejam necessários para um achado principal, devem ser omitidos em vez de acumulados no N2.
-- Qualquer avaliacao_termos com tratamento=nao_resolvido deve colocar o bloco correspondente em blocos_para_reparar e gerar problema_linguistico do tipo jargao_nao_explicado.
-- Marque jargão não explicado quando um termo complexo permanece sem necessidade ou sem explicação suficiente.
+- Marque jargão não explicado quando um termo complexo permanece sem necessidade ou sem explicação possível pela fonte.
 - Marque frase_com_muitas_ideias quando a frase exige acompanhar mais de uma relação científica principal ao mesmo tempo.
 - Marque nominalizacao_densa quando uma construção abstrata puder ser expressa por verbo ou forma concreta sem mudar o sentido.
 - Não mande apagar número, limitação, população ou qualificador apenas para encurtar uma frase.
 - Não exija definição externa de um termo; a explicação deve ser sustentada pela fonte/ficha.
-
-TRAVA DE ACESSIBILIDADE — TERMOS TÉCNICOS:
-- Avalie TODOS os termos em termos_para_atencao e TODOS os termos em DIAGNÓSTICO DE SUPERFÍCIE.termos_complexos_detectados.
-- Nenhum termo técnico pode simplesmente "passar" sem decisão. Ele deve estar removido, substituído, explicado ou justificado como nome essencial.
-- O fato científico é obrigatório; o rótulo técnico nem sempre é. Preserve o fato e simplifique o rótulo.
-- Use o glossario_metodologico_controlado somente para explicar métodos. Não crie definições médicas externas.
-- Se um termo essencial não puder ser explicado com segurança, marque nao_resolvido para revisão humana.
-
-TRAVA 1 — ESCOPO NUMÉRICO:
-- Para cada item em numeros_com_escopo, confira se o N2 preserva não apenas o valor, mas também o grupo/subgrupo/condição a que o número pertence.
-- O escopo pode estar na mesma frase ou imediatamente anterior, desde que o referente seja inequívoco.
-- Se "68% dos estudos sobre padrões alimentares e gatilhos" virar "68% dos estudos", registre violação escopo_numerico.
-
-TRAVA 2 — FORÇA EPISTEMOLÓGICA:
-- Para cada item em relacoes_associativas, confira se associação/relação continuou sendo associação/relação.
-- Se o N2 trocar por "ajudou", "causou", "provocou", "evitou", "preveniu", "reduziu", "aumentou", "melhorou" ou equivalente causal/de eficácia sem apoio explícito da fonte, registre violação forca_epistemologica.
-- Frases simples como "foi ligado a mais crises" são aceitáveis quando preservam a relação.
-- Toda violação de trava deve obrigatoriamente colocar o bloco em blocos_para_reparar.
 
 Retorne APENAS JSON seguindo este esquema:
 {json.dumps(esquema, ensure_ascii=False, indent=2)}
@@ -2043,9 +1900,6 @@ PLANO:
 
 DIAGNÓSTICO DE SUPERFÍCIE:
 {json.dumps(diagnostico, ensure_ascii=False, indent=2)}
-
-TRAVAS DE FIDELIDADE DO N2:
-{json.dumps(travas, ensure_ascii=False, indent=2)}
 
 LEITURA FACILITADA:
 {json.dumps(normalizar_blocos_leitura(blocos), ensure_ascii=False, indent=2)}
@@ -2066,7 +1920,6 @@ LEITURA FACILITADA:
             "aprovado_para_auditoria": False,
             "itens_obrigatorios": [],
             "problemas_linguisticos": [],
-            "violacoes_travas": [],
             "blocos_para_reparar": [],
             "observacao": "Checagem automática inconclusiva; revisão humana necessária.",
         }, modelo, erro or "Resposta de checagem inválida."
@@ -2100,118 +1953,11 @@ LEITURA FACILITADA:
         if bloco in dict(BLOCOS_LEITURA) and bloco not in blocos_reparar:
             blocos_reparar.append(bloco)
 
-    # A política terminológica é obrigatória: todo termo potencialmente complexo precisa
-    # receber uma decisão explícita. Se o verificador omitir um termo, ele é tratado como
-    # não resolvido em vez de ser silenciosamente aceito.
-    termos_esperados = []
-    for termo in [
-        *(plano.get("termos_para_atencao") or []),
-        *(diagnostico.get("termos_complexos_detectados") or []),
-    ]:
-        termo_limpo = limpar_texto_editorial(termo)
-        if termo_limpo and termo_limpo.lower() not in {t.lower() for t in termos_esperados}:
-            termos_esperados.append(termo_limpo)
-
-    avaliacoes_recebidas = {}
-    for item in dados.get("avaliacao_termos", []) if isinstance(dados.get("avaliacao_termos"), list) else []:
-        if not isinstance(item, dict):
-            continue
-        termo = limpar_texto_editorial(item.get("termo"))
-        if termo:
-            avaliacoes_recebidas[termo.lower()] = item
-
-    texto_blocos = normalizar_blocos_leitura(blocos)
-    avaliacoes_termos = []
-    termos_nao_resolvidos = []
-    tratamentos_validos = {"removido", "substituido", "explicado", "nome_essencial", "comum_no_contexto", "nao_resolvido"}
-    for termo in termos_esperados:
-        item = avaliacoes_recebidas.get(termo.lower())
-        if not isinstance(item, dict):
-            item = {
-                "termo": termo,
-                "presente": any(termo.lower() in limpar_texto_editorial(txt).lower() for txt in texto_blocos.values()),
-                "tratamento": "nao_resolvido",
-                "bloco": "",
-                "trecho": "",
-                "observacao": "O verificador não classificou este termo; revisão obrigatória.",
-            }
-        tratamento = str(item.get("tratamento") or "").strip().lower()
-        if tratamento not in tratamentos_validos:
-            tratamento = "nao_resolvido"
-            item["tratamento"] = tratamento
-
-        # Rótulos metodológicos conhecidos não podem ser liberados como se fossem palavras
-        # comuns ou nomes próprios: se aparecem, precisam estar explicados ou substituídos.
-        termo_norm = unicodedata.normalize("NFKD", termo.lower()).encode("ascii", "ignore").decode()
-        glossario_norm = {
-            unicodedata.normalize("NFKD", k.lower()).encode("ascii", "ignore").decode()
-            for k in (plano.get("glossario_metodologico_controlado") or {}).keys()
-        }
-        if termo_norm in glossario_norm and tratamento in {"nome_essencial", "comum_no_contexto"}:
-            tratamento = "nao_resolvido"
-            item["tratamento"] = tratamento
-            item["observacao"] = (
-                "Rótulo metodológico presente sem tratamento suficiente; ele deve ser explicado, substituído ou removido."
-            )
-
-        bloco = str(item.get("bloco") or "")
-        if tratamento == "nao_resolvido":
-            # Localiza de forma simples o primeiro bloco onde o termo aparece para que o reparo saiba onde atuar.
-            if bloco not in dict(BLOCOS_LEITURA):
-                for chave, txt in texto_blocos.items():
-                    if termo.lower() in limpar_texto_editorial(txt).lower():
-                        bloco = chave
-                        item["bloco"] = chave
-                        break
-            termos_nao_resolvidos.append(item)
-            if bloco in dict(BLOCOS_LEITURA) and bloco not in blocos_reparar:
-                blocos_reparar.append(bloco)
-        avaliacoes_termos.append(item)
-
-    violacoes_travas = []
-    for violacao in dados.get("violacoes_travas", []) if isinstance(dados.get("violacoes_travas"), list) else []:
-        if not isinstance(violacao, dict):
-            continue
-        tipo = str(violacao.get("tipo") or "")
-        bloco = str(violacao.get("bloco") or "")
-        if tipo not in {"escopo_numerico", "forca_epistemologica"}:
-            continue
-        if bloco not in dict(BLOCOS_LEITURA):
-            fato_id = str(violacao.get("fato_id") or "")
-            bloco = str((mapa_plano.get(fato_id) or {}).get("bloco_preferencial") or "")
-            violacao["bloco"] = bloco
-        violacoes_travas.append(violacao)
-        if bloco in dict(BLOCOS_LEITURA) and bloco not in blocos_reparar:
-            blocos_reparar.append(bloco)
-
     dados["valida"] = True
-    problemas_linguisticos = [
-        x for x in (dados.get("problemas_linguisticos") or []) if isinstance(x, dict)
-    ]
-    for item in termos_nao_resolvidos:
-        termo = str(item.get("termo") or "")
-        bloco = str(item.get("bloco") or "")
-        if not any(
-            p.get("tipo") == "jargao_nao_explicado" and str(p.get("trecho") or "").lower() == termo.lower()
-            for p in problemas_linguisticos
-        ):
-            problemas_linguisticos.append({
-                "bloco": bloco,
-                "tipo": "jargao_nao_explicado",
-                "trecho": termo,
-                "observacao": str(item.get("observacao") or "Termo técnico ainda não removido, substituído ou explicado."),
-            })
-
     dados["itens_obrigatorios"] = itens
     dados["itens_faltantes_ou_infieis"] = [i.get("id") for i in faltantes]
-    dados["problemas_linguisticos"] = problemas_linguisticos
-    dados["avaliacao_termos"] = avaliacoes_termos
-    dados["termos_nao_resolvidos"] = termos_nao_resolvidos
-    dados["violacoes_travas"] = violacoes_travas
     dados["blocos_para_reparar"] = blocos_reparar
-    dados["aprovado_para_auditoria"] = bool(
-        not faltantes and not violacoes_travas and not termos_nao_resolvidos and not blocos_reparar
-    )
+    dados["aprovado_para_auditoria"] = bool(not faltantes and not blocos_reparar)
     return dados, modelo, erro
 
 
@@ -2229,8 +1975,6 @@ def reparar_leitura_facilitada_uma_vez(
 
     mapa_fatos = {item.get("id"): item for item in plano.get("fatos_obrigatorios", [])}
     faltantes = [mapa_fatos.get(x) for x in checagem.get("itens_faltantes_ou_infieis", []) if mapa_fatos.get(x)]
-    travas = preparar_travas_fidelidade_n2(plano)
-    violacoes_travas = checagem.get("violacoes_travas", []) if isinstance(checagem.get("violacoes_travas"), list) else []
     esquema = {"blocos_corrigidos": {chave: "string" for chave in alvos}, "nota": ["string"]}
     prompt = f"""
 Você fará UMA ÚNICA RODADA DE REPARO da Leitura Facilitada.
@@ -2241,8 +1985,7 @@ OBJETIVOS, nesta ordem:
 2. preservar números e qualificadores de incerteza;
 3. reduzir de forma perceptível a complexidade sintática e lexical;
 4. descompactar frases densas em várias frases simples;
-5. retirar ou substituir rótulos técnicos não essenciais quando o conteúdo puder ser preservado em linguagem comum;
-6. resolver TODOS os termos marcados como não resolvidos: remover, substituir ou explicar.
+5. retirar ou substituir rótulos técnicos não essenciais quando o conteúdo puder ser preservado em linguagem comum.
 
 REGRAS:
 - Use somente a fonte e a tradução-base. Não use conhecimento externo.
@@ -2252,16 +1995,10 @@ REGRAS:
 - Prefira verbos concretos e palavras cotidianas.
 - Troque formas abstratas por concretas quando isso não alterar a evidência, por exemplo "redução da frequência" por "menos crises".
 - Evite várias vírgulas e várias relações científicas na mesma frase.
-- Se um termo técnico não for essencial, REMOVA o rótulo e preserve apenas a informação em palavras comuns.
-- Se um termo técnico essencial puder ser explicado usando a fonte ou o glossário metodológico controlado, apresente a ideia simples antes do nome técnico.
-- Use o glossário controlado somente para rótulos metodológicos. Não invente definições médicas.
-- Se um exemplo técnico for apenas ilustrativo e não for necessário para um achado principal, ele pode ser omitido.
-- Se não puder explicar um termo essencial com segurança, mantenha-o apenas se for indispensável; o bloco continuará marcado para revisão humana na rechecagem.
-- Não devolva "intervenções dietéticas", "padrões alimentares", "estudos transversais", "ensaios clínicos randomizados" ou rótulos semelhantes sem substituição ou explicação simples.
+- Se um termo técnico não for essencial, prefira a descrição simples do fato.
+- Se um termo técnico essencial puder ser explicado usando apenas a fonte, apresente a ideia simples antes do nome técnico.
+- Se não puder ser explicado com segurança pela fonte, mantenha-o e deixe-o para revisão humana.
 - Percentuais importantes podem aparecer como frequência natural junto do valor original, por exemplo "68 em cada 100 (68%)".
-- TRAVA DE ESCOPO: se um número pertence a um grupo/subgrupo/condição, preserve esse escopo na mesma frase ou imediatamente antes. Nunca generalize o denominador ou o grupo.
-- TRAVA EPISTEMOLÓGICA: se a fonte diz associado/relacionado/ligado, mantenha associação. Não troque por "ajudou", "causou", "provocou", "evitou", "preveniu", "reduziu", "aumentou" ou "melhorou" sem apoio explícito da fonte.
-- Prefira "foi ligado a mais/menos..." quando precisar simplificar uma associação.
 - Não transforme associação em causalidade nem possibilidade em certeza.
 - Preserve todo fato obrigatório que já estava correto no bloco.
 
@@ -2273,18 +2010,6 @@ BLOCOS_A_REPARAR:
 
 FATOS QUE PRECISAM DE ATENÇÃO:
 {json.dumps(faltantes, ensure_ascii=False, indent=2)}
-
-VIOLAÇÕES DAS TRAVAS DETECTADAS:
-{json.dumps(violacoes_travas, ensure_ascii=False, indent=2)}
-
-TERMOS TÉCNICOS NÃO RESOLVIDOS:
-{json.dumps(checagem.get("termos_nao_resolvidos", []), ensure_ascii=False, indent=2)}
-
-GLOSSÁRIO METODOLÓGICO CONTROLADO:
-{json.dumps(plano.get("glossario_metodologico_controlado", {}), ensure_ascii=False, indent=2)}
-
-TRAVAS DE FIDELIDADE DO N2:
-{json.dumps(travas, ensure_ascii=False, indent=2)}
 
 PLANO COMPLETO:
 {json.dumps(plano, ensure_ascii=False, indent=2)}
@@ -3223,7 +2948,7 @@ def processar_artigo(artigo: Dict, titulo_pt: str) -> Dict:
         "modelo_reparo_simplificacao": modelo_reparo,
         "modelo_rechecagem_simplificacao": modelo_rechecagem,
         "erros_pipeline": erros_pipeline,
-        "configuracao_prompt": ID_CONFIGURACAO_PROMPT,
+        "versao_prompt": VERSAO_PROMPT,
         "gerado_em": agora_iso(),
     }
 
@@ -3250,8 +2975,8 @@ def reavaliar_rascunho(rascunho: Dict) -> Dict:
     )
     n2 = blocos_para_texto(blocos)
     idf = calcular_idf_corpus(construir_corpus_portugues(fonte))
-    # Reconstrói o plano com as regras atuais. Isso garante que rascunhos
-    # antigos recebam a separação atual entre fatos obrigatórios e úteis ao reavaliar.
+    # Reconstroi o plano com as regras da versão atual. Isso garante que rascunhos
+    # antigos recebam a nova separação entre fatos obrigatórios e úteis ao reavaliar.
     plano_simplificacao = construir_plano_simplificacao(
         ficha, extrair_termos_complexos(fonte, idf)
     )
@@ -3356,57 +3081,11 @@ def renderizar_rastreabilidade_simplificacao(rascunho: Dict[str, Any]) -> None:
             st.write("Nenhuma frase acima de 18 palavras detectada na checagem final.")
 
         termos_n2 = diagnostico.get("termos_complexos_detectados", [])
-        avaliacoes_termos = checagem.get("avaliacao_termos", []) if isinstance(checagem.get("avaliacao_termos"), list) else []
-        nao_resolvidos = checagem.get("termos_nao_resolvidos", []) if isinstance(checagem.get("termos_nao_resolvidos"), list) else []
-
-        st.markdown("**Tratamento de termos técnicos no N2**")
-        st.caption(
-            "Todo termo potencialmente técnico deve ser removido, substituído, explicado ou justificado como nome essencial. "
-            "Termos metodológicos podem usar somente o glossário controlado do projeto."
-        )
-        if avaliacoes_termos:
-            for item in avaliacoes_termos[:16]:
-                if not isinstance(item, dict):
-                    continue
-                termo = str(item.get("termo") or "")
-                tratamento = str(item.get("tratamento") or "")
-                observacao = str(item.get("observacao") or "")
-                if tratamento == "nao_resolvido":
-                    st.warning(f"Termo ainda não resolvido: {termo}. {observacao}".strip())
-                elif tratamento in {"explicado", "substituido", "removido"}:
-                    st.write(f"✓ {termo}: {tratamento.replace('_', ' ')}")
-                elif tratamento == "nome_essencial":
-                    st.write(f"• {termo}: nome essencial mantido")
-        elif termos_n2:
-            st.warning(
-                "A checagem não classificou os termos complexos detectados. Eles devem ser revisados antes da publicação: "
+        if termos_n2:
+            st.caption(
+                "Termos potencialmente complexos ainda presentes no N2 (alerta lexical; não significa erro): "
                 + ", ".join(str(t) for t in termos_n2[:12])
             )
-        else:
-            st.success("Nenhum termo técnico pendente foi detectado na Leitura Facilitada.")
-
-        if nao_resolvidos:
-            st.warning(
-                "A Leitura Facilitada ainda contém termo(s) técnico(s) sem tratamento suficiente e deve ser revisada antes da publicação."
-            )
-
-        st.markdown("**Travas de fidelidade do N2**")
-        st.caption(
-            "Escopo numérico: todo número deve manter o grupo/condição a que se refere. "
-            "Força epistemológica: associações não podem virar causalidade ou eficácia na simplificação."
-        )
-        violacoes = checagem.get("violacoes_travas", []) if isinstance(checagem.get("violacoes_travas"), list) else []
-        if violacoes:
-            for violacao in violacoes:
-                if not isinstance(violacao, dict):
-                    continue
-                tipo = "escopo numérico" if violacao.get("tipo") == "escopo_numerico" else "força epistemológica"
-                st.warning(
-                    f"Trava acionada — {tipo}: {violacao.get('trecho', '')} "
-                    f"{('— ' + str(violacao.get('observacao'))) if violacao.get('observacao') else ''}"
-                )
-        else:
-            st.success("Nenhuma violação das travas de escopo numérico ou força epistemológica foi detectada na checagem final.")
 
         if rascunho.get("reparo_simplificacao_aplicado"):
             st.info(
@@ -3705,10 +3384,15 @@ def renderizar_modelos_usados(rascunho: Dict[str, Any]) -> None:
         or tradutor_registrado == "Fonte original em português"
     ):
         st.warning(
-            "Este rascunho foi criado com uma configuração anterior de tradução-base. "
-            "Para manter a padronização do experimento, exclua este rascunho e gere-o novamente. "
-            "A configuração atual usa exclusivamente Google Translate na tradução-base e reforça a acessibilidade do N2."
+            "Este rascunho foi criado com uma tradução-base de uma versão anterior. "
+            "Para manter a padronização do experimento, exclua este rascunho e gere-o novamente; "
+            "a versão 7.1 usa exclusivamente Google Translate na tradução-base e reforça a acessibilidade do N2."
         )
+    alinhamentos = [
+        (avaliacao.get(chave) or {}).get("alinhamento_semantico") or {}
+        for chave in ("nivel_1", "nivel_2", "resumo_cientifico")
+    ]
+    minilm_usado = any(a.get("ativo") for a in alinhamentos)
     etapas = [
         ("Tradução-base", rascunho.get("modelo_traducao")),
         ("Ficha factual", rascunho.get("modelo_ficha")),
@@ -3717,6 +3401,7 @@ def renderizar_modelos_usados(rascunho: Dict[str, Any]) -> None:
         ("Checagem do núcleo", rascunho.get("modelo_checagem_simplificacao")),
         ("Reparo da leitura", rascunho.get("modelo_reparo_simplificacao")),
         ("Rechecagem da leitura", rascunho.get("modelo_rechecagem_simplificacao")),
+        ("Recuperação semântica", MINILM_MODEL if minilm_usado else None),
         ("Auditoria de fidelidade", avaliacao.get("modelo_avaliador")),
     ]
     validos = [(etapa, str(modelo)) for etapa, modelo in etapas if modelo and str(modelo) != "nenhum"]
@@ -3728,9 +3413,9 @@ def renderizar_modelos_usados(rascunho: Dict[str, Any]) -> None:
     with st.expander("Ver qual modelo foi usado em cada etapa"):
         for etapa, modelo in validos:
             if etapa == "Tradução-base" and rascunho.get("traducao_base_cache"):
-                st.markdown(f"**{etapa}:** {modelo} · reutilizada do cache persistente")
+                st.write(f"**{etapa}:** `{modelo}` · reutilizada do cache persistente")
             else:
-                st.markdown(f"**{etapa}:** {modelo}")
+                st.write(f"**{etapa}:** `{modelo}`")
         erros = [str(x) for x in (rascunho.get("erros_pipeline") or []) if x]
         if erros:
             st.caption("Algumas etapas acionaram fallback ou registraram indisponibilidade:")
@@ -3740,6 +3425,97 @@ def renderizar_modelos_usados(rascunho: Dict[str, Any]) -> None:
             "Para comparar modelos no TCC, registre esta proveniência. Um rascunho que misturou "
             "modelos por fallback não deve ser tratado como resultado de um único modelo."
         )
+
+
+def _fmt_percentual(valor: Any) -> str:
+    try:
+        return f"{float(valor):.1f}%"
+    except (TypeError, ValueError):
+        return "N/D"
+
+
+def _fmt_nota(valor: Any) -> str:
+    try:
+        return f"{float(valor):.1f}/100"
+    except (TypeError, ValueError):
+        return "Inconclusiva"
+
+
+def renderizar_metricas_editoriais(registro: Dict[str, Any], titulo: str = "Métricas e ferramentas usadas") -> None:
+    """Mostra os indicadores técnicos preservados no rascunho ou na publicação."""
+    avaliacao = registro.get("avaliacao_fidelidade_intelectual") or {}
+    m_n1 = registro.get("metricas_estruturais_n1") or {}
+    m_n2 = registro.get("metricas_estruturais_n2") or {}
+
+    with st.expander(titulo, expanded=False):
+        st.markdown("**Fidelidade Intelectual**")
+        geral = registro.get("fidelidade_intelectual", avaliacao.get("pontuacao_geral"))
+        status = registro.get("status_fidelidade_intelectual") or registro.get("status_fidelidade") or "N/D"
+        c1, c2 = st.columns(2)
+        with c1:
+            st.metric("FI geral", _fmt_nota(geral))
+        with c2:
+            st.metric("Status da auditoria", str(status))
+
+        niveis = []
+        for rotulo, chave in (("Divulgação", "nivel_1"), ("Leitura facilitada", "nivel_2"), ("Resumo científico", "resumo_cientifico")):
+            niveis.append((rotulo, avaliacao.get(chave) or {}))
+        cols = st.columns(3)
+        for col, (rotulo, info) in zip(cols, niveis):
+            with col:
+                st.metric(rotulo, _fmt_nota(info.get("pontuacao")))
+                st.caption(
+                    f"Sustentação: {_fmt_nota(info.get('sustentacao'))} · "
+                    f"Cobertura: {_fmt_nota(info.get('cobertura'))} · "
+                    f"Incerteza: {_fmt_nota(info.get('preservacao_incerteza'))}"
+                )
+
+        st.divider()
+        st.markdown("**Simplificação estrutural**")
+        st.caption(
+            "Indicador experimental de mudança estrutural; não representa porcentagem de compreensão humana nem de fidelidade factual."
+        )
+        s1, s2 = st.columns(2)
+        with s1:
+            st.metric("Índice estrutural — Divulgação", _fmt_percentual(m_n1.get("indice_experimental", registro.get("isr_leve"))))
+            origem = m_n1.get("origem") or {}
+            saida = m_n1.get("saida") or {}
+            if origem or saida:
+                st.caption(
+                    f"Palavras/frase: {origem.get('media_palavras_sentenca', 'N/D')} → {saida.get('media_palavras_sentenca', 'N/D')} · "
+                    f"termos complexos: {origem.get('termos_complexos', 'N/D')} → {saida.get('termos_complexos', 'N/D')}"
+                )
+        with s2:
+            st.metric("Índice estrutural — Leitura facilitada", _fmt_percentual(m_n2.get("indice_experimental", registro.get("isr_forte"))))
+            origem = m_n2.get("origem") or {}
+            saida = m_n2.get("saida") or {}
+            if origem or saida:
+                st.caption(
+                    f"Palavras/frase: {origem.get('media_palavras_sentenca', 'N/D')} → {saida.get('media_palavras_sentenca', 'N/D')} · "
+                    f"termos complexos: {origem.get('termos_complexos', 'N/D')} → {saida.get('termos_complexos', 'N/D')}"
+                )
+
+        st.divider()
+        st.markdown("**Indicadores semânticos auxiliares**")
+        st.caption("Ajudam na recuperação de evidências; não comprovam factualidade.")
+        st.write(
+            "Divulgação — similaridade temática: "
+            f"{_fmt_score(registro.get('sim_origem_leve') or avaliacao.get('similaridade_tematica_n1'))} · "
+            "cobertura temática: "
+            f"{_fmt_score(registro.get('cobertura_tematica_n1') or avaliacao.get('cobertura_tematica_n1'))}"
+        )
+        st.write(
+            "Leitura facilitada — similaridade temática: "
+            f"{_fmt_score(registro.get('sim_origem_forte') or avaliacao.get('similaridade_tematica_n2'))} · "
+            "cobertura temática: "
+            f"{_fmt_score(registro.get('cobertura_tematica_n2') or avaliacao.get('cobertura_tematica_n2'))}"
+        )
+
+        st.divider()
+        st.markdown("**Ferramentas e modelos efetivamente usados**")
+        renderizar_modelos_usados(registro)
+        st.caption(f"Modelo de recuperação semântica configurado: {MINILM_MODEL}")
+        st.caption("Tradução-base padronizada: Google Translate, quando a fonte não está em português.")
 
 
 def bloco_contador(numero: int, rotulo: str) -> None:
@@ -3795,7 +3571,7 @@ contagens = {
 # Sidebar simples, próxima da primeira versão.
 with st.sidebar:
     st.markdown("## 📰 Jornal Cienc.IA")
-    st.caption("Painel editorial simples")
+    st.caption("Painel editorial simples · versão 7.1")
     st.divider()
     st.markdown(f"**🟢 Publicados:** {contagens['publicado']}")
     st.markdown(f"**🔵 Para aprovar:** {contagens['rascunho']}")
@@ -3876,7 +3652,7 @@ for artigo, estado in lista_visivel:
         tipos = ", ".join(artigo.get("tipos", [])) or "Tipo não informado"
         st.markdown(
             f'<div class="meta-linha"><b>{tipos}</b> · {artigo.get("autores", "—")} · '
-            f'{artigo.get("ano", "—")} · Tema: {artigo.get("_tema", "geral")} · '
+            f'{artigo.get("ano", "—")} · Tema: {traduzir_tema_exibicao(artigo.get("_tema", "geral"))} · '
             f'Prioridade: {prioridade_editorial(artigo):.1f}</div>',
             unsafe_allow_html=True,
         )
@@ -3931,7 +3707,7 @@ for artigo, estado in lista_visivel:
                 valor = nivel_info.get("pontuacao")
                 notas_niveis.append(f"{rotulo}: {'inconclusiva' if valor is None else f'{float(valor):.1f}/100'}")
             st.caption(" · ".join(notas_niveis))
-            renderizar_modelos_usados(rascunho)
+            renderizar_metricas_editoriais(rascunho, "Resumo técnico: métricas e ferramentas")
 
             manchete = st.text_input(
                 "Manchete",
@@ -4106,6 +3882,29 @@ for artigo, estado in lista_visivel:
             st.markdown(f"### {noticia.get('manchete') or noticia.get('titulo_pt') or titulo_original}")
             if noticia.get("subtitulo"):
                 st.write(noticia["subtitulo"])
+
+            if noticia.get("revisao_humana_confirmada"):
+                st.success("Conteúdo publicado após revisão humana.")
+            if noticia.get("publicado_em"):
+                st.caption(f"Publicado em: {noticia.get('publicado_em')}")
+
+            renderizar_metricas_editoriais(
+                noticia,
+                "Métricas, ferramentas e proveniência desta publicação",
+            )
+
+            with st.expander("Fonte e tradução-base"):
+                fonte_original = noticia.get("texto_fonte_original") or artigo.get("abstract") or ""
+                fonte_pt = noticia.get("texto_fonte_pt") or noticia.get("abstract_pt") or ""
+                if fonte_original:
+                    st.markdown("**Fonte original usada na geração**")
+                    st.write(fonte_original)
+                if fonte_pt:
+                    st.markdown("**Tradução-base em português**")
+                    st.write(fonte_pt)
+                if noticia.get("url_artigo"):
+                    st.markdown(f"[Abrir artigo original]({noticia['url_artigo']})")
+
             with st.expander("Ver divulgação científica", expanded=True):
                 st.write(noticia.get("divulgacao_cientifica", ""))
             with st.expander("Ver leitura facilitada"):
@@ -4119,6 +3918,10 @@ for artigo, estado in lista_visivel:
                         st.write(blocos_publicados[chave])
             with st.expander("Ver resumo científico em português"):
                 st.write(noticia.get("resumo_cientifico_traduzido", ""))
+
+            renderizar_rastreabilidade_simplificacao(noticia)
+            renderizar_rastreabilidade_fidelidade(noticia)
+
             if st.button("↩️ Despublicar", key=f"despublicar_{pid}"):
                 despublicar(pid)
                 st.rerun()

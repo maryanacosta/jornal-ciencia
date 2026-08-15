@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-08-11T20:44:57.414413",
+  "gerado_em": "2026-08-14T20:33:19.577357",
   "versao_pipeline": "4.2",
   "parametros": {
     "min_prioridade": 60.0,
@@ -21,9 +21,9 @@
     "aviso": "O score é operacional e não substitui avaliação crítica da evidência, risco de viés, certeza da evidência ou adequação à pergunta clínica."
   },
   "temas": {
-    "stress": {
+    "sleep": {
       "total_descobertos_biomedicos": 400,
-      "total_selecionados": 11,
+      "total_selecionados": 27,
       "por_fonte_descoberta": {
         "PubMed": 200,
         "EuropePMC": 200,
@@ -36,93 +36,94 @@
       },
       "artigos": [
         {
-          "paper_id": "pmid_42569817",
-          "doi": "10.1111/bjhp.70099",
-          "fonte_origem": "EuropePMC",
+          "paper_id": "pmid_41517697",
+          "doi": "10.1097/md.0000000000045225",
+          "fonte_origem": "PubMed",
           "fontes_encontradas": [
-            "EuropePMC"
+            "PubMed"
           ],
-          "titulo": "Procrastination, stress, and self-rated health: A multi-sample meta-analysis.",
-          "abstract": "Despite a growing evidence base indicating that trait procrastination increases risk for specific outcomes reflecting poor health, there is less evidence examining the implications of procrastination for overall health status, or investigating the contributing factors involved. Guided by the cognitive process model of self-rated health (SRH), and the procrastination-health model, the current study extended previous research and theory by quantifying the link between trait procrastination and SRH across multiple samples and testing the contributions of stress. Additionally, we explored the link between chronic procrastination and the SRH-future SRH discrepancy. Thirty-six cross-sectional samples (N = 8603) completed measures of trait procrastination, current and future SRH. A subset completed measures of perceived stress. Random effects meta-analyses were conducted on the raw and semi-partial correlations of procrastination with SRH and FSRH, controlling for perceived stress. Moderator analyses were conducted where warranted. Procrastination scores were examined in relation to the discrepancy between current and future SRH. Trait procrastination was significantly associated with poor SRH (ravg = .21; 95% CIs [.19, .23]), and to a lesser extent, poor future SRH (ravg = .13; 95% CIs [.09, .18]). The semi-partial effects were reduced but significant for SRH, and non-significant for future SRH. Procrastination was modestly associated with the discrepancy between current and future SRH, reflecting an expectation that health would improve slightly over the next 10 years. The current findings indicate that chronic procrastination is associated with poor overall health status that can be explained in part by higher levels of stress.",
+          "titulo": "Evaluating the causal connections between sleep duration and disease prevalence: A comprehensive systematic review and meta-analysis of Mendelian randomization studies.",
+          "abstract": "The causal link between sleep duration and diverse health conditions remains unconfirmed. This meta-analysis aimed to clarify these relationships by synthesizing Mendelian randomization (MR) study evidence. PubMed was systematically searched up to February 15, 2024, for MR studies exploring genetic predispositions to sleep duration/insomnia (short/long/overall sleep duration, insomnia) and associations with circulatory, digestive, neurodegenerative, metabolic diseases, and cancers. Eligible effect estimates were meta-analyzed. Fifty-one MR studies were included. Genetic variations in sleep traits were strongly linked to elevated risk of 12 cardiovascular diseases, obesity-related metrics (Type 2 diabetes, fasting glucose/insulin, HbA1c), neurological disorders (Alzheimer, amyotrophic lateral sclerosis, Parkinson disease), mental health conditions (attention-deficit/hyperactivity disorder, autism, bipolar disorder, major depressive disorder, schizophrenia), inflammatory bowel disease, and lung cancer. Genetic evidence confirms causal associations between sleep characteristics and multiple diseases, emphasizing sleep's key role in health promotion and supporting personalized sleep management to reduce disease risk.",
           "ano": 2026,
-          "autores": "Sirois FM, Monaghan C.",
-          "periodico": "",
+          "autores": "Zhihui Wang; Lingyu Yao; Mengyue Tu",
+          "periodico": "Medicine",
           "citacoes_totais": 0,
           "citacoes_influentes": 0,
           "tipos": [
-            "MetaAnalysis",
-            "JournalArticle"
+            "JournalArticle",
+            "SystematicReview",
+            "MetaAnalysis"
           ],
-          "open_access": false,
+          "open_access": true,
           "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42569817/",
-          "score_prioridade_editorial": 76.4,
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12795056/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/41517697/",
+          "score_prioridade_editorial": 81.0,
           "componentes_prioridade": {
             "desenho": 50,
             "atualidade": 20.0,
             "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 4.4
-          },
-          "tipo_principal": "MetaAnalysis",
-          "desenho_estudo_rotulo": "Meta-análise",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42470164",
-          "doi": "10.1002/smi.70209",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "The Association Between Mindfulness and Perceived Stress: A Meta-Analysis.",
-          "abstract": "This study consolidated the association of mindfulness with perceived stress found across studies. A meta-analysis examined the relationship between mindfulness and perceived stress in 56 samples, which included a total of 24,494 participants. The weighted effect size of r(55) = -0.40, 95% CI [-0.36, 0-44], p = 0.0001, showed that greater mindfulness was associated with less perceived stress. Studies assessing mindfulness using the Mindful Attention Awareness Scale or the Five Facet Mindfulness Questionnaire showed substantial effect sizes, as did studies assessing stress using the Perceived Stress Scale. Even though the present meta-analysis does not show causality, the results suggest a possible bidirectional relationship between mindfulness and perceived stress. The nonjudgmental awareness comprising mindfulness may facilitate an appraisal of life events and challenges that results in events and challenges as being perceived as less stressful. Lower perceived stress may free cognitive resources that promote mindfulness.",
-          "ano": 2026,
-          "autores": "Schutte NS, Rock AJ.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "MetaAnalysis",
-            "Review",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42470164/",
-          "score_prioridade_editorial": 75.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
+            "acesso": 8.0,
             "relevancia_na_fonte": 3.0
           },
-          "tipo_principal": "MetaAnalysis",
-          "desenho_estudo_rotulo": "Meta-análise",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "acesso_status": "Texto completo aberto identificado",
           "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
           "fontes_descoberta": [
-            "EuropePMC"
+            "PubMed"
           ]
         },
         {
-          "paper_id": "pmid_42530025",
-          "doi": "10.1080/10253890.2026.2709368",
+          "paper_id": "pmid_41239260",
+          "doi": "10.1186/s12865-025-00770-z",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "The effect of disrupted sleep on macrophage polarization: a systematic review and meta-analysis of animal studies.",
+          "abstract": "Based on the bidirectional relationship between sleep and macrophages in healthy and diseased states, this systematic review and meta-analysis investigated the effect of disrupted sleep on macrophage polarization. A literature search was conducted in PubMed, Scopus, and Web of Science (WoS) databases up to October 2023, identifying English-language studies on disrupted sleep's effects on macrophage polarization. After screening and data extraction, the standardized mean difference (SMD) with a 95% Confidence Interval (CI) was calculated for M1 pro-inflammatory and M2 anti-inflammatory markers. Heterogeneity was assessed using Cochran's Q test and the I-square (I2) statistic, and subgroup analyses were performed. The methodological quality was assessed using SYRCLE's RoB tool. Publication bias was examined through Egger's test and the trim-and-fill method, and a sensitivity analysis was also conducted. The meta-analysis was performed using STATA version 14.2 software. Thirteen studies were included. Results indicated that disrupted sleep significantly increased CD11c levels [SMD: 2.450, 95% CI: 1.517 to 3.383, I² = 11.7%], and decreased CD206 levels [SMD: -2.616, 95% CI: -4.911 to -0.321, I² = 83.3%]. The association between disrupted sleep and M1/M2 was uncertain, with sex identified as a potential source of heterogeneity. No publication bias or sensitivity was detected, which strengthens the reliability and robustness of the findings. Disrupted sleep significantly influenced macrophage polarization towards a CD11c+ M1 inflammatory phenotype. Given the heterogeneity and limited number of studies, these findings should be interpreted as exploratory. Further research on the underlying mechanisms, particularly concerning biological sex, to better understand sleep's impact on immune function and treatment strategies for inflammatory conditions.",
+          "ano": 2025,
+          "autores": "Monireh Askarzadeh; Rezvan Yazdian-Robati; Misagh Rajabinejad; et al.",
+          "periodico": "BMC immunology",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "SystematicReview",
+            "MetaAnalysis"
+          ],
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12619322/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/41239260/",
+          "score_prioridade_editorial": 79.5,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 18.5,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 8.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "acesso_status": "Texto completo aberto identificado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_42219959",
+          "doi": "10.1097/ajp.0000000000001398",
           "fonte_origem": "EuropePMC",
           "fontes_encontradas": [
             "EuropePMC"
           ],
-          "titulo": "Antidepressant-like effects of valproic acid in rodents go back to the 1980s: a comment to enrich the reviewed evidence by Goudarzi et al. (2026) \"Valproic acid effects on stress-induced depression-like behavior in rodent models: a systematic review and meta-analysis\".",
-          "abstract": "In a recent review and meta-analysis, Goudarzi et al. (Stress, 2026 Dec 31; 29(1):2641561) show that valproic acid (VPA) exhibits antidepressant (AD)-like effects in several procedures involving the induction of depression-like symptoms by prior sub-chronic or chronic stress in laboratory rats or mice. In their review, the authors included reports of experimental studies (covering only from 2007 to 2024), using several validated depression-like behaviors, such as decreased sucrose preference, increased immobility in the forced swim test (FST), decreased activity in the open field test, and/or impaired novel object recognition memory. The meta-analysis of the 19 included studies showed that sub-chronic/chronic VPA treatment improves most of these depression-like symptoms. The present \"Comment\" article aims to highlight that the first demonstrations of VPA AD-like and passive coping-reducing effects date back to the 1980s. Our group was the first to demonstrate AD-like effects of sub-acute and chronic VPA treatments in the forced swim test in rats (in 1988). These effects were partially antagonized by pre-test injections of the GABA-A receptor complex antagonists bicuculline and picrotoxin, thus suggesting that VPA-induced passive coping reduction was at least partly mediated by enhancement of GABA-A neurotransmission. Shortly thereafter (1989), the AD-like effects of VPA were confirmed in the FST in mice. These reports from the late 1980s, showing positive effects of VPA on the FST in rats and mice, constitute relevant precedents that further strengthen the profile of AD-like effects of VPA reported by Goudarzi et al.",
+          "titulo": "Effect of Pain Neuroscience Education on Pain, Sleep, and Psychosocial Factors in Chronic Musculoskeletal Pain Conditions: A Systematic Review and Meta-Analysis.",
+          "abstract": "<h4>Objective</h4>This systematic review and meta-analysis examined the efficacy of pain neuroscience education (PNE) on pain, sleep parameters, and psychosocial factors in chronic musculoskeletal pain conditions in adults and adolescents.<h4>Methods</h4>The review was conducted in accordance with the PRISMA guidelines. A systematic search was performed using the databases Medline (PubMed), Scopus, PEDro, and Web of Science. The qualitative assessment was done by using the Physiotherapy Evidence Database (PEDro) scale and the Cochrane Risk of Bias (ROB 2.0) tool. The quantitative analysis was performed using RevMan 5.4.1 using a random-effects model, an standarized mean diffeerence (SMD) with 95% confidence intervals (CIs), and the certainty of evidence was evaluated using GRADEpro/GDT.<h4>Results</h4>Twelve randomized-controlled trials (n=1485) met the inclusion criteria. The meta-analysis showed a statistically significant effect in favor of PNE on reducing pain intensity (SMD: -0.27 [95% CI: -0.5 to 0.00; I2 =67%]) and total sleep time with a small to medium effect size (SMD: 0.42 [95% CI: 0.12-0.71; I2 =0%]). However, no statistically significant differences were observed for other sleep parameters and psychosocial outcomes, despite some outcomes indicating a moderate clinical effect.<h4>Discussion</h4>The findings suggest that PNE alone can reduce pain intensity, but greater improvements in sleep and psychosocial outcomes are seen when it is combined with interventions such as cognitive-behavioral therapy (CBT) and therapeutic exercises. These results highlight the potential role of PNE within a multimodal approach to pain management, while also underscoring the need for further research on its impact on sleep parameters in a specific population.",
           "ano": 2026,
-          "autores": "Fernández-Teruel A.",
+          "autores": "Khan Z, Sehgal CA, Rehman S, Abbas A, Iram I, Veqar Z.",
           "periodico": "",
           "citacoes_totais": 0,
           "citacoes_influentes": 0,
@@ -134,7 +135,123 @@
           "open_access": false,
           "url_pdf": "",
           "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42530025/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42219959/",
+          "score_prioridade_editorial": 78.85,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 6.85
+          },
+          "tipo_principal": "MetaAnalysis",
+          "desenho_estudo_rotulo": "Meta-análise",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_36900873",
+          "doi": "10.3390/ijerph20053862",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Exploring Clinical Trials to Manage Firefighters' Sleep Quality: A PRISMA Compliant Systematic Review.",
+          "abstract": "Sleep research has grown over the past decades and investigators are deeply involved in studying sleep and its impact on human health and body regulation. Despite the understanding that insufficient sleep is strongly linked to the development of several disorders, unsatisfactory sleep exposes health and safety to innumerous risks. The present study aims to review and analyze the main results of clinical trials, registered at ClinicalTrials.gov and ICTRT databases, and developed construct strategies to improve sleep quality on firefighters and enhance professionals' sleep and health conditions. The protocol was registered in PROSPERO under number CRD42022334719. Trials registered between first registry and 2022 were included. We retrieved 11 registered clinical trials; seven met eligibility criteria and were included in the review. A relation between sleep disorders, shift work, and occupational health problems was found, and retrieved trials showed that sleep education programs can improve sleep quality and sleep hygiene. Science has already recognized sleep's importance for metabolic functioning and survivorship. Nevertheless, it continues to play a major role in discovering methods to diminish the problems faced. Strategies contemplating sleep education, or intervention, should be presented to fire services to tackle this problem and promote healthier and safer environments.",
+          "ano": 2023,
+          "autores": "Sara Alves; Josiana Vaz; Adília Fernandes",
+          "periodico": "International journal of environmental research and public health",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "SystematicReview"
+          ],
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10001586/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/36900873/",
+          "score_prioridade_editorial": 76.5,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 15.5,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 8.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "acesso_status": "Texto completo aberto identificado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_42373586",
+          "doi": "10.1002/msc.70242",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Effect of Multimodal Physiotherapy on Sleep Quality and Architecture in Patients With Chronic Neck Pain With Sleep Disturbance: A Randomised Clinical Trial.",
+          "abstract": "<h4>Background</h4>Chronic neck pain is frequently associated with disturbed sleep, yet evidence on physiotherapy's impact on objective sleep parameters remains limited. To our knowledge, this study is the first to evaluate the effects of exercises, interferential current therapy (IFT) and myofascial release therapy on sleep quality and polysomnographic parameters in this population.<h4>Methods</h4>Thirty adult men with chronic neck pain and poor sleep were randomised (1:1) in a two-arm, assessor-blinded trial. Group 1 received therapeutic exercise plus interferential current therapy; Group 2 received the same plus myofascial release (MFR), 7 weeks. Outcomes included subjective sleep quality as a primary outcme, polysomnographic (PSG) architecture and pain as secondary outcomes.<h4>Results</h4>Sleep quality improved significantly in both groups (time effect p < 0.001), with greater overall improvement in Group 2 (group effect p = 0.003). For PSG parameters, both groups improved. Compared with exercise + IFT, adding MFR produced greater changes in PSG N1% and REM% (Time × Group interaction), while other PSG parameters showed similar improvements across groups.<h4>Conclusion</h4>Physiotherapy significantly improved pain and sleep outcomes in patients with chronic neck pain. Exercise with IFT enhanced sleep continuity, while combining exercise with myofascial release further optimized sleep architecture, particularly N1% and REM%. These findings highlight the added value of multimodal physiotherapy for pain management and sleep improvement.<h4>Trial registration</h4>This clinical trial was registered at the Clinical Trials Registry of India under the registration number CTRI/2019/09/021028.",
+          "ano": 2026,
+          "autores": "Aldabbas MM, Tanwar T, Iram I, Veqar Z.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42373586/",
+          "score_prioridade_editorial": 75.6,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 8.6
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42545422",
+          "doi": "10.1007/s00484-026-03281-7",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "The effect of water immersion thermotherapy on sleep quality: a systematic review and meta-analysis of randomized controlled trials.",
+          "abstract": "A systematic review of the effects of water immersion thermotherapy (WIT) on sleep quality in healthy adults. A comprehensive search was conducted in PubMed, Cochrane Library, Web of science, Embase, Scopus, Ovid MEDLINE, Wiley Online Library, PEDro, CNKI, SinoMed and Yiigle databases. A meta-analysis method was adopted to evaluate the improvement of sleep quality by using WIT. By calculating the standardized mean difference (SMD) and its 95% confidence interval (CI), and selecting either a common effects model or a random effects model for data pooling and analysis. A total of ten randomized controlled trials were included in this study. The results showed that WIT significantly increased total sleep time (SMD = 0.63, P = 0.0438) and significantly improved sleep efficiency (SMD = 0.64, P = 0.0419). However, there were no significant effects on sleep latency (P = 0.0877) or the pittsburgh sleep quality index (PSQI). Furthermore, there were no significant effects on PSQI-total score (P = 0.1136), PSQI-subjective sleep quality (P = 0.3721), PSQI-sleep latency (P = 0.0864), PSQI-sleep duration (P = 0.1402), PSQI-sleep efficiency (P = 0.6793), PSQI-sleep disturbances (P = 0.0580), PSQI-use of sleep medication (P = 0.9991), or PSQI-day time dysfunction (P = 0.6525) among the various indicators of the PSQI. WIT can significantly prolong total sleep time and improve sleep efficiency, but has no significant effect on the improvement of subjective sleep quality, indicating that the sleep-improving effect of WIT has certain limitations.",
+          "ano": 2026,
+          "autores": "Chen H, Gao S, Chen W, Gao B.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "MetaAnalysis",
+            "SystematicReview",
+            "Review",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42545422/",
           "score_prioridade_editorial": 75.0,
           "componentes_prioridade": {
             "desenho": 50,
@@ -152,221 +269,32 @@
           ]
         },
         {
-          "paper_id": "pmid_42563456",
-          "doi": "10.1111/nicc.70617",
+          "paper_id": "pmid_42537441",
+          "doi": "10.1016/j.sleep.2026.109180",
           "fonte_origem": "EuropePMC",
           "fontes_encontradas": [
             "EuropePMC"
           ],
-          "titulo": "The Effects of Virtual Reality Applications on Perceived Stress, Anxiety and Fatigue Among Nurses Working in the Intensive Care Unit.",
-          "abstract": "<h4>Background</h4>Intensive care unit (ICU) nurses experience high levels of stress, anxiety and fatigue. Conventional coping strategies are often difficult to implement during busy shifts. Virtual reality (VR) may offer a practical, non-pharmacological alternative; however, evidence of its effectiveness in ICU nurses remains limited.<h4>Aim</h4>This study aimed to determine the effects of a VR application on perceived stress, state anxiety and fatigue among ICU nurses.<h4>Study design</h4>This parallel-group randomised controlled trial was conducted between June and December 2025 in the adult ICUs of a public hospital in eastern Turkey. Nurses were randomly assigned to an intervention group, which used a VR application during work breaks, or to a control group, which had standard rest periods. Data were collected before and after the intervention using the Demographic Information Form, the Perceived Stress Scale-10 (PSS-10), the State-Trait Anxiety Inventory-State Form (STAI-S) and the Fatigue Severity Scale (FSS).<h4>Results</h4>A total of 60 nurses completed the study (intervention = 30, control = 30). At baseline, there were no significant differences between the intervention and control groups on any outcome measure (all p > 0.05). From pre-test to post-test, the intervention group showed marked reductions in perceived stress, state anxiety and fatigue, whereas the control group remained essentially unchanged. Post-intervention between-group differences were statistically significant for perceived stress (t = -5.326), state anxiety (t = -4.814) and fatigue (t = -13.587) (all p < 0.001). Two-way mixed ANOVA revealed significant group × time interactions for perceived stress (F = 13.525, p < 0.001, ηp<sup>2</sup> = 0.189), state anxiety (F = 14.072, p < 0.001, ηp<sup>2</sup> = 0.195) and fatigue (F = 91.192, p < 0.001, ηp<sup>2</sup> = 0.611).<h4>Conclusion</h4>The VR application was associated with lower levels of perceived stress, state anxiety and fatigue among ICU nurses compared with standard rest periods. However, because the study was conducted in a single hospital and the follow-up period was short, the findings should be interpreted with caution.<h4>Relevance to clinical practice</h4>Short VR sessions during work breaks may help reduce stress, anxiety and fatigue, supporting ICU nurses' well-being and resilience.",
+          "titulo": "Electroencephalographic correlates of sleepiness: A meta-analysis and narrative review.",
+          "abstract": "Excessive daytime sleepiness has become a significant problem in society. Despite evidence for the effect of sleep need on EEG and calls for better EEG-derived predictors and diagnostics, no study has conducted a review to determine the best practice for using EEG to measure sleepiness. We aimed to provide this. Correlation coefficients were calculated for beta, alpha, theta, and delta wake EEG power across normal and sleep restriction/deprivation conditions, in order to determine which measures are most predictive of sleep need, in what conditions and using which parameters. Our results demonstrate that increases in EEG theta power are associated with increases in subjective sleepiness during both normal and sleep loss conditions. A similar increase was observed for EEG delta power, but only in the conditions of sleep loss. EEG alpha power showed no correlation with subjective sleepiness in either condition. This review also identified novel EEG markers, such as microstates and event-related potentials, and a limited number of studies that examined EEG measures of sleepiness in clinical sleep-disorder cohorts. Our study is the first to thoroughly examine the current EEG markers of sleepiness and the influence of recording conditions on sleepiness assessment using the EEG.",
           "ano": 2026,
-          "autores": "Bahcecioglu Turan G, Gür F, Özer Z.",
+          "autores": "Poethke T, Lushington K, Chatburn A.",
           "periodico": "",
           "citacoes_totais": 0,
           "citacoes_influentes": 0,
           "tipos": [
-            "RCT",
+            "MetaAnalysis",
+            "Review",
             "JournalArticle"
           ],
           "open_access": false,
           "url_pdf": "",
           "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42563456/",
-          "score_prioridade_editorial": 73.85,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 6.85
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42529893",
-          "doi": "10.1111/nicc.70613",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Effects of an Online Meditation Programme on Stress and Fatigue in Critical Care Nurses: A Randomised Controlled Trial.",
-          "abstract": "<h4>Background</h4>Critical care nurses are frequently exposed to high levels of occupational stress and fatigue because of demanding workloads, emotional burden and the need for sustained vigilance in complex clinical environments.<h4>Aim</h4>To evaluate the effects of an online meditation programme on perceived stress and fatigue among intensive care nurses.<h4>Study design</h4>This single-centre, two-arm, pre-test/post-test randomised controlled trial was conducted in a hospital in Türkiye between December 2021 and January 2022 using a convenience sample of eligible intensive care nurses. Nurses were randomly assigned to the intervention and control groups. The intervention group participated in a six-week online meditation programme delivered via WhatsApp, consisting of 20-min sessions three times per week.<h4>Results</h4>Forty nurses completed the study and were included in the final analysis (20 in the intervention group and 20 in the control group). Baseline perceived stress and fatigue scores were similar between groups. At post-test, the intervention group had significantly lower perceived stress scores than the control group (25.50 ± 4.22 vs. 30.90 ± 7.50, p = 0.008) and significantly lower fatigue severity scores (3.06 ± 0.65 vs. 3.99 ± 0.77, p < 0.001).<h4>Conclusions</h4>A brief online meditation programme may be a feasible supportive intervention for reducing stress and fatigue among intensive care nurses; however, larger multi-centre trials are needed to confirm these findings.<h4>Relevance to clinical practice</h4>Remotely delivered meditation may offer an accessible and low-cost adjunct to staff well-being initiatives in intensive care settings, particularly for nurses working rotating shifts, but it should complement rather than replace organisational approaches to workforce well-being.",
-          "ano": 2026,
-          "autores": "Güngör S, Atik D.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "RCT",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42529893/",
-          "score_prioridade_editorial": 73.15,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 6.15
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42437334",
-          "doi": "10.36721/pjps.2026.39.9.268.1",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Etomidate combined with TAPB in ovarian cancer surgery: A controlled study on hemodynamics and immune response.",
-          "abstract": "<h4>Background</h4>Selecting appropriate anesthetic agents and techniques that ensure hemodynamic stability and attenuate perioperative stress responses is crucial for ovarian cancer surgery.<h4>Objectives</h4>This study aimed to evaluate the effects of etomidate combined with transversus abdominis plane block (TAPB) on perioperative hemodynamics, inflammatory and oxidative stress responses and immune function in patients undergoing radical resection of ovarian cancer.<h4>Methods</h4>A total of 80 patients were randomly assigned to receive total intravenous anesthesia (TIVA) alone or TIVA combined with TAPB. Hemodynamic parameters, serum inflammatory markers, oxidative stress indicators, pain mediators, immune cell subsets and adverse reactions were compared between the two groups.<h4>Results</h4>Perioperative hemodynamic parameters changed dynamically in both groups, with heart rate and mean arterial pressure increasing intraoperatively and decreasing postoperatively. However, the research group had significantly lower heart rate and mean arterial pressure than the control group during the peak intraoperative period (P<0.001), indicating improved hemodynamic stability. Preoperative levels of inflammatory, oxidative stress, pain-related and immune indexes were comparable between groups (P>0.05). At 24 h postoperatively, the research group showed significantly reduced serum levels of high-sensitivity C-reactive protein, tumor necrosis factor-α, malondialdehyde, cortisol, prostaglandin E2 and substance P compared with the control group (all P<0.05), reflecting attenuation of systemic inflammation, oxidative stress and nociceptive activation. Postoperative immune function was better preserved in the research group, as evidenced by higher CD3+ and CD4+ cell counts and CD4+/CD8+ ratio, along with a lower CD8+ level (P<0.05). The overall incidence of adverse reactions was low and did not differ significantly between groups (4.4% vs 8.9%, P>0.05).<h4>Conclusion</h4>Etomidate combined with transversus abdominis plane block provides stable anesthesia and modulates perioperative inflammatory and immune responses while reducing postoperative biochemical pain mediator levels, thereby supporting a safer and more physiologically balanced recovery following ovarian cancer surgery.",
-          "ano": 2026,
-          "autores": "Xie J, Li X, Jian F.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "RCT",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42437334/",
-          "score_prioridade_editorial": 70.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42400189",
-          "doi": "10.1111/aphw.70188",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "The effect of a stress mindset intervention on academic motivation among junior high school students.",
-          "abstract": "In recent years, stress mindset-how individuals perceive and respond to stress-has drawn increasing attention from researchers. Studies have begun to explore its mechanisms of influence on students' mental health and academic achievement. A randomized controlled trial was conducted in a middle school in China. Two classes were randomly assigned to the intervention group and received a specially designed \"Stress Mindset\" course based on the B.E.S.T. principle, whereas the remaining two classes served as the control group. A total of 155 students participated, including 78 in the intervention group. The average age of participants was 12.25 years, with 49.70% females. Bayesian Causal Forest (BCF) analysis showed that, compared to the control group, the intervention group exhibited a 0.46 standard deviation increase in stress-is-enhancing mindset (95% confidence interval [CI] = [.18, .71]). No significant improvements were observed for other variables. A mediation model supported the intervention mechanism: Group assignment (independent variable) predicted changes in academic motivation through the change in stress-is-enhancing mindset (B = .12, SE = .05, and 95% CI [.03, .25]). Process evaluation and qualitative feedback from researchers indicated high satisfaction and acceptability of the intervention. The stress mindset intervention effectively promoted a shift in students' perception of stress as enhancing, offering a novel paradigm for future intervention research. The findings offer a novel paradigm for future intervention research.",
-          "ano": 2026,
-          "autores": "Wu Y, Zhao Y, Chen S, Pan Y, Xiang J, Chen Y.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "RCT",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42400189/",
-          "score_prioridade_editorial": 70.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42478935",
-          "doi": "10.2196/83618",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Characterizing Digital Mindfulness Intervention Utilization and Weekly Assessments in Caregivers of Persons Living With Dementia: Secondary Analysis of a Randomized Controlled Trial.",
-          "abstract": "<h4>Background</h4>Caregivers of persons living with dementia are at increased risk of reporting high stress. Mindfulness-based interventions (MBIs) teach caregivers mindfulness skills and are effective at reducing stress. Digital MBIs are a feasible way to improve access to MBIs for caregivers of persons living with dementia. Yet, caregiver improvement with digital MBI utilization is less defined in the literature.<h4>Objective</h4>The goal of this secondary data analysis was to characterize weekly mindfulness and stress ratings among caregivers of persons living with dementia and to examine how digital MBI utilization impacted these ratings throughout 12 weeks of a feasibility trial.<h4>Methods</h4>Participants were eligible for this secondary analysis if they were randomized to the digital MBI condition (Healthy Minds Program for Caregivers [HMP-C], n=46) and completed weekly ratings over the 12-week trial. At baseline and at the end of each week of the trial, participants rated their mindfulness and stress in the past week from 0 to 10. Weekly HMP-C utilization was defined as the time spent using HMP-C in the week prior to the weekly ratings. Descriptive statistics and visualizations were used to characterize mindfulness and stress ratings. Generalized linear mixed models were used to estimate the effect of mindfulness on stress and the effect of HMP-C utilization on stress and mindfulness throughout the trial (α=.05).<h4>Results</h4>Baseline mindfulness and stress ratings were 4 (IQR 3-6, range 0-8) and 7 (IQR 6.5-8, range 4-10), respectively. Stress had the greatest decrease between baseline and week 3 (-2 points on average), whereas mindfulness had the greatest increase between baseline and week 4 (+2.5 points on average). There was a significant fixed effect of baseline mindfulness on baseline stress (β=.5, P<.001), with a significant interaction between mindfulness and study week (β=.05, P=.001), suggesting that this relationship was attenuated over time. There was variability in baseline stress (τ00=2.04) and the relationship between mindfulness and stress (τ₁₁=0.08), with a high correlation (ρ01=0.86), suggesting that those with high baseline stress benefited most from increases in mindfulness. For every 10 minutes of HMP-C utilization between baseline and week 1, mindfulness and stress ratings were 0.14 points higher (P<.001) and 0.14 points lower (P<.001), respectively. Despite a significant interaction between HMP-C utilization and study week in both models, the effect size was small (mindfulness: β=.02, P<.001; stress: β=.01, P=.013), suggesting that this relationship was sustained over time.<h4>Conclusions</h4>Mindfulness and stress changed mostly during the first 3 to 4 weeks of the trial. During this time of mindfulness skill acquisition, mindfulness and stress were most significantly negatively associated, especially among those with high baseline stress. The consistent relationship between HMP-C utilization and mindfulness and stress suggests that continued use of HMP-C may be helpful for skill maintenance.",
-          "ano": 2026,
-          "autores": "Williams MP, Simon DM, Seward M, Tatar RG, Huberty J, Vranceanu AM, Plys E.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "RCT",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42478935/",
-          "score_prioridade_editorial": 70.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_35302658",
-          "doi": "10.1111/nph.18102",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "The effects of arbuscular mycorrhizal fungal species and taxonomic groups on stressed and unstressed plants: a global meta-analysis.",
-          "abstract": "The great majority of plants gain access to soil nutrients and enhance their performance under stressful conditions through symbiosis with arbuscular mycorrhizal fungi (AMF). The benefits that AMF confer vary among species and taxonomic groups. However, a comparative analysis of the different benefits among AMF has not yet been performed. We conducted a global meta-analysis of recent studies testing the benefits of individual AMF species and main taxonomic groups in terms of plant performance (growth and nutrition). Separately, we examined AMF benefits to plants facing biotic (pathogens, parasites, and herbivores) and abiotic (drought, salinity, and heavy metals) stress. AMF had stronger positive effects on phosphorus nutrition than on plant growth and nitrogen nutrition and the effects on the growth of plants facing biotic and abiotic stresses were similarly positive. While the AMF taxonomic groups showed positive effects on plant performance either with or without stress, Diversisporales were the most beneficial to plants without stress and Gigasporales to plants facing biotic stress. Our results provide a comprehensive analysis of the benefits of different AMF species and taxonomic groups on plant performance and useful insights for their management and use as bio-inoculants for agriculture and restoration.",
-          "ano": 2022,
-          "autores": "Nicolás Marro; Gabriel Grilli; Florencia Soteras; et al.",
-          "periodico": "The New phytologist",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "MetaAnalysis"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35302658/",
-          "score_prioridade_editorial": 69.0,
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42537441/",
+          "score_prioridade_editorial": 75.0,
           "componentes_prioridade": {
             "desenho": 50,
-            "atualidade": 14.0,
+            "atualidade": 20.0,
             "impacto_bibliometrico": 0.0,
             "acesso": 2.0,
             "relevancia_na_fonte": 3.0
@@ -376,21 +304,98 @@
           "acesso_status": "DOI disponível; acesso aberto não confirmado",
           "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
           "fontes_descoberta": [
-            "PubMed"
+            "EuropePMC"
           ]
         },
         {
-          "paper_id": "pmid_32311073",
-          "doi": "10.1002/dev.21974",
+          "paper_id": "pmid_42563341",
+          "doi": "10.29271/jcpsp.2026.08.1045",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Association Between Sleep Duration and Hypertension Development in Women: A Meta-Analysis.",
+          "abstract": "This study examined the association between females' sleep duration and the development of hypertension (HTN). Searches were conducted in Embase, PubMed, Cochrane Library, Web of Science, CNKI, VIP, and Wanfang databases up to March 15, 2024. Using RR as the effect measure, the combined RR and 95% CI were calculated using Stata 15.0. A total of 10 articles, comprising 12 cohort studies, were included in the meta-analysis. Inadequate sleep duration is associated with HTN in women (RR: 1.10, 95% CI: 1.06-1.13, p <0.001). However, long sleep duration was not associated with HTN in women (RR: 1.00, 95% CI: 0.96-1.05, p = 0.958). Short- and long-sleep duration groups showed no publication bias. Subgroup and meta-regression analyses indicated that age and variation in the operational definition of sleep duration were the principal sources of heterogeneity. In age-stratified analysis, both <50 years (RR = 1.19, 95% CI: 1.11-1.28, p <0.001) and ≥50 years (RR = 1.06, 95% CI: 1.00-1.12, p = 0.036) showed increased HTN risk among women with short sleep duration. The dose-response association was L-shaped; using 4 hours/day as the reference, the lowest risk was observed at approximately 7.5 hours/day. For women, insufficient sleep duration is linked to a higher risk of developing HTN. Key Words: Hypertension, Women, Sleep duration, Prospective cohort study, Meta-analysis.",
+          "ano": 2026,
+          "autores": "Bai Y, Kong D, Hou J, Bai L.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "MetaAnalysis",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42563341/",
+          "score_prioridade_editorial": 75.0,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "MetaAnalysis",
+          "desenho_estudo_rotulo": "Meta-análise",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42478101",
+          "doi": "10.1111/obr.70199",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Sleep and Its Impact on the Success of Weight Loss Interventions in Adults With Excess Weight: A Systematic Review.",
+          "abstract": "<h4>Objective</h4>To evaluate evidence on the impact of sleep health on weight loss in adults with excess weight undergoing behavioral or surgical weight loss interventions.<h4>Methods</h4>We conducted a systematic review of randomized controlled trials and quasi-experimental studies including adults aged ≥ 18 years with BMI ≥ 25 kg/m<sup>2</sup>. MEDLINE, Embase, and CENTRAL were searched from inception to September 2025. Screening, data extraction, and risk of bias assessment were performed in duplicate. Sleep was examined either as an exposure or as an intervention component. A narrative synthesis was conducted using the RU-SATED framework and stratified by sleep exposure versus sleep intervention studies.<h4>Results</h4>Thirty studies (13 randomized controlled trials and 17 quasi-experimental studies; 10,944 participants from 13 countries) were included. Evidence was mixed across sleep dimensions. In behavioral weight loss interventions, sleep manipulation studies suggested that sleep restriction reduced fat loss, whereas observational studies reported inconsistent associations between sleep duration and weight loss. Limited evidence suggested that greater sleep satisfaction and higher sleep efficiency may support weight loss, with approximately half of the studies reporting positive associations. Evidence for sleep regularity, timing, and alertness was sparse and inconsistent because of the small number of studies and methodological heterogeneity.<h4>Conclusion</h4>Sleep satisfaction and sleep efficiency may support weight loss in behavioral interventions, whereas sleep duration shows inconsistent associations and sleep restriction may impair fat loss. Evidence for sleep regularity, timing, and alertness remains limited. High-quality experimental studies are needed to clarify the causal role of sleep health in weight loss outcomes.",
+          "ano": 2026,
+          "autores": "Duan L, Berryhill J, Dai N, Sica G, Chaput JP.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "SystematicReview",
+            "Review",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42478101/",
+          "score_prioridade_editorial": 75.0,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_41219733",
+          "doi": "10.1186/s12916-025-04411-5",
           "fonte_origem": "PubMed",
           "fontes_encontradas": [
             "PubMed"
           ],
-          "titulo": "A Caretaker Acute Stress Paradigm: Effects on behavior and physiology of caretaker and infant.",
-          "abstract": "While experimental stress paradigms of infants (arm restraint; the Still-Face) are powerful tools for infant research, no study has experimentally stressed mothers to observe its independent effects on infant stress regulation. Extant caretaker/maternal stress studies essentially are correlational and confounded by other conditions (e.g., depression). Here, we present a standard procedure, the Caregiver Acute Stress Paradigm (CASP), for stressing mothers during en face interactions with their infants. We hypothesized that infants of the stressed mothers would be more distressed than infants of non-stressed mothers. A total of 106 four-month-old infants and their mothers were randomly assigned to the experimental stress or non-stress manipulation. Confirming our hypothesis, infants of the stressed mothers were significantly more likely to become distressed and require terminating the procedure. While objective ratings of maternal behavior showed no difference between groups, mother in the stress condition self-rated the episode following the caretaker stress significantly lower than mothers in the non-stress group. The self-ratings in the maternal stress-group were reflected in infant cortisol. The findings indicate that CASP is an effective experimental paradigm for exploring the independent effects of an acute stress on caretakers, including effects of conditions, such as poverty or mental illness.",
-          "ano": 2021,
-          "autores": "Ed Tronick; Isabelle Mueller; Jennifer DiCorcia; et al.",
-          "periodico": "Developmental psychobiology",
+          "titulo": "REM sleep reduction leads to fear overgeneralization via negatively modulating prefrontal theta oscillations.",
+          "abstract": "Fear overgeneralization, defined as the excessive fear response to non-threatening stimuli, is a hallmark of anxiety-related disorders. Sleep has long been recognized as a critical factor in the consolidation and processing of fear memories, with research suggesting that different sleep phases, particularly rapid eye movement (REM) and non-rapid eye movement (NREM) sleep, may have distinct roles. However, how sleep influences fear generalization remains largely unknown. We systematically investigated the dynamic effects of sleep phases and their associated neural oscillations on fear generalization recently after sleep manipulation and remotely 1 week later. In a randomized controlled between-subjects experiment, 126 participants were assigned to the four groups: total sleep deprivation (SD), early-night (dominated by NREM sleep) SD, late-night (dominated by REM sleep) SD, and total sleep. Participants completed the fear conditioning test before the sleep-manipulated night, the recent fear generalization test after sleep, and the remote fear generalization test 1 week later. Both neuroimaging data and behavioral data (subjective risk ratings and objective skin conductance responses) were collected synchronously to analyze brain functional changes during generalized stimuli processing. Sleep, particularly REM sleep phase, inhibits fear generalization, whereas late-night SD, by reducing REM sleep, induces fear overgeneralization comparable to total SD. The percentage of REM sleep was negatively associated with the degree of fear generalization and positively correlated with dorsolateral prefrontal cortex BOLD activity during the recent generalization test. Notably, prefrontal theta oscillations mediated 44% of REM sleep's effects on fear generalization. These findings demonstrate the essential role of post-conditioning REM sleep, particularly its reliance on theta oscillations in the frontal lobe, in mitigating fear overgeneralization.",
+          "ano": 2025,
+          "autores": "Tianqi Di; Jianfeng Liu; Wangyue Liu; et al.",
+          "periodico": "BMC medicine",
           "citacoes_totais": 0,
           "citacoes_influentes": 0,
           "tipos": [
@@ -399,12 +404,12 @@
           ],
           "open_access": true,
           "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7572457/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/32311073/",
-          "score_prioridade_editorial": 68.5,
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12607157/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/41219733/",
+          "score_prioridade_editorial": 74.5,
           "componentes_prioridade": {
             "desenho": 45,
-            "atualidade": 12.5,
+            "atualidade": 18.5,
             "impacto_bibliometrico": 0.0,
             "acesso": 8.0,
             "relevancia_na_fonte": 3.0
@@ -418,34 +423,416 @@
           ]
         },
         {
-          "paper_id": "pmid_28186615",
-          "doi": "10.1111/evo.13201",
+          "paper_id": "pmid_38091060",
+          "doi": "10.1007/s00417-023-06338-0",
           "fonte_origem": "PubMed",
           "fontes_encontradas": [
             "PubMed"
           ],
-          "titulo": "Environmental stress correlates with increases in both genetic and residual variances: A meta-analysis of animal studies.",
-          "abstract": "Adaptive evolutionary responses are determined by the strength of selection and amount of genetic variation within traits, however, both are known to vary across environmental conditions. As selection is generally expected to be strongest under stressful conditions, understanding how the expression of genetic variation changes across stressful and benign environmental conditions is crucial for predicting the rate of adaptive change. Although theory generally predicts increased genetic variation under stress, previous syntheses of the field have found limited support for this notion. These studies have focused on heritability, which is dependent on other environmentally sensitive, but nongenetic, sources of variation. Here, we aim to complement these studies with a meta-analysis in which we examine changes in coefficient of variation (CV) in maternal, genetic, and residual variances across stressful and benign conditions. Confirming previous analyses, we did not find any clear direction in how heritability changes across stressful and benign conditions. However, when analyzing CV, we found higher genetic and residual variance under highly stressful conditions in life-history traits but not in morphological traits. Our findings are of broad significance to contemporary evolution suggesting that rapid evolutionary adaptive response may be mediated by increased evolutionary potential in stressed populations.",
-          "ano": 2017,
-          "autores": "Piotr K Rowiński; Björn Rogell",
-          "periodico": "Evolution; international journal of organic evolution",
+          "titulo": "Association between sleep and myopia in children and adolescents: a systematic review and meta-analysis.",
+          "abstract": "There is a scarcity of literature focusing on sleep's impact on myopia in children despite an epidemic rise of myopia among the age group and the importance of early prevention. As such, this systematic review-meta-analysis aims to evaluate the association between various aspects of sleep and myopia in children and adolescents aged 0-19 years. We searched PubMed, EMBASE, and Cochrane Library on 08/12/2022 for studies reporting sleep in relation to myopia among children and adolescents. Myopia was defined as spherical equivalent refraction < -0.5 diopter. The primary outcome was the relationship between sleep duration and myopia prevalence. Secondary outcomes include the effect of sleep quality, bedtime, and waketime on myopia prevalence, incidence, and progression. Odds ratio (OR) was estimated with a 95% confidence interval (95% CI). Eighteen studies (49,277 participants) were included in the review, and six studies (14,116 participants) were included in the meta-analysis for the primary outcome. There was no significant correlation between sleep and myopia prevalence (OR = 0.905, 95% CI = 0.782 to 1.047). Some studies suggested that better sleep quality (2 of 6 studies), earlier bedtime (3 of 5 studies), and later waketimes (2 of 3 studies) had protective effects on myopia. Sleep duration did not affect myopia prevalence in children, while other aspects of sleep had plausible but inconclusive impacts on myopia development and progression. More research with diverse populations and standardized methods of reporting is needed.",
+          "ano": 2024,
+          "autores": "Eric Jin; Chae Eun Lee; Hengtong Li; et al.",
+          "periodico": "Graefe's archive for clinical and experimental ophthalmology = Albrecht von Graefes Archiv fur klinische und experimentelle Ophthalmologie",
           "citacoes_totais": 0,
           "citacoes_influentes": 0,
           "tipos": [
+            "SystematicReview",
             "JournalArticle",
             "MetaAnalysis"
           ],
           "open_access": false,
           "url_pdf": "",
           "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/28186615/",
-          "score_prioridade_editorial": 62.55,
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38091060/",
+          "score_prioridade_editorial": 72.0,
           "componentes_prioridade": {
             "desenho": 50,
-            "atualidade": 6.5,
+            "atualidade": 17.0,
             "impacto_bibliometrico": 0.0,
             "acesso": 2.0,
-            "relevancia_na_fonte": 4.05
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_39119732",
+          "doi": "10.1111/jocn.17401",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "A qualitative systematic review of adolescent's perceptions of sleep: Awareness of, barriers to and strategies for promoting healthy sleep patterns.",
+          "abstract": "To consolidate adolescents' perspectives regarding various aspects of sleep and offer insights to promote healthier sleep habits during their critical developmental years. Six electronic databases (PubMed, CINAHL, Embase, Scopus, PsycINFO and Web of Science) were searched from their inception dates to June 2023. Data were extracted and meta-summarised using Sandelowski and Barroso's approach and synthesised using Thomas and Harden's thematic analysis framework. Meta-synthesis from 11 peer-reviewed published studies identified four main themes: (1) Awareness and understanding of sleep's significance, (2) The shadows and radiance of slumber, (3) Traversing the sleepscape: trouble bubbles and (4) Illuminating the path: Guiding lights to enhanced sleep. Our review findings suggest a lack of awareness and guidance regarding the significance of sleep and the cultivation of good sleep habits among adolescents. Identified barriers to adequate sleep encompass various factors, including overthinking, poor habits, family/environmental influences, extensive technology use, peer pressure, the fear of missing out, academic demands and involvement in extracurricular activities. Strategies to improve adolescents' sleep health involve multiple sleep strategies, including sleep education, workshops/seminars, parental involvement, incorporating digital well-being practices, the promotion of relaxation techniques and the provision of essential resources. Prioritising sleep health and implementing targeted interventions are key steps to empower adolescents, create supportive environments and shape a healthier future generation. Future research endeavours should focus on evaluating the effectiveness of interventions and exploring the influence of cultural factors. There exists a notable lack of awareness and guidance regarding the significance of sleep and the cultivation of good sleep habits among adolescents. Barriers to achieving adequate sleep among adolescents include overthinking, poor habits, family/environmental influences, extensive technology use, peer pressure, the fear of missing out, academic demands and involvement in extracurricular activities. The collaboration between healthcare institutions, professionals and educational institutions is crucial to facilitate (1) the implementation of sleep education workshops/seminars targeting adolescents, (2) increased parental involvement and role-modelling to instil good sleep practices among adolescents and (3) enhanced integration of digital well-being practices, the promotion of relaxation techniques and accessibility to essential sleep hygiene resources. Preferred Reporting Items for Systematic Reviews and Meta-Analyses (PRISMA) guidelines. No patient or public contribution. This review was registered on the Prospective Register of Systematic Reviews (CRD42023403775).",
+          "ano": 2024,
+          "autores": "Yumi Yeo; John Chee Meng Wong; Travis Lanz-Brian Pereira; et al.",
+          "periodico": "Journal of clinical nursing",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "SystematicReview"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/39119732/",
+          "score_prioridade_editorial": 72.0,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 17.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_32414060",
+          "doi": "10.3390/s20102770",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "A Systematic Review of Closed-Loop Feedback Techniques in Sleep Studies-Related Issues and Future Directions.",
+          "abstract": "Advances in computer processing technology have enabled researchers to analyze real-time brain activity and build real-time closed-loop paradigms. In many fields, the effectiveness of these closed-loop protocols has proven to be better than that of the simple open-loop paradigms. Recently, sleep studies have attracted much attention as one possible application of closed-loop paradigms. To date, several studies that used closed-loop paradigms have been reported in the sleep-related literature and recommend a closed-loop feedback system to enhance specific brain activity during sleep, which leads to improvements in sleep's effects, such as memory consolidation. However, to the best of our knowledge, no report has reviewed and discussed the detailed technical issues that arise in designing sleep closed-loop paradigms. In this paper, we reviewed the most recent reports on sleep closed-loop paradigms and offered an in-depth discussion of some of their technical issues. We found 148 journal articles strongly related with 'sleep and stimulation' and reviewed 20 articles on closed-loop feedback sleep studies. We focused on human sleep studies conducting any modality of feedback stimulation. Then we introduced the main component of the closed-loop system and summarized several open-source libraries, which are widely used in closed-loop systems, with step-by-step guidelines for closed-loop system implementation for sleep. Further, we proposed future directions for sleep research with closed-loop feedback systems, which provide some insight into closed-loop feedback systems.",
+          "ano": 2020,
+          "autores": "Jinyoung Choi; Moonyoung Kwon; Sung Chan Jun",
+          "periodico": "Sensors (Basel, Switzerland)",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "SystematicReview"
+          ],
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7285770/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/32414060/",
+          "score_prioridade_editorial": 72.0,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 11.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 8.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "acesso_status": "Texto completo aberto identificado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_35153168",
+          "doi": "10.1016/j.sleh.2021.12.001",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Waking up to sleep's role in obesity and blood pressure among Black adolescent girls in low-income, US urban communities: A longitudinal analysis.",
+          "abstract": "To identify longitudinal bidirectional associations between unique sleep trajectories and obesity and hypertension among Black, adolescent girls. Longitudinal data were from a randomized controlled trial (2009-2013) implemented in schools serving low-income communities aimed at preventing obesity among adolescent girls (mean age = 12.2 years (standard deviation ± 0.72). Nocturnal sleep data were extracted from accelerometers at T1 (enrollment, n = 470), T2 (6-month, n = 348), and T3 (18-month follow-up, n = 277); height and weight were measured at T1-T3; and systolic/diastolic blood pressure at T1 and T3 using an oscillometric monitor. Multilevel models examined longitudinal associations. Finite mixture models identified sleep trajectory groups. Structural equation models examined whether T1 chronic disease risk predicted sleep profiles, and conversely, if sleep trajectories predicted T3 chronic disease risk. Data were analyzed in 2021. For each additional hour of sleep and 1% increase in efficiency there was a 7% lower risk of overweight/obesity at T1 and 6% lower risk at T2, but not at T3. Four sleep trajectories emerged: Worsened, Irregular, Improved, and Regular, with no demographic or metabolic differences between the trajectories. Improved sleep trajectory predicted lower diastolic percentile at T3 (b = -8.81 [95% confidence interval -16.23, -1.40]). Group-based trajectories of sleep duration and quality provide information on modifiable factors that can be targeted in interventions to evaluate their impact on reducing chronic diseases and addressing disparities. Additional research is needed on samples beyond those recruited in the context of an intervention study.",
+          "ano": 2022,
+          "autores": "Angela Cristina Bizzotto Trude; Bridget Armstrong; Adriana Kramer Fiala Machado; et al.",
+          "periodico": "Sleep health",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "RCT"
+          ],
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9019769/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35153168/",
+          "score_prioridade_editorial": 70.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 14.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 8.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "Texto completo aberto identificado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_35982481",
+          "doi": "10.1186/s40101-022-00303-2",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Validity of an algorithm for determining sleep/wake states using FS-760 in school-aged children.",
+          "abstract": "Actigraphy is a method used for determining sleep (S)/wakefulness (W) by actigraph, a device equipped with a built-in accelerometer and an algorithm validated for each device. The S/W determination algorithm for the waist-worn actigraph FS-760 has been formulated for adults. However, the algorithm for children has not been established. The purpose of this study was to formulate an algorithm for discriminating S/W in school-aged children using FS-760 and to evaluate its validity. We further tested the generalizability of existing algorithm for adults by applying it to the children's activity data and then examined factors associated with adult algorithm agreement rates by multiple regression analysis using combined adult and children data. Sixty-five, healthy, school-aged children (aged 6 to 15 years) were recruited and randomly assigned to two groups: A (n = 33) and B (n = 32). They underwent 8-h polysomnography (PSG) and wore FS-760 simultaneously to obtain activity data. To determine the central epoch of the sleep/wake states (𝑥), a five-order linear discriminant analysis was conducted using the activity intensity of group A for five epochs (𝑥-2, 𝑥-1, 𝑥, 𝑥+1, 𝑥+2; 10 min) and evaluate its accuracy with the activity of group B. To reveal the factors associated with adult algorithm agreement rate, we integrated the activity, age, sleep efficiency of 15 adults (aged 20 to 39 years) and those of 65 children for multiple regression analysis. The mean agreement rate of the developed algorithm was 91.0%, with a mean sensitivity (true sleep detection rate) of 93.0% and a mean specificity (true wakefulness detection rate) of 63.9%. The agreement rate of the adult algorithm applied to children's activity was significantly lower (81.8%) than that of the children algorithm. Multiple regression analysis showed that the agreement rates calculated by the adult algorithm were significantly related to mean activity of the 𝑥 epoch in NREM and REM sleep as well as age and sleep efficiency. The S/W states in school-aged children can be reliably assessed using the developed algorithm for waist-worn actigraph FS-760. Since the accuracy of the adult algorithms decreased when applied it to children which have different activity levels during sleep, the establishment and validation of population-specific S/W algorithms should be required.",
+          "ano": 2022,
+          "autores": "Minori Enomoto; Shingo Kitamura; Kyoko Nakazaki",
+          "periodico": "Journal of physiological anthropology",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "RCT"
+          ],
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9387041/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35982481/",
+          "score_prioridade_editorial": 70.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 14.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 8.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "Texto completo aberto identificado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_42547644",
+          "doi": "10.1007/s44470-026-00146-z",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Psychometric evaluation of the Pittsburgh Sleep Quality Index among South African women participating in the Bukhali trial: Healthy Life Trajectories Initiative.",
+          "abstract": "<h4>Purpose</h4>We examined the psychometric properties of the Pittsburgh Sleep Quality Index (PSQI) in a large sample of young women in Soweto, South Africa, to assess its reliability and structural validity in this context.<h4>Methods</h4>Data were collected from 7182 women enrolled in the Bukhali randomized controlled trial, part of the Healthy Life Trajectories Initiative (HeLTI). Sociodemographic information and PSQI data were collected through interviewer-administered surveys. Internal consistency was assessed using Cronbach's alpha, McDonald's omega and item-level correlations. Confirmatory factor analysis (CFA) evaluated the original one-factor and established two- and three-factor multidimensional models. Model fit was examined using Root Mean Square Error of Approximation (RMSEA), Comparative Fit Index (CFI), and Tucker-Lewis Index (TLI).<h4>Results</h4>Most women (57.4%) reported good sleep quality (PSQI ≤ 5). Poor sleep quality was associated with higher household socioeconomic status (assets score), higher education, and single relationship status. Average sleep was 7.8 hours, characterized by prolonged onset latency and high fragmentation, suggesting that continuity disruptions rather than opportunity shortage drove poor sleep. The PSQI had modest internal consistency (α = .57; ω = .57; item-total r = .33 - .65). The one-factor model demonstrated poor fit (χ<sup>2</sup>(14) = 1677.70; CFI = .65; TLI = .48; RMSEA = .13) whereas fit was good for the two-factor (χ<sup>2</sup>(13) = 291.46; CFI = .94; TLI = .91; RMSEA = .05) and three-factor models (χ<sup>2</sup>(11) = 285.21; CFI = .94; TLI = .89; RMSEA = .06).<h4>Conclusion</h4>The PSQI showed a multidimensional structure in this population. While both multidimensional models performed well, the two-factor model showed slightly better fit and is recommended for use in this population. Interpreting PSQI components rather than the global score offers more meaningful insight into sleep quality and highlights the need for context-specific psychometric validation in diverse settings.<h4>Current knowledge/study rationale</h4>The Pittsburgh Sleep Quality Index is widely used, but prior evidence shows its reliability and factor structure vary across populations, settings, and sex. Young women in under-resourced urban South African settings may experience sleep disruption shaped by psychosocial stress, safety concerns, caregiving demands, and environmental factors, yet the PSQI had not been evaluated in this population.<h4>Study impact</h4>In this large Soweto cohort, sleep problems appeared driven more by fragmented sleep and continuity disruptions than by insufficient sleep opportunity. The PSQI performed better as a multidimensional measure, particularly a parsimonious two-factor structure, than as a single global score. The findings support using component- or factor-informed PSQI interpretation and highlight the need for context-specific validation of sleep measures in diverse populations.",
+          "ano": 2026,
+          "autores": "Alcock S, Beukes J, Hart C, Scheuermaier K, Lye SJ, Norris SA.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42547644/",
+          "score_prioridade_editorial": 70.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42565254",
+          "doi": "10.1111/ggi.70756",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Effect of Sleep Report Feedback With Health Guidance Using a Sleep Monitoring Device for Improving Sleep in Community-Dwelling Older People: A Three-Arm Randomized Controlled Trial.",
+          "abstract": "<h4>Aim</h4>To evaluate the effectiveness of sleep monitoring, report feedback, and telephone-based guidance regarding sleep hygiene and daytime activity for community-dwelling older adults.<h4>Methods</h4>We conducted a three-arm randomized controlled trial among community-dwelling adults in Japan. Participants were divided into three groups: (A) sleep report feedback and telephone-based health guidance for 6 months; (B) sleep report feedback and telephone-based health guidance for the first 3 months followed by sleep report feedback alone for the subsequent 3 months; and (C) sleep report feedback alone for 6 months. All groups used a sleep monitoring device. The Athens Insomnia Scale (AIS) score was the primary outcome. We analyzed time-series data by comparing different groups before and after the intervention to determine factors influencing the AIS score. All significance levels were set at p < 0.05.<h4>Results</h4>In total, 229 participants (80, 74, and 75 participants in groups A, B, and C, respectively) were randomized (men: 37.1%; mean age: 78.5 years; average AIS score: 6.5). Linear mixed model analysis revealed a significant group-by-time interaction for AIS scores (p = 0.002). Both intervention groups showed significant within-group improvements in AIS scores at 3 months compared with baseline, whereas the control group showed no significant change over time. In between-group comparisons, Group B showed significantly lower AIS scores than the control group at 3 months.<h4>Conclusions</h4>Combining sleep report feedback with telephone-based health guidance may support improvement in subjective sleep status among community-dwelling older adults.<h4>Trial registration</h4>Committee and registered in the UMIN Clinical Trials Registry (study number: 21249; date of first registration: December 15, 2021; receipt number: R000052743; https://center6.umin.ac.jp/cgi-open-bin/ctr_e/ctr_view.cgi?recptno=R000052743).",
+          "ano": 2026,
+          "autores": "Chikama H, Yamakawa M, Shigenobu K, Kurakami H, Nobuhara K, Umemura K, Mizukami W, Takeya Y, Koujiya E, Adachi H, Ikeda M.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42565254/",
+          "score_prioridade_editorial": 70.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42560468",
+          "doi": "10.1007/s11325-026-03778-w",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Polygraphic evaluation of the effects of functional orthodontic treatment with twin block and herbst appliances on sleep quality: a randomized clinical trial.",
+          "abstract": "<h4>Background</h4>The aim of this clinical study was to investigate the effects of functional treatment with twin block (TB) and Herbst appliances on sleep quality.<h4>Materials and methods</h4>A total of 46 patients having mandibular retrognathia and identified with OSA were divided randomly into two groups: Twin Block (TB) and Herbst appliances. Changes in sleep parameters (apnoea-hypopnea index (AHI), supine AHI, oxygen desaturation index (ODI), minimum oxygen saturation) at baseline (B/L) and an average of 8-month follow-up (F/U) detected by polygraphy and Pittsburgh Sleep Quality Index (PSQI) were the primary outcomes. Treatment of the mandibular retrognathia was the secondary outcome. Shapiro Wilk test and Q-Q graphs were used to evaluate the distribution of variables according to groups, Mann Whitney U test was used to evaluate the two independent group means of measurements. Paired sample t test was used to evaluate the differences between the B/L and F/U times at p < 0.05 significance level.<h4>Results</h4>Among 46 patients randomized, AHI changed from B/L to F/U in Herbst group statistically significant (1.08 (-0.47-2.63), p = 0.031). While the change from B/L to F/U in the supine AHI was significant in Herbst group (3.29 (-0.20-6.78), 95% (CI), p = 0.001), this value did not reach statistical significance in TB group (0.39 (-0.59-1.37), 95% (CI), p = 0.531). ODI altered from B/L to F/U in Herbst group statistically significant (2.09 (0.58-3.60), p = 0.013). There was no change in minimum oxygen saturation following treatment in all groups (3.81 (-1.38-9.00), p = 0.166; 0.87 (-3.17-4.91), p = 0.680, respectively). The F/U values of SNB, ANB and Wits were statistically significantly higher than the B/L values (95% (CI), p < 0.001) in both groups. The average PSQI values were decreased significantly in both groups following functional treatment (95% (CI), p < 0.05).<h4>Conclusions</h4>Significant improvement was observed in sleep parameters with Herbst appliance. Functional orthodontic treatment was found to be effective for adjunctive treatment for OSA. Changes in skeletal sagittal measurements were significant in all groups.",
+          "ano": 2026,
+          "autores": "Gokce G, Akan B, Basoglu OK, Tasbakan MS, Emir B.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42560468/",
+          "score_prioridade_editorial": 70.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_42545530",
+          "doi": "10.1007/s00520-026-11038-6",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Effects of motivational music on sleep quality for caregivers of patients with advanced cancer: a randomized controlled trial.",
+          "abstract": "<h4>Purpose</h4>To investigate the benefits of listening to pre-bedtime music on sleep quality and daytime sleepiness for family caregivers of palliative care patients at home.<h4>Methods</h4>Multicenter, randomized controlled clinical trial. Seventy-six caregivers were randomly assigned to intervention (n = 38) and control (n = 38) groups. The intervention group listened to individually chosen music for 30 min before bedtime for 7 days, and the control group listened to pre-recorded basic nursing education messages. The primary endpoint was the change in global subjective sleep quality, evaluated via the global Pittsburgh Sleep Quality Index (PSQI) score. Secondary endpoints included daytime sleepiness (Epworth Sleepiness Scale [ESS]), accelerometer-derived sleep parameters, and client satisfaction (CSQ-8).<h4>Results</h4>Significant intergroup differences favoring the music intervention were observed in the mean changes from baseline for the primary endpoint of global sleep quality (PSQI Global Score: + 0.60 vs. + 2.05 points; p = 0.006). Descriptive intergroup differences favoring the intervention were observed for subjective nighttime sleep duration (+ 0.55 h; 95% CI 0.19 to 0.94) and daytime sleepiness (ESS: -2.74 points; 95% CI -4.11 to -0.56). Post-intervention satisfaction was significantly higher in the music group (CSQ-8: 27.61 vs. 24.63 points).<h4>Conclusions</h4>Listening to pre-bedtime music maintains global subjective sleep quality for family caregivers in a home palliative care setting. Furthermore, exploratory signals suggest it may also prolong subjective sleep duration and reduce daytime sleepiness.<h4>Clinical trial registration</h4>The study is registered at Clinical Trials.gov, NCT04491110. Date: 29 July 2020.",
+          "ano": 2026,
+          "autores": "Valero-Cantero I, Vázquez-Sánchez MÁ, Espinar-Toledo M, Corral-Pérez J, Casals-Sánchez JL, Casals C.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "RCT",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42545530/",
+          "score_prioridade_editorial": 70.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_34212428",
+          "doi": "10.1111/jan.14947",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Sleep and hypoglycaemia symptom perception in adults with type-1 diabetes mellitus: A mixed-methods review.",
+          "abstract": "The study aims to review, synthesize and integrate primary research on the relationship between sleep and hypoglycaemia symptom perception in adults with type-1 diabetes. This mixed-methods review follows a convergent segregated approach to synthesis and integration of qualitative and quantitative evidence. With assistance of a biomedical librarian, a search of four databases was conducted (PubMed, CINAHL, Embase and PsycINFO) in June 2020. The review included primary research measuring sleep and hypoglycaemia symptom perception in adults (age ≥ 18 years) with type-1 diabetes in English. Studies that exclusively addressed children, type-2 diabetes or outcomes unrelated to sleep and hypoglycaemia symptom perception were excluded. Screening focused on title and abstract review (n = 624). Studies not excluded after screening (n = 35) underwent full-text review. References of each study selected for inclusion (n = 6) were hand searched with one study added. All studies included in the review (n = 7) were critically appraised with JBI Critical Appraisal tools, and then data were extracted with systematic evaluation. Quantitative synthesis found sleep reduces the magnitude of detectable symptoms and one's capacity to detect them. Qualitative synthesis found that individuals with type-1 diabetes perceive unpredictable severity, frequency and awareness of symptoms while asleep as an oppressive, lingering threat. Integration of findings highlights the troublesome duality of sleep's relationship with hypoglycaemia symptom perception. Sleep presents a challenging time for individuals with type-1 diabetes. Further research examining the relationship between sleep and hypoglycaemia symptom perception is recommended as the number of studies limits this review. Symptom perception is the main physiologic defense against severe hypoglycaemia in type-1 diabetes. This review found that sleep's relationship with hypoglycaemia symptoms has unique physiological and psychological components to address when providing comprehensive care. This review may inform future lines of inquiry that develop into interventions, improvements in practice and risk reduction for hypoglycaemia-related complications.",
+          "ano": 2022,
+          "autores": "Austin Matus; Kimberly K Trout; Amy M Sawyer; et al.",
+          "periodico": "Journal of advanced nursing",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "SystematicReview"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/34212428/",
+          "score_prioridade_editorial": 69.0,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 14.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_32179376",
+          "doi": "10.1016/j.smrv.2020.101280",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Sleep's impact on emotional recognition memory: A meta-analysis of whole-night, nap, and REM sleep effects.",
+          "abstract": "Numerous studies have shown that post-learning sleep enhances visual episodic recognition memory. However, it remains unclear whether this consolidation benefit is moderated by the emotional valence of the learned material. To clarify whether sleep selectively enhances memory for emotional material, we conducted a meta-analysis including N = 1059 post-sleep/wake observations. Overall, our results do not support this hypothesis. When only studies with a sleep group/wake group comparison were included in the analysis (k = 22), the retention advantage for emotional (negative/positive) over neutral material was not significantly different between sleep and wake groups. When studies without wake groups were included in the analysis after statistical estimation of wake-group parameters, the retention advantage for emotional material was significantly larger in wake groups than in sleep groups (k = 34). Interestingly, however, an additional analysis of eight studies investigating the selective effects of rapid-eye-movement sleep and slow-wave sleep on post-interval emotional memory provided evidence for a selective enhancement of emotional over neutral memory performance after rapid-eye-movement sleep compared to slow-wave sleep. These findings suggest that sleep does not generally enhance visual recognition memory for emotional stimuli. However, the result pattern is consistent with the idea that specific sleep stages preferentially enhance consolidation of emotional and neutral material, respectively.",
+          "ano": 2020,
+          "autores": "Sarah K Schäfer; Benedikt E Wirth; Marlene Staginnus; et al.",
+          "periodico": "Sleep medicine reviews",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "MetaAnalysis",
+            "SystematicReview"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/32179376/",
+          "score_prioridade_editorial": 66.0,
+          "componentes_prioridade": {
+            "desenho": 50,
+            "atualidade": 11.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
           },
           "tipo_principal": "MetaAnalysis",
           "desenho_estudo_rotulo": "Meta-análise",
@@ -454,9 +841,237 @@
           "fontes_descoberta": [
             "PubMed"
           ]
+        },
+        {
+          "paper_id": "pmid_42577429",
+          "doi": "10.3389/fnut.2026.1892442",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Effects of almond consumption on sleep quality in adults: a randomized controlled trial.",
+          "abstract": "<h4>Background</h4>Sleep disturbances are associated with adverse metabolic, neurocognitive, and inflammatory outcomes. This study examined the effects of a 5-month whole-almond intervention on objective and subjective sleep parameters, biochemical and inflammatory markers in adults with poor sleep quality.<h4>Methods</h4>In this open-label, parallel-arm, randomized controlled community-based trial with blinded outcome assessment, 175 adults aged 21-55 years with poor sleep quality (Pittsburgh Sleep Quality Index [PSQI] ≥ 5 and/or Epworth Sleepiness Scale [ESS] ≥ 10) were randomized to either an almond group (<i>n</i> = 88) or a control group receiving an isocaloric snack (<i>n</i> = 87) using computer-generated allocation. We hypothesized that regular almond consumption would improve subjective and objective sleep outcomes. Assessments conducted at baseline and after 5 months included polysomnography, PSQI, ESS, anthropometry, and biochemical markers. Per-protocol analyses were performed to evaluate between-group differences in mean changes.<h4>Results</h4>Baseline characteristics were comparable between groups (<i>p</i> > 0.05). The almond group demonstrated significantly greater improvement in subjective sleep efficiency compared with controls (mean change: 9.7 ± 13.4 vs. 5.4 ± 10.6; <i>p</i> = 0.021). After adjustment for baseline values and sex, the almond group had lower global PSQI scores (3.94 ± 0.24 vs. 4.79 ± 0.32; <i>p</i> = 0.013), higher subjective sleep efficiency (94.45 ± 0.72% vs. 91.85 ± 0.42%; <i>p</i> = 0.012), and shorter subjective sleep latency (18.46 ± 2.25 vs. 26.29 ± 2.27 min; <i>p</i> = 0.016) than the control group. No significant treatment effects were observed for most PSG-derived sleep parameters, although wake during sleep tended to be lower in the almond group (<i>p</i> = 0.081). Endline melatonin concentrations were significantly higher following almond consumption (250.63 ± 15.98 vs. 206.19 ± 16.07 pg./mL, <i>p</i> = 0.050), whereas no significant differences were observed for other biochemical or anthropometric outcomes. A higher proportion of participants in the almond group achieved a clinically meaningful improvement in PSQI score and demonstrated reduced wake during sleep (<i>p</i> = 0.043).<h4>Conclusion</h4>Almond consumption was associated with improvements in subjective sleep efficiency and sleep continuity in adults with poor sleep quality. These findings suggest that almonds may enhance perceived sleep quality, with slight objective improvements among responders.<h4>Clinical trial</h4>https://ctri.nic.in/Clinicaltrials/showallp.php?mid1=80395&EncHid=&userName=Almond, Clinical Trials Registry-India (CTRI/2023/02/049727; registered 15 February 2023).",
+          "ano": 2026,
+          "autores": "Desai SR, Pinto L, Halbe A, Vaidya RA, Udipi SA, Kalita S.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "ClinicalTrial",
+            "JournalArticle"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42577429/",
+          "score_prioridade_editorial": 65.0,
+          "componentes_prioridade": {
+            "desenho": 40,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "ClinicalTrial",
+          "desenho_estudo_rotulo": "Ensaio clínico",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
+        },
+        {
+          "paper_id": "pmid_35732089",
+          "doi": "10.1016/j.cortex.2022.04.018",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Sleep affects higher-level categorization of speech sounds, but not frequency encoding.",
+          "abstract": "Sleep can increase consolidation of new knowledge and skills. It is less clear whether sleep plays a role in other aspects of experience-dependent neuroplasticity, which underlie important human capabilities such as spoken language processing. Theories of sensory learning differ in their predictions; some imply rapid learning at early sensory levels, while other propose a slow, progressive timecourse such that higher-level categorical representations guide immediate, novice learning, while lower-level sensory changes do not emerge until later stages. In this study, we investigated the role of sleep across both behavioural and physiological indices of auditory neuroplasticity. Forty healthy young human adults (23 female) who did not speak a tonal language participated in the study. They learned to categorize non-native Mandarin lexical tones using a sound-to-category training paradigm, and were then randomly assigned to a Nap or Wake condition. Polysomnographic data were recorded to quantify sleep during a 3 h afternoon nap opportunity, or equivalent period of quiet wakeful activity. Measures of behavioural performance accuracy revealed a significant improvement in learning the sound-to-category training paradigm between Nap and Wake groups. Conversely, a neural index of fine sound encoding fidelity of speech sounds known as the frequency-following response (FFR) suggested no change due to sleep, and a null model was supported, using Bayesian statistics. Together, these results support theories that propose a slow, progressive and hierarchical timecourse for sensory learning. Sleep's effect may play the biggest role in the higher-level learning, although contributions to more protracted processes of plasticity that exceed the study duration cannot be ruled out.",
+          "ano": 2022,
+          "autores": "Aurélien de la Chapelle; Marie-Anick Savard; Reyan Restani; et al.",
+          "periodico": "Cortex; a journal devoted to the study of the nervous system and behavior",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "RCT"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35732089/",
+          "score_prioridade_editorial": 64.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 14.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_35439637",
+          "doi": "10.1016/j.nlm.2022.107621",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "The role of sleep for episodic memory consolidation: Stabilizing or rescuing?",
+          "abstract": "Prior studies suggest a role for sleep in memory consolidation, with specific contributions from slow oscillations and sleep spindles (Rasch & Born, 2013). However, recent studies failed to replicate sleep's superiority over wake in strengthening memory against interference (Cordi & Rasch, 2021). The goal of the current study is to investigate whether sleep protects newly formed memory from unspecific interference induced by daytime experiences over 24 h, as well as to elucidate the sleep features that are involved. 56 healthy adults were randomly assigned to either the Sleep First or Wake First group. The Sleep First group encoded word pairs at night before sleep, while the Wake First group encoded word pairs in the morning before a day of wakefulness. Memory was tested 30 min, 12 h, and 24 h after encoding for both groups. The Sleep First group performed significantly better 12 h after encoding, replicating prior findings that memory is better after a period of sleep compared to wake. However, after 24 h, the two groups performed similarly. The Wake First group showed a positive correlation between overnight memory improvement and the theta and delta band power during slow wave sleep, an effect not found in the Sleep First group. These correlations suggest the possibility that after a day of waking interference, the brain recruits extra sleep resources to rescue memories from further forgetting. Our results are not consistent with prior studies showing a significant role for sleep in stabilizing memory from future interference, but they may suggest that sleep rescues memories after interference has occurred.",
+          "ano": 2022,
+          "autores": "Jing Zhang; Lauren N Whitehurst; Sara C Mednick",
+          "periodico": "Neurobiology of learning and memory",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "RCT"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35439637/",
+          "score_prioridade_editorial": 64.0,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 14.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_33446812",
+          "doi": "10.1038/s41598-020-80671-w",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Sleep reactivation did not boost suppression-induced forgetting.",
+          "abstract": "Sleep's role in memory consolidation is widely acknowledged, but its role in weakening memories is still debated. Memory weakening is evolutionary beneficial and makes an integral contribution to cognition. We sought evidence on whether sleep-based memory reactivation can facilitate memory suppression. Participants learned pairs of associable words (e.g., DIET-CREAM) and were then exposed to hint words (e.g., DIET) and instructed to either recall (\"think\") or suppress (\"no-think\") the corresponding target words (e.g., CREAM). As expected, suppression impaired retention when tested immediately after a 90-min nap. To test if reactivation could selectively enhance memory suppression during sleep, we unobtrusively presented one of two sounds conveying suppression instructions during sleep, followed by hint words. Results showed that targeted memory reactivation did not enhance suppression-induced forgetting. Although not predicted, post-hoc analyses revealed that sleep cues strengthened memory, but only for suppressed pairs that were weakly encoded before sleep. The results leave open the question of whether memory suppression can be augmented during sleep, but suggest strategies for future studies manipulating memory suppression during sleep. Additionally, our findings support the notion that sleep reactivation is particularly beneficial for weakly encoded information, which may be prioritized for consolidation.",
+          "ano": 2021,
+          "autores": "Eitan Schechtman; Anna Lampe; Brianna J Wilson; et al.",
+          "periodico": "Scientific reports",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "ClinicalTrial",
+            "JournalArticle"
+          ],
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7809483/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/33446812/",
+          "score_prioridade_editorial": 63.5,
+          "componentes_prioridade": {
+            "desenho": 40,
+            "atualidade": 12.5,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 8.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "ClinicalTrial",
+          "desenho_estudo_rotulo": "Ensaio clínico",
+          "acesso_status": "Texto completo aberto identificado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_34153105",
+          "doi": "10.1093/sleep/zsab155",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Sleep's short-term memory preservation and long-term affect depotentiation effect in emotional memory consolidation: behavioral and EEG evidence.",
+          "abstract": "Sleep plays a pivotal role in the off-line processing of emotional memory. However, much remains unknown for its immediate vs. long-term influences. We employed behavioral and electrophysiological measures to investigate the short- and long-term impacts of sleep vs. sleep deprivation on emotional memory. Fifty-nine participants incidentally learned 60 negative and 60 neutral pictures in the evening and were randomly assigned to either sleep or sleep deprivation conditions. We measured memory recognition and subjective affective ratings in 12- and 60-h post-encoding tests, with EEGs in the delayed test. In a 12-h post-encoding test, compared to sleep deprivation, sleep equally preserved both negative and neutral memory, and their affective tones. In the 60-h post-encoding test, negative and neutral memories declined significantly in the sleep group, with attenuated emotional responses to negative memories over time. Furthermore, two groups showed spatial-temporally distinguishable ERPs at the delayed test: while both groups showed the old-new frontal negativity (300-500 ms, FN400), sleep-deprived participants additionally showed an old-new parietal, Late Positive Component effect (600-1000 ms, LPC). Multivariate whole-brain ERPs analyses further suggested that sleep prioritized neural representation of emotion over memory processing, while they were less distinguishable in the sleep deprivation group. These data suggested that sleep's impact on emotional memory and affective responses is time-dependent: sleep preserved memories and affective tones in the short term, while ameliorating affective tones in the long term. Univariate and multivariate EEG analyses revealed different neurocognitive processing of remote, emotional memories between sleep and sleep deprivation groups.",
+          "ano": 2021,
+          "autores": "Shengzi Zeng; Xuanyi Lin; Jingxuan Wang; et al.",
+          "periodico": "Sleep",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "RCT"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/34153105/",
+          "score_prioridade_editorial": 62.5,
+          "componentes_prioridade": {
+            "desenho": 45,
+            "atualidade": 12.5,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 3.0
+          },
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "pmid_42544029",
+          "doi": "10.1002/pri.70281",
+          "fonte_origem": "EuropePMC",
+          "fontes_encontradas": [
+            "EuropePMC"
+          ],
+          "titulo": "Movement Behaviors and Quality of Life in Cardiac Rehabilitation Programs: A Study Based on the Canadian 24-Hour Movement Guidelines.",
+          "abstract": "<h4>Background and purpose</h4>The Canadian 24-Hour Movement Guidelines integrate recommendations on physical activity (PA), sedentary behavior (SB), and sleep. Individuals in cardiac rehabilitation programs (CRPs) have specific characteristics that may influence adherence to these 24-Hour Movement Guidelines and their relationship with quality of life. This study aimed to investigate the proportion of CRP participants who meet the recommendations of the Canadian 24-Hour Movement Guidelines and to evaluate the association between levels of PA, SB, and sleep duration with the quality-of-life domains of these individuals.<h4>Methods</h4>This was a cross-sectional observational study including CRP participants (mean age: 68.46 ± 10.15 years; 58.1% with coronary artery disease). Quality of life was assessed using the 36-Item Short-Form Health Survey (SF-36). Movement behaviors (PA, SB, and sleep) were measured by accelerometers. Compliance with the guidelines was described using percentage values. Associations between PA, SB, and sleep with quality-of-life domains were analyzed using quantile regression. The significance level was set at 5%.<h4>Results</h4>Among the 105 participants analyzed, only 2.9% simultaneously met all three recommendations. Individual adherence was 29.5% (PA), 9.5% (SB), and 34.3% (sleep). A negative association was identified between SB and functional capacity, and positive associations were found between PA and the domains of functional capacity, vitality, and social aspects. Sleep duration was not associated with quality-of-life domains.<h4>Discussion</h4>Few CRP participants simultaneously meet all three recommendations of the Canadian 24-Hour Movement Guidelines, with partial adherence being more frequent. Higher levels of PA and lower time spent in SB were associated with better quality of life, whereas sleep duration showed no significant association.",
+          "ano": 2026,
+          "autores": "Soares JCÁ, Vigilato MEM, Valente HB, Moliterno AH, Silva JPLN, Christofaro DGD, Vanderlei LCM.",
+          "periodico": "",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "tipos": [
+            "JournalArticle",
+            "ObservationalStudy"
+          ],
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42544029/",
+          "score_prioridade_editorial": 60.0,
+          "componentes_prioridade": {
+            "desenho": 28,
+            "atualidade": 20.0,
+            "impacto_bibliometrico": 0.0,
+            "acesso": 2.0,
+            "relevancia_na_fonte": 10.0
+          },
+          "tipo_principal": "ObservationalStudy",
+          "desenho_estudo_rotulo": "Estudo observacional",
+          "acesso_status": "DOI disponível; acesso aberto não confirmado",
+          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "fontes_descoberta": [
+            "EuropePMC"
+          ]
         }
       ]
     }
   },
-  "total_artigos": 11
+  "total_artigos": 27
 }
