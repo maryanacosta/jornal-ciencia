@@ -1,32 +1,29 @@
 # -*- coding: utf-8 -*-
 """
-coletor_artigos.py — Busca federada e triagem editorial de literatura biomédica
-Jornal Cienc.IA · coletor biomédico · versão 4.3
+coletor_artigos.py — Busca federada e seleção de fontes científicas biomédicas
+Jornal Cienc.IA · coletor biomédico · versão 5.1
 
-O coletor usa PubMed, Europe PMC e, quando houver credenciais/entitlement, Embase como
-fontes de DESCOBERTA biomédica. Semantic Scholar, OpenAlex e Crossref são usados apenas
-para ENRIQUECIMENTO de registros já descobertos nas fontes biomédicas; eles não introduzem
-artigos novos na fila editorial.
-O pipeline deduplica os resultados e produz uma lista de prioridade editorial. O número final NÃO é
-apresentado como "qualidade científica" ou "nível de evidência". Ele combina
-sinais operacionais distintos para ajudar o revisor a decidir o que ler primeiro:
+O coletor usa somente PubMed, OpenAlex e, quando houver credenciais/entitlement, Embase
+como fontes de descoberta. Semantic Scholar, Crossref e Europe PMC não são consultados.
+Os resultados são deduplicados antes da triagem.
 
-  - desenho do estudo identificado nos metadados;
-  - atualidade;
-  - impacto bibliométrico atenuado por logaritmo;
-  - disponibilidade de texto aberto;
-  - ordem de relevância fornecida pelas fontes.
+O coletor NÃO calcula nota numérica de qualidade ou prioridade. O fluxo é:
 
-OCEBM é usado apenas como referência conceitual para descrever desenhos de
-estudo. A própria OCEBM recomenda julgamento clínico e interpretação conforme
-a pergunta de pesquisa; portanto, uma revisão narrativa não é tratada como
-sinônimo de revisão sistemática nem como evidência máxima.
+  1. busca por tema;
+  2. deduplicação por DOI ou título;
+  3. triagem objetiva de elegibilidade;
+  4. priorização de revisões sistemáticas e meta-análises, quando disponíveis;
+  5. demais estudos elegíveis em ordem de relevância retornada pelas bases;
+  6. seleção de uma fila editorial manejável por tema.
+
+A preferência por sínteses de evidência é uma regra de seleção editorial, não uma
+avaliação automática da qualidade metodológica de cada estudo. O coletor não aplica
+OCEBM nem JBI e não transforma desenho, citações, idade, acesso ou rank em uma nota.
 
 Uso:
     python coletor_artigos.py
     python coletor_artigos.py --temas "diet liver disease" "vaccine safety"
-    python coletor_artigos.py
-    python coletor_artigos.py --limite-busca 300
+    python coletor_artigos.py --limite-busca 200 --limite-selecionados 20
 """
 
 from __future__ import annotations
@@ -34,7 +31,6 @@ from __future__ import annotations
 import argparse
 import json
 import logging
-import math
 import os
 import re
 import time
@@ -50,17 +46,13 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("coletor")
 
-S2_KEY = os.getenv("SEMANTIC_SCHOLAR_KEY", "")
 EMBASE_API_KEY = os.getenv("EMBASE_API_KEY", "").strip()
 EMBASE_INSTTOKEN = os.getenv("EMBASE_INSTTOKEN", "").strip()
 ATIVAR_EMBASE = os.getenv("ATIVAR_EMBASE", "1").strip() != "0"
 NCBI_KEY = os.getenv("NCBI_API_KEY", "")
-ATIVAR_ENRIQUECIMENTO = os.getenv("ATIVAR_ENRIQUECIMENTO", "1").strip() != "0"
 EMAIL = os.getenv("USER_EMAIL", "contato@example.com")
 ANO_ATUAL = datetime.now().year
 
-# Limiar editorial fixo do projeto. Todos os artigos elegíveis com score >= 60 entram.
-MIN_PRIORIDADE_EDITORIAL = 60.0
 
 TEMAS_PADRAO = [
     "sunscreen skin cancer prevention",
@@ -75,54 +67,11 @@ TEMAS_PADRAO = [
     "detox diet liver kidney health",
 ]
 
-S2_URL = "https://api.semanticscholar.org/graph/v1/paper/search"
 PUBMED_SEARCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
 PUBMED_FETCH = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi"
 OPENALEX_URL = "https://api.openalex.org/works"
-CROSSREF_URL = "https://api.crossref.org/works"
-EUROPE_PMC_URL = "https://www.ebi.ac.uk/europepmc/webservices/rest/search"
 EMBASE_URL = "https://api.elsevier.com/content/embase/article"
 
-S2_CAMPOS = ",".join(
-    [
-        "paperId",
-        "title",
-        "abstract",
-        "year",
-        "authors",
-        "citationCount",
-        "influentialCitationCount",
-        "publicationTypes",
-        "isRetracted",
-        "isOpenAccess",
-        "openAccessPdf",
-        "externalIds",
-        "venue",
-    ]
-)
-
-# Peso editorial aproximado por desenho. Não representa um nível OCEBM automático.
-PESO_DESENHO = {
-    "SystematicReview": 50,
-    "MetaAnalysis": 50,
-    "RCT": 45,
-    "ClinicalTrial": 40,
-    "CohortStudy": 35,
-    "CaseControlStudy": 32,
-    "ObservationalStudy": 28,
-    "Review": 25,
-    "JournalArticle": 22,
-    "journal-article": 22,
-    "CaseSeries": 15,
-    "CaseReport": 10,
-    "Editorial": 5,
-    "Opinion": 5,
-    "Letter": 5,
-    "preprint": 12,
-    "Conference": 12,
-    "proceedings-article": 12,
-    "book-chapter": 8,
-}
 
 ROTULO_DESENHO = {
     "SystematicReview": "Revisão sistemática",
@@ -208,112 +157,71 @@ def _artigo(
     }
 
 
-def classificar_desenho(tipos: List[str]) -> Tuple[str, int, str]:
-    """Retorna tipo principal, peso editorial e rótulo legível."""
+# Especificidade de metadados, NÃO hierarquia de evidência.
+# Serve apenas para escolher um rótulo representativo quando a base informa vários tipos.
+ORDEM_TIPO_ESPECIFICO = (
+    "MetaAnalysis", "SystematicReview", "RCT", "ClinicalTrial", "CohortStudy",
+    "CaseControlStudy", "ObservationalStudy", "CaseSeries", "CaseReport", "Review",
+    "JournalArticle", "journal-article", "preprint", "Conference",
+    "proceedings-article", "book-chapter", "Editorial", "Opinion", "Letter",
+)
+
+
+def classificar_desenho_metadados(tipos: List[str]) -> Tuple[str, str]:
+    """Escolhe o tipo mais específico informado pelas bases, sem pontuar qualidade."""
     tipos = tipos or ["JournalArticle"]
-    principal = max(tipos, key=lambda t: PESO_DESENHO.get(t, 18))
-    peso = PESO_DESENHO.get(principal, 18)
-    rotulo = ROTULO_DESENHO.get(principal, principal)
-    return principal, peso, rotulo
+    conjunto = set(tipos)
+    principal = next((tipo for tipo in ORDEM_TIPO_ESPECIFICO if tipo in conjunto), tipos[0])
+    return principal, ROTULO_DESENHO.get(principal, principal)
 
 
-def calcular_prioridade_editorial(a: Dict) -> Dict:
-    """Calcula sinais separados e um total operacional de 0 a 100."""
-    principal, desenho, rotulo = classificar_desenho(a.get("tipos", []))
+def avaliar_elegibilidade(a: Dict) -> Dict:
+    """Aplica apenas critérios objetivos necessários para o artigo entrar na fila editorial."""
+    tipos = a.get("tipos") or []
+    abstract = (a.get("abstract") or "").strip()
 
-    idade = max(0, ANO_ATUAL - int(a.get("ano") or ANO_ATUAL))
-    atualidade = max(0.0, 20.0 - 1.5 * idade)
+    criterios = {
+        "nao_retratado": not bool(a.get("retracted")),
+        "tipo_publicacao_aceito": (
+            not _eh_tipo_editorial_excluido(tipos)
+            and not _eh_revisao_narrativa(tipos)
+        ),
+        # Critério operacional: o restante do pipeline trabalha a partir do resumo científico.
+        "abstract_minimo_100_caracteres": len(abstract) >= 100,
+    }
 
-    cit_total = max(0, int(a.get("cit_total", 0)))
-    cit_influ = max(0, int(a.get("cit_influ", 0)))
-    impacto = min(20.0, math.log1p(cit_total) * 3.2 + math.log1p(cit_influ) * 5.0)
+    motivos = []
+    if not criterios["nao_retratado"]:
+        motivos.append("registro retratado")
+    if not criterios["tipo_publicacao_aceito"]:
+        if _eh_revisao_narrativa(tipos):
+            motivos.append("revisão narrativa/genérica sem identificação de revisão sistemática ou meta-análise")
+        else:
+            motivos.append("tipo de publicação não elegível")
+    if not criterios["abstract_minimo_100_caracteres"]:
+        motivos.append("resumo ausente ou insuficiente para o pipeline")
 
-    if a.get("url_pdf"):
-        acesso = 10.0
-        acesso_status = "PDF aberto identificado"
-    elif a.get("url_texto_completo"):
-        acesso = 8.0
-        acesso_status = "Texto completo aberto identificado"
-    elif a.get("doi"):
-        acesso = 2.0
-        acesso_status = "DOI disponível; acesso aberto não confirmado"
-    else:
-        acesso = 0.0
-        acesso_status = "Texto completo não identificado"
-
-    rank = max(0, int(a.get("rank_fonte", 0)))
-    relevancia = max(0.0, 10.0 - min(rank, 20) * 0.35)
-
-    total = min(100.0, desenho + atualidade + impacto + acesso + relevancia)
     return {
-        "score_prioridade_editorial": round(total, 2),
-        "componentes_prioridade": {
-            "desenho": round(desenho, 2),
-            "atualidade": round(atualidade, 2),
-            "impacto_bibliometrico": round(impacto, 2),
-            "acesso": round(acesso, 2),
-            "relevancia_na_fonte": round(relevancia, 2),
-        },
-        "tipo_principal": principal,
-        "desenho_estudo_rotulo": rotulo,
-        "acesso_status": acesso_status,
-        "aviso_evidencia": (
-            "Classificação baseada em metadados. Não substitui avaliação crítica do "
-            "método, risco de viés, pergunta clínica ou certeza da evidência."
+        "elegivel": all(criterios.values()),
+        "criterios": criterios,
+        "motivos_exclusao": motivos,
+        "observacao": (
+            "Triagem operacional de elegibilidade. Não representa nível de evidência "
+            "nem avaliação automática da qualidade metodológica."
         ),
     }
 
 
-def buscar_s2(tema: str, limite: int) -> List[Dict]:
-    headers = {"User-Agent": f"TCC-UFV/3.0 (mailto:{EMAIL})"}
-    if S2_KEY:
-        headers["x-api-key"] = S2_KEY
-    params = {"query": tema, "limit": min(limite, 100), "fields": S2_CAMPOS}
+def eh_sintese_evidencia(tipos: List[str]) -> bool:
+    """Identifica revisões sistemáticas/meta-análises para prioridade editorial de leitura."""
+    tipos_set = set(tipos or [])
+    return bool(tipos_set & {"SystematicReview", "MetaAnalysis"})
 
-    for tentativa in range(1, 5):
-        try:
-            r = requests.get(S2_URL, params=params, headers=headers, timeout=30)
-            if r.status_code == 429:
-                espera = 2**tentativa
-                log.warning("  [S2] Limite de requisições. Aguardando %ss...", espera)
-                time.sleep(espera)
-                continue
-            if r.status_code in (400, 403) and "x-api-key" in headers:
-                headers.pop("x-api-key", None)
-                r = requests.get(S2_URL, params=params, headers=headers, timeout=30)
-            r.raise_for_status()
-            artigos = []
-            for rank, p in enumerate(r.json().get("data", [])):
-                ids = p.get("externalIds") or {}
-                pdf = (p.get("openAccessPdf") or {}).get("url", "") or ""
-                artigos.append(
-                    _artigo(
-                        paper_id=p.get("paperId", ""),
-                        doi=ids.get("DOI", ""),
-                        fonte="SemanticScholar",
-                        titulo=p.get("title", ""),
-                        abstract=p.get("abstract", ""),
-                        ano=p.get("year"),
-                        autores=_nomes(p.get("authors") or []),
-                        cit_total=p.get("citationCount") or 0,
-                        cit_influ=p.get("influentialCitationCount") or 0,
-                        tipos=p.get("publicationTypes") or ["JournalArticle"],
-                        open_access=bool(pdf),
-                        url_pdf=pdf,
-                        url_texto_completo=pdf,
-                        url_artigo=f"https://www.semanticscholar.org/paper/{p.get('paperId', '')}",
-                        retracted=bool(p.get("isRetracted")),
-                        rank_fonte=rank,
-                        periodico=p.get("venue") or "",
-                    )
-                )
-            log.info("  [S2] '%s': %s artigos", tema, len(artigos))
-            return artigos
-        except Exception as exc:
-            log.warning("  [S2] tentativa %s/4: %s", tentativa, exc)
-            if tentativa < 4:
-                time.sleep(2**tentativa)
-    return []
+
+def categoria_selecao(tipos: List[str]) -> Tuple[str, str]:
+    if eh_sintese_evidencia(tipos):
+        return "sintese_evidencia", "Revisão sistemática / meta-análise"
+    return "estudo_elegivel", "Estudo científico elegível"
 
 
 def buscar_pubmed(tema: str, limite: int) -> List[Dict]:
@@ -434,111 +342,6 @@ def buscar_pubmed(tema: str, limite: int) -> List[Dict]:
 
     log.info("  [PubMed] '%s': %s artigos", tema, len(artigos))
     return artigos
-
-
-def buscar_europe_pmc(tema: str, limite: int) -> List[Dict]:
-    """Busca biomédica complementar no Europe PMC.
-
-    Europe PMC é tratado como fonte de descoberta, ao lado do PubMed. A consulta
-    exige abstract para evitar encaminhar ao revisor registros sem fonte textual.
-    """
-    params = {
-        "query": f"({tema}) AND HAS_ABSTRACT:Y",
-        "format": "json",
-        "resultType": "core",
-        "pageSize": min(limite, 1000),
-    }
-    headers = {"User-Agent": f"TCC-UFV/4.2 (mailto:{EMAIL})"}
-    try:
-        r = requests.get(EUROPE_PMC_URL, params=params, headers=headers, timeout=35)
-        r.raise_for_status()
-        dados = r.json()
-    except Exception as exc:
-        log.warning("  [Europe PMC] erro: %s", exc)
-        return []
-
-    mapa_tipos = {
-        "systematic review": "SystematicReview",
-        "meta-analysis": "MetaAnalysis",
-        "meta analysis": "MetaAnalysis",
-        "randomized controlled trial": "RCT",
-        "randomised controlled trial": "RCT",
-        "clinical trial": "ClinicalTrial",
-        "observational study": "ObservationalStudy",
-        "review": "Review",
-        "case reports": "CaseReport",
-        "case report": "CaseReport",
-        "journal article": "JournalArticle",
-        "editorial": "Editorial",
-        "letter": "Letter",
-    }
-
-    artigos: List[Dict] = []
-    resultados = (dados.get("resultList") or {}).get("result") or []
-    for rank, item in enumerate(resultados):
-        try:
-            titulo = (item.get("title") or "").strip()
-            abstract = (item.get("abstractText") or "").strip()
-            if not titulo or not abstract:
-                continue
-
-            pmid = str(item.get("pmid") or "").strip()
-            pmcid = str(item.get("pmcid") or "").strip()
-            doi = _normalizar_doi(str(item.get("doi") or ""))
-            ano_txt = str(item.get("pubYear") or "")
-            ano = int(ano_txt[:4]) if ano_txt[:4].isdigit() else ANO_ATUAL - 5
-            tipos_raw = (item.get("pubTypeList") or {}).get("pubType") or []
-            if isinstance(tipos_raw, str):
-                tipos_raw = [tipos_raw]
-            tipos = []
-            for tipo in tipos_raw:
-                chave = str(tipo or "").strip().lower()
-                if chave in mapa_tipos:
-                    tipos.append(mapa_tipos[chave])
-            if not tipos:
-                tipos = ["JournalArticle"]
-
-            retratado = bool(item.get("isRetracted", False)) or any(
-                "retract" in str(tipo).lower() for tipo in tipos_raw
-            )
-            oa = str(item.get("isOpenAccess") or "").upper() == "Y" or bool(pmcid)
-            url_artigo = ""
-            if pmid:
-                url_artigo = f"https://pubmed.ncbi.nlm.nih.gov/{pmid}/"
-            elif doi:
-                url_artigo = f"https://doi.org/{doi}"
-            elif item.get("id"):
-                url_artigo = f"https://europepmc.org/article/{item.get('source','MED')}/{item.get('id')}"
-            url_completo = f"https://pmc.ncbi.nlm.nih.gov/articles/{pmcid}/" if pmcid else ""
-
-            paper_id = f"pmid_{pmid}" if pmid else (f"epmc_{item.get('source','')}_{item.get('id','')}".strip("_"))
-            artigos.append(
-                _artigo(
-                    paper_id=paper_id,
-                    doi=doi,
-                    fonte="EuropePMC",
-                    titulo=titulo,
-                    abstract=abstract,
-                    ano=ano,
-                    autores=(item.get("authorString") or "").strip(),
-                    cit_total=int(item.get("citedByCount") or 0),
-                    cit_influ=0,
-                    tipos=tipos,
-                    open_access=oa,
-                    url_pdf="",
-                    url_texto_completo=url_completo,
-                    url_artigo=url_artigo,
-                    retracted=retratado,
-                    rank_fonte=rank,
-                    periodico=(item.get("journalTitle") or "").strip(),
-                )
-            )
-        except Exception as exc:
-            log.debug("  [Europe PMC] registro ignorado: %s", exc)
-
-    log.info("  [Europe PMC] '%s': %s artigos", tema, len(artigos))
-    return artigos
-
 
 
 def _embase_texto(obj) -> str:
@@ -893,65 +696,6 @@ def buscar_openalex(tema: str, limite: int) -> List[Dict]:
     return artigos
 
 
-def buscar_crossref(tema: str, limite: int) -> List[Dict]:
-    params = {
-        "query": tema,
-        "rows": min(limite, 100),
-        "sort": "relevance",
-        "order": "desc",
-        "select": "DOI,title,abstract,type,is-referenced-by-count,published,author,container-title",
-    }
-    try:
-        r = requests.get(
-            CROSSREF_URL,
-            params=params,
-            headers={"User-Agent": f"TCC-UFV/3.0 (mailto:{EMAIL})"},
-            timeout=25,
-        )
-        r.raise_for_status()
-    except Exception as exc:
-        log.warning("  [Crossref] erro: %s", exc)
-        return []
-
-    artigos = []
-    for rank, item in enumerate(r.json().get("message", {}).get("items", [])):
-        abstract = re.sub(r"<[^>]+>", " ", item.get("abstract", ""))
-        abstract = re.sub(r"\s+", " ", abstract).strip()
-        titulo_lista = item.get("title") or []
-        titulo = titulo_lista[0] if titulo_lista else ""
-        partes = item.get("published", {}).get("date-parts", [[]])
-        ano = partes[0][0] if partes and partes[0] else ANO_ATUAL - 5
-        autores_raw = item.get("author") or []
-        nomes = [f"{a.get('given', '')} {a.get('family', '')}".strip() for a in autores_raw[:3]]
-        if len(autores_raw) > 3:
-            nomes.append("et al.")
-        doi = item.get("DOI", "")
-        periodicos = item.get("container-title") or []
-
-        artigos.append(
-            _artigo(
-                paper_id=f"crossref_{doi}" if doi else f"crossref_{abs(hash(titulo))}",
-                doi=doi,
-                fonte="Crossref",
-                titulo=titulo,
-                abstract=abstract,
-                ano=ano,
-                autores="; ".join(n for n in nomes if n),
-                cit_total=item.get("is-referenced-by-count", 0),
-                cit_influ=0,
-                tipos=[item.get("type", "journal-article")],
-                open_access=False,
-                url_pdf="",
-                url_texto_completo="",
-                url_artigo=f"https://doi.org/{_normalizar_doi(doi)}" if doi else "",
-                rank_fonte=rank,
-                periodico=periodicos[0] if periodicos else "",
-            )
-        )
-    log.info("  [Crossref] '%s': %s artigos", tema, len(artigos))
-    return artigos
-
-
 def _chave_deduplicacao(a: Dict) -> str:
     doi = _normalizar_doi(a.get("doi", ""))
     if doi:
@@ -977,24 +721,19 @@ def _mesclar_registros(base: Dict, novo: Dict) -> Dict:
     return resultado
 
 
-def enriquecer_registros(base: List[Dict], extras: List[Dict]) -> List[Dict]:
-    """Mescla metadados extras SOMENTE em artigos já descobertos.
-
-    Registros exclusivos de Semantic Scholar/OpenAlex/Crossref são ignorados.
-    Assim, uma base multidisciplinar nunca inclui sozinha um artigo na fila.
-    """
-    por_chave = {_chave_deduplicacao(a): dict(a) for a in base if _chave_deduplicacao(a)}
-    for extra in extras:
-        chave = _chave_deduplicacao(extra)
-        if chave in por_chave:
-            por_chave[chave] = _mesclar_registros(por_chave[chave], extra)
-    return list(por_chave.values())
-
-
 def _eh_tipo_editorial_excluido(tipos: List[str]) -> bool:
     tipos_set = set(tipos or [])
-    excluidos = {"Editorial", "Opinion", "Letter", "Conference", "proceedings-article", "book-chapter"}
+    excluidos = {"Editorial", "Opinion", "Letter", "Conference", "proceedings-article", "book-chapter", "preprint"}
     return bool(tipos_set) and tipos_set.issubset(excluidos)
+
+
+def _eh_revisao_narrativa(tipos: List[str]) -> bool:
+    """Exclui review genérico quando não há identificação de revisão sistemática/meta-análise."""
+    tipos_set = set(tipos or [])
+    return (
+        "Review" in tipos_set
+        and not bool(tipos_set & {"SystematicReview", "MetaAnalysis"})
+    )
 
 
 def deduplicar(artigos: List[Dict]) -> List[Dict]:
@@ -1012,82 +751,126 @@ def deduplicar(artigos: List[Dict]) -> List[Dict]:
     return list(por_chave.values())
 
 
-def filtrar(artigos: List[Dict]) -> List[Dict]:
-    """Seleciona TODOS os artigos elegíveis acima do limiar de prioridade.
+def selecionar_fontes(artigos: List[Dict], limite_selecionados: int) -> Tuple[List[Dict], int]:
+    """Seleciona fontes sem criar escore numérico.
 
-    Não existe limite máximo de artigos selecionados por tema. O parâmetro
-    O corte editorial é fixo em 60 pontos nesta etapa.
+    Ordem editorial:
+      1. relevância retornada pelas próprias bases de busca;
+      2. em posições equivalentes, preferência por revisão sistemática/meta-análise;
+      3. em novo empate, publicação mais recente.
+
+    Revisões narrativas/genéricas são excluídas da fila porque não representam
+    sínteses sistemáticas de evidência.
+
+    ``limite_selecionados`` é somente um limite operacional da fila. Valor <= 0 mantém
+    todos os elegíveis.
     """
-    candidatos = []
+    elegiveis = []
+
     for a in artigos:
-        if a.get("retracted"):
+        triagem = avaliar_elegibilidade(a)
+        if not triagem["elegivel"]:
             continue
-        if _eh_tipo_editorial_excluido(a.get("tipos") or []):
-            continue
+
+        principal, rotulo = classificar_desenho_metadados(a.get("tipos") or [])
+        categoria, categoria_rotulo = categoria_selecao(a.get("tipos") or [])
         abstract = (a.get("abstract") or "").strip()
-        if len(abstract) < 100:
-            continue
-        metadados = calcular_prioridade_editorial(a)
-        if metadados["score_prioridade_editorial"] < MIN_PRIORIDADE_EDITORIAL:
-            continue
-        candidatos.append(
-            {
-                "paper_id": a.get("paper_id", ""),
-                "doi": a.get("doi", ""),
-                "fonte_origem": a.get("fonte", ""),
-                "fontes_encontradas": a.get("fontes_encontradas", []),
-                "titulo": a.get("titulo", ""),
-                "abstract": abstract,
-                "ano": a.get("ano"),
-                "autores": a.get("autores", ""),
-                "periodico": a.get("periodico", ""),
-                "citacoes_totais": a.get("cit_total", 0),
-                "citacoes_influentes": a.get("cit_influ", 0),
-                "tipos": a.get("tipos", []),
-                "open_access": a.get("open_access", False),
-                "url_pdf": a.get("url_pdf", ""),
-                "url_texto_completo": a.get("url_texto_completo", ""),
-                "url_artigo": a.get("url_artigo", ""),
-                **metadados,
-            }
+        rank = max(0, int(a.get("rank_fonte", 0) or 0))
+
+        elegiveis.append({
+            "paper_id": a.get("paper_id", ""),
+            "doi": a.get("doi", ""),
+            "fonte_origem": a.get("fonte", ""),
+            "fontes_encontradas": a.get("fontes_encontradas", []),
+            "titulo": a.get("titulo", ""),
+            "abstract": abstract,
+            "ano": a.get("ano"),
+            "autores": a.get("autores", ""),
+            "periodico": a.get("periodico", ""),
+            # Metadados preservados para rastreabilidade; não entram em uma nota.
+            "citacoes_totais": a.get("cit_total", 0),
+            "citacoes_influentes": a.get("cit_influ", 0),
+            "rank_fonte": rank,
+            "tipos": a.get("tipos", []),
+            "tipo_principal": principal,
+            "desenho_estudo_rotulo": rotulo,
+            "open_access": a.get("open_access", False),
+            "url_pdf": a.get("url_pdf", ""),
+            "url_texto_completo": a.get("url_texto_completo", ""),
+            "url_artigo": a.get("url_artigo", ""),
+            "triagem_elegibilidade": triagem,
+            "categoria_selecao": categoria,
+            "categoria_selecao_rotulo": categoria_rotulo,
+            "criterio_selecao": (
+                "Revisão sistemática/meta-análise elegível."
+                if categoria == "sintese_evidencia"
+                else "Estudo científico elegível; ordenado pela relevância retornada na busca."
+            ),
+        })
+
+    total_elegiveis = len(elegiveis)
+
+    elegiveis.sort(
+        key=lambda x: (
+            # A relevância calculada pela própria base é o critério principal.
+            int(x.get("rank_fonte", 10**9) or 10**9),
+            # Em posições equivalentes, sínteses sistemáticas recebem preferência.
+            0 if x.get("categoria_selecao") == "sintese_evidencia" else 1,
+            # Último desempate: artigo mais recente.
+            -int(x.get("ano") or 0),
+            str(x.get("titulo") or "").lower(),
         )
-    candidatos.sort(key=lambda x: x["score_prioridade_editorial"], reverse=True)
-    return candidatos
+    )
+
+    if int(limite_selecionados or 0) > 0:
+        selecionados = elegiveis[: int(limite_selecionados)]
+    else:
+        selecionados = elegiveis
+
+    for posicao, artigo in enumerate(selecionados, start=1):
+        artigo["ordem_selecao"] = posicao
+
+    return selecionados, total_elegiveis
 
 
-def coletar(temas: List[str], limite_busca: int, saida: str) -> Dict:
-    log.info("Iniciando coleta biomédica federada | %s tema(s)", len(temas))
+def coletar(temas: List[str], limite_busca: int, limite_selecionados: int, saida: str) -> Dict:
+    log.info("Iniciando coleta | %s tema(s) | fontes: PubMed + OpenAlex + Embase opcional", len(temas))
     resultado = {
         "gerado_em": datetime.now().isoformat(),
-        "versao_pipeline": "4.2",
+        "versao_pipeline": "5.1",
         "parametros": {
-            "min_prioridade": MIN_PRIORIDADE_EDITORIAL,
             "limite_busca_por_fonte": limite_busca,
             "criterio_selecao": (
-                "Todos os artigos elegíveis com score_prioridade_editorial maior ou igual "
-                "ao limiar mínimo; não há máximo de selecionados por tema."
+                "Após a triagem objetiva, revisões sistemáticas e meta-análises são "
+                "priorizadas; os demais estudos elegíveis seguem pela relevância da busca."
             ),
-            "fontes_descoberta": ["PubMed", "Europe PMC", "Embase (quando autorizado)"],
-            "fontes_enriquecimento": ["Semantic Scholar", "OpenAlex", "Crossref"],
+            "limite_selecionados_por_tema": limite_selecionados,
+            "fontes_descoberta": ["PubMed", "OpenAlex", "Embase (quando autorizado)"],
+            "fontes_removidas": ["Semantic Scholar", "Crossref", "Europe PMC"],
             "embase": (
-                "Fonte biomédica de descoberta habilitada quando EMBASE_API_KEY está configurada "
-                "e a assinatura institucional possui entitlement para a Embase API. "
-                "A chave nunca é gravada no arquivo de saída."
+                "Fonte habilitada quando EMBASE_API_KEY está configurada e a assinatura "
+                "institucional possui entitlement para a Embase API. A chave nunca é gravada na saída."
             ),
-            "cochrane": (
-                "Fonte especializada recomendada para consulta editorial/revisões, mas não "
-                "integrada automaticamente nesta versão por não haver uma API pública aberta "
-                "equivalente às fontes biomédicas usadas aqui."
-            ),
-            "score": (
-                "prioridade editorial = desenho (0-50) + atualidade (0-20) + "
-                "impacto bibliométrico logarítmico (0-20) + acesso (0-10) + "
-                "relevância na fonte (0-10)"
-            ),
-            "aviso": (
-                "O score é operacional e não substitui avaliação crítica da evidência, "
-                "risco de viés, certeza da evidência ou adequação à pergunta clínica."
-            ),
+            "triagem_elegibilidade": {
+                "nao_retratado": True,
+                "tipo_publicacao_aceito": True,
+                "abstract_minimo": "100 caracteres (critério operacional de sanidade do pipeline)",
+            },
+            "selecao_editorial": {
+                "regra": (
+                    "1) sínteses de evidência elegíveis; 2) demais estudos elegíveis; "
+                    "3) relevância retornada pelas bases dentro de cada grupo."
+                ),
+                "sem_escore_numerico": True,
+                "observacao": (
+                    "A regra organiza a fila de leitura e não equivale a uma avaliação "
+                    "automática da qualidade metodológica do estudo."
+                ),
+                "referencia_conceitual": (
+                    "OCEBM Levels of Evidence Working Group (2011): busca da provável "
+                    "melhor evidência e preferência por sínteses sistemáticas quando apropriado."
+                ),
+            },
         },
         "temas": {},
         "total_artigos": 0,
@@ -1095,65 +878,53 @@ def coletar(temas: List[str], limite_busca: int, saida: str) -> Dict:
 
     for tema in temas:
         log.info("\nBuscando: '%s'", tema)
+        termos_tema = re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ0-9]+", str(tema or ""))
+        if len(termos_tema) <= 1:
+            log.warning(
+                "  Tema muito amplo ('%s'). A busca continuará, mas consultas com mais contexto "
+                "tendem a retornar fontes mais específicas (ex.: população + exposição/intervenção + desfecho).",
+                tema,
+            )
         limite = max(1, int(limite_busca))
 
-        # 1) DESCOBERTA: somente fontes biomédicas/life sciences selecionadas.
         pubmed = buscar_pubmed(tema, limite)
-        europe_pmc = buscar_europe_pmc(tema, limite)
+        openalex = buscar_openalex(tema, limite)
         embase = buscar_embase(tema, limite)
-        descobertos = deduplicar(pubmed + europe_pmc + embase)
 
-        # Marca explicitamente em quais fontes biomédicas o artigo foi descoberto.
+        descobertos = deduplicar(pubmed + openalex + embase)
+        fontes_validas = {"PubMed", "OpenAlex", "Embase"}
         for art in descobertos:
-            art["fontes_descoberta"] = [
-                f for f in (art.get("fontes_encontradas") or [art.get("fonte")])
-                if f in {"PubMed", "EuropePMC", "Embase"}
-            ]
+            fontes = art.get("fontes_encontradas") or [art.get("fonte")]
+            art["fontes_descoberta"] = [f for f in fontes if f in fontes_validas]
 
-        # 2) ENRIQUECIMENTO: bases multidisciplinares só completam registros existentes.
-        cont_enriq = {"SemanticScholar": 0, "OpenAlex": 0, "Crossref": 0}
-        pool = descobertos
-        if ATIVAR_ENRIQUECIMENTO and descobertos:
-            s2 = buscar_s2(tema, limite)
-            oa = buscar_openalex(tema, limite)
-            cr = buscar_crossref(tema, limite)
-            cont_enriq = {
-                "SemanticScholar": len(s2),
-                "OpenAlex": len(oa),
-                "Crossref": len(cr),
-            }
-            pool = enriquecer_registros(pool, s2)
-            pool = enriquecer_registros(pool, oa)
-            pool = enriquecer_registros(pool, cr)
-
-        selecionados = filtrar(pool)
+        selecionados, total_elegiveis = selecionar_fontes(descobertos, limite_selecionados)
         for art in selecionados:
-            # Não deixar a fonte multidisciplinar aparecer como origem de descoberta.
             descob = art.get("fontes_descoberta") or []
             if not descob:
                 fontes = art.get("fontes_encontradas") or []
-                descob = [f for f in fontes if f in {"PubMed", "EuropePMC", "Embase"}]
+                descob = [f for f in fontes if f in fontes_validas]
             art["fontes_descoberta"] = descob
             art["fonte_origem"] = (
                 "PubMed" if "PubMed" in descob
-                else ("Embase" if "Embase" in descob else ("EuropePMC" if "EuropePMC" in descob else art.get("fonte_origem", "")))
+                else ("Embase" if "Embase" in descob
+                      else ("OpenAlex" if "OpenAlex" in descob else art.get("fonte_origem", "")))
             )
 
         resultado["temas"][tema] = {
-            "total_descobertos_biomedicos": len(descobertos),
+            "total_descobertos": len(descobertos),
+            "total_elegiveis": total_elegiveis,
             "total_selecionados": len(selecionados),
             "por_fonte_descoberta": {
                 "PubMed": len(pubmed),
-                "EuropePMC": len(europe_pmc),
+                "OpenAlex": len(openalex),
                 "Embase": len(embase),
             },
-            "resultados_consultados_para_enriquecimento": cont_enriq,
             "artigos": selecionados,
         }
         resultado["total_artigos"] += len(selecionados)
         log.info(
-            "  → %s selecionados de %s registros biomédicos únicos (PubMed:%s EuropePMC:%s Embase:%s)",
-            len(selecionados), len(descobertos), len(pubmed), len(europe_pmc), len(embase)
+            "  → %s elegíveis; %s selecionados de %s registros únicos (PubMed:%s OpenAlex:%s Embase:%s)",
+            total_elegiveis, len(selecionados), len(descobertos), len(pubmed), len(openalex), len(embase)
         )
         time.sleep(0.8)
 
@@ -1161,19 +932,21 @@ def coletar(temas: List[str], limite_busca: int, saida: str) -> Dict:
         json.dump(resultado, arquivo, indent=2, ensure_ascii=False)
 
     print("\n" + "=" * 72)
-    print("  COLETA BIOMÉDICA CONCLUÍDA — Jornal Cienc.IA v4.3")
+    print("  COLETA CONCLUÍDA — Jornal Cienc.IA v5.1")
     print(f"  Temas: {len(temas)}")
-    print(f"  Artigos selecionados: {resultado['total_artigos']}")
-    print(f"  Prioridade editorial mínima fixa: {MIN_PRIORIDADE_EDITORIAL:.0f}")
-    print("  Descoberta: PubMed + Europe PMC + Embase (quando autorizado)")
-    print("  Enriquecimento: Semantic Scholar + OpenAlex + Crossref")
+    print(f"  Artigos selecionados para a fila: {resultado['total_artigos']}")
+    print(f"  Limite operacional por tema: {limite_selecionados if limite_selecionados > 0 else 'todos os elegíveis'}")
+    print("  Seleção: sínteses de evidência primeiro; depois demais elegíveis por relevância")
+    print("  Sem nota numérica de prioridade ou qualidade")
+    print("  Fontes: PubMed + OpenAlex + Embase (quando autorizado)")
+    print("  Semantic Scholar, Crossref e Europe PMC: não consultados")
     print(f"  Saída: {saida}")
     print("=" * 72)
     return resultado
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Coleta biomédica: PubMed + Europe PMC + Embase opcional; enriquecimento bibliográfico separado")
+    parser = argparse.ArgumentParser(description="Coleta de artigos: PubMed + OpenAlex + Embase opcional")
     parser.add_argument("--temas", nargs="+", default=TEMAS_PADRAO)
     parser.add_argument(
         "--limite-busca",
@@ -1182,6 +955,15 @@ if __name__ == "__main__":
         help=(
             "Quantidade máxima de resultados consultados POR FONTE e POR TEMA antes da "
             "triagem. Não limita quantos artigos podem ser selecionados (padrão: 200)."
+        ),
+    )
+    parser.add_argument(
+        "--limite-selecionados",
+        type=int,
+        default=20,
+        help=(
+            "Quantidade máxima de fontes enviadas à fila editorial POR TEMA após a triagem "
+            "(padrão: 20). Use 0 para manter todos os elegíveis."
         ),
     )
     parser.add_argument("--saida", default="artigos_coletados.json")
@@ -1194,4 +976,4 @@ if __name__ == "__main__":
     if args.testar_embase:
         testar_acesso_embase()
     else:
-        coletar(args.temas, args.limite_busca, args.saida)
+        coletar(args.temas, args.limite_busca, args.limite_selecionados, args.saida)

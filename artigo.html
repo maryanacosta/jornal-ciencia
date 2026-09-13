@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Leitura de notícia científica no Jornal Cienc.IA.">
+  <title>Leitura — Jornal Cienc.IA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Changa+One:ital@0;1&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#artigo-conteudo">Ir para a matéria</a>
+
+  <header class="site-header">
+    <div class="header-top">
+      <a class="brand" href="index.html" aria-label="Página inicial do Jornal Cienc.IA">
+        <span class="brand-mark" aria-hidden="true"><i class="fa-solid fa-flask"></i></span>
+        <span class="brand-copy">
+          <span class="brand-name">Jornal Cienc<span class="ia">.IA</span></span>
+          <span class="brand-tagline">As melhores pesquisas da saúde em linguagem acessível</span>
+        </span>
+      </a>
+    </div>
+  </header>
+
+  <main class="reader-page" id="artigo-conteudo">
+    <a class="back-link" href="index.html"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Voltar para as notícias</a>
+    <div id="artigo-root" aria-live="polite">
+      <div class="empty-state">
+        <i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i>
+        <h2>Carregando matéria</h2>
+        <p>Aguarde um instante.</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <span><span class="footer-brand">Jornal Cienc.IA</span> · Divulgação científica em saúde.</span>
+      <span>Consulte a fonte científica original ao final da matéria.</span>
+    </div>
+  </footer>
+
+  <script src="artigo.js" defer></script>
+</body>
+</html>

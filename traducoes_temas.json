@@ -1,0 +1,56 @@
+{
+  "physical activity": {
+    "tema_original": "physical activity",
+    "rotulo_pt": "Atividade física",
+    "tradutor": "Google Translate via deep-translator",
+    "salvo_em": "2026-09-07T13:20:44-03:00"
+  },
+  "sleep": {
+    "tema_original": "sleep",
+    "rotulo_pt": "Sono",
+    "tradutor": "Google Translate via deep-translator",
+    "salvo_em": "2026-09-07T13:20:46-03:00"
+  },
+  "diet": {
+    "tema_original": "diet",
+    "rotulo_pt": "Dieta",
+    "tradutor": "Google Translate via deep-translator",
+    "salvo_em": "2026-09-07T13:20:55-03:00"
+  },
+  "contraceptive pill": {
+    "tema_original": "contraceptive pill",
+    "rotulo_pt": "Pílula anticoncepcional",
+    "tradutor": "Google Translate via deep-translator",
+    "salvo_em": "2026-09-10T20:51:46-03:00"
+  },
+  "vaccine": {
+    "tema_original": "vaccine",
+    "rotulo_pt": "Vacina",
+    "tradutor": "Google Translate via deep-translator",
+    "salvo_em": "2026-09-11T12:00:42-03:00"
+  },
+  "alzheimer's": {
+    "tema_original": "alzheimer's",
+    "rotulo_pt": "Alzheimer",
+    "tradutor": "Google Translate via deep-translator",
+    "salvo_em": "2026-09-11T14:24:50-03:00"
+  },
+  "mental health": {
+    "tema_original": "mental health",
+    "rotulo_pt": "Saúde mental",
+    "tradutor": "Google Translate via deep-translator",
+    "salvo_em": "2026-09-12T09:23:52-03:00"
+  },
+  "immunity": {
+    "tema_original": "Immunity",
+    "rotulo_pt": "Imunidade",
+    "tradutor": "Google Translate via deep-translator",
+    "salvo_em": "2026-09-12T12:09:24-03:00"
+  },
+  "semaglutide": {
+    "tema_original": "Semaglutide",
+    "rotulo_pt": "Semaglutida",
+    "tradutor": "Google Translate via deep-translator",
+    "salvo_em": "2026-09-12T20:11:19-03:00"
+  }
+}

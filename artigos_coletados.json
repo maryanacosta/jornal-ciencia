@@ -1,1077 +1,903 @@
 {
-  "gerado_em": "2026-08-14T20:33:19.577357",
-  "versao_pipeline": "4.2",
+  "gerado_em": "2026-09-12T20:09:08.077860",
+  "versao_pipeline": "5.1",
   "parametros": {
-    "min_prioridade": 60.0,
     "limite_busca_por_fonte": 200,
-    "criterio_selecao": "Todos os artigos elegíveis com score_prioridade_editorial maior ou igual ao limiar mínimo; não há máximo de selecionados por tema.",
+    "criterio_selecao": "Após a triagem objetiva, revisões sistemáticas e meta-análises são priorizadas; os demais estudos elegíveis seguem pela relevância da busca.",
+    "limite_selecionados_por_tema": 20,
     "fontes_descoberta": [
       "PubMed",
-      "Europe PMC",
+      "OpenAlex",
       "Embase (quando autorizado)"
     ],
-    "fontes_enriquecimento": [
+    "fontes_removidas": [
       "Semantic Scholar",
-      "OpenAlex",
-      "Crossref"
+      "Crossref",
+      "Europe PMC"
     ],
-    "embase": "Fonte biomédica de descoberta habilitada quando EMBASE_API_KEY está configurada e a assinatura institucional possui entitlement para a Embase API. A chave nunca é gravada no arquivo de saída.",
-    "cochrane": "Fonte especializada recomendada para consulta editorial/revisões, mas não integrada automaticamente nesta versão por não haver uma API pública aberta equivalente às fontes biomédicas usadas aqui.",
-    "score": "prioridade editorial = desenho (0-50) + atualidade (0-20) + impacto bibliométrico logarítmico (0-20) + acesso (0-10) + relevância na fonte (0-10)",
-    "aviso": "O score é operacional e não substitui avaliação crítica da evidência, risco de viés, certeza da evidência ou adequação à pergunta clínica."
+    "embase": "Fonte habilitada quando EMBASE_API_KEY está configurada e a assinatura institucional possui entitlement para a Embase API. A chave nunca é gravada na saída.",
+    "triagem_elegibilidade": {
+      "nao_retratado": true,
+      "tipo_publicacao_aceito": true,
+      "abstract_minimo": "100 caracteres (critério operacional de sanidade do pipeline)"
+    },
+    "selecao_editorial": {
+      "regra": "1) sínteses de evidência elegíveis; 2) demais estudos elegíveis; 3) relevância retornada pelas bases dentro de cada grupo.",
+      "sem_escore_numerico": true,
+      "observacao": "A regra organiza a fila de leitura e não equivale a uma avaliação automática da qualidade metodológica do estudo.",
+      "referencia_conceitual": "OCEBM Levels of Evidence Working Group (2011): busca da provável melhor evidência e preferência por sínteses sistemáticas quando apropriado."
+    }
   },
   "temas": {
-    "sleep": {
-      "total_descobertos_biomedicos": 400,
-      "total_selecionados": 27,
+    "Semaglutide": {
+      "total_descobertos": 353,
+      "total_elegiveis": 247,
+      "total_selecionados": 20,
       "por_fonte_descoberta": {
         "PubMed": 200,
-        "EuropePMC": 200,
-        "Embase": 0
-      },
-      "resultados_consultados_para_enriquecimento": {
-        "SemanticScholar": 0,
         "OpenAlex": 200,
-        "Crossref": 100
+        "Embase": 0
       },
       "artigos": [
         {
-          "paper_id": "pmid_41517697",
-          "doi": "10.1097/md.0000000000045225",
+          "paper_id": "pmid_38958939",
+          "doi": "10.1001/jamaophthalmol.2024.2296",
           "fonte_origem": "PubMed",
           "fontes_encontradas": [
+            "OpenAlex",
             "PubMed"
           ],
-          "titulo": "Evaluating the causal connections between sleep duration and disease prevalence: A comprehensive systematic review and meta-analysis of Mendelian randomization studies.",
-          "abstract": "The causal link between sleep duration and diverse health conditions remains unconfirmed. This meta-analysis aimed to clarify these relationships by synthesizing Mendelian randomization (MR) study evidence. PubMed was systematically searched up to February 15, 2024, for MR studies exploring genetic predispositions to sleep duration/insomnia (short/long/overall sleep duration, insomnia) and associations with circulatory, digestive, neurodegenerative, metabolic diseases, and cancers. Eligible effect estimates were meta-analyzed. Fifty-one MR studies were included. Genetic variations in sleep traits were strongly linked to elevated risk of 12 cardiovascular diseases, obesity-related metrics (Type 2 diabetes, fasting glucose/insulin, HbA1c), neurological disorders (Alzheimer, amyotrophic lateral sclerosis, Parkinson disease), mental health conditions (attention-deficit/hyperactivity disorder, autism, bipolar disorder, major depressive disorder, schizophrenia), inflammatory bowel disease, and lung cancer. Genetic evidence confirms causal associations between sleep characteristics and multiple diseases, emphasizing sleep's key role in health promotion and supporting personalized sleep management to reduce disease risk.",
-          "ano": 2026,
-          "autores": "Zhihui Wang; Lingyu Yao; Mengyue Tu",
-          "periodico": "Medicine",
-          "citacoes_totais": 0,
+          "titulo": "Risk of Nonarteritic Anterior Ischemic Optic Neuropathy in Patients Prescribed Semaglutide.",
+          "abstract": "Importance: Anecdotal experience raised the possibility that semaglutide, a glucagon-like peptide 1 receptor agonist (GLP-1 RA) with rapidly increasing use, is associated with nonarteritic anterior ischemic optic neuropathy (NAION). Objective: To investigate whether there is an association between semaglutide and risk of NAION. Design, Setting, and Participants: In a retrospective matched cohort study using data from a centralized data registry of patients evaluated by neuro-ophthalmologists at 1 academic institution from December 1, 2017, through November 30, 2023, a search for International Statistical Classification of Diseases and Related Health Problems, Tenth Revision code H47.01 (ischemic optic neuropathy) and text search yielded 16 827 patients with no history of NAION. Propensity matching was used to assess whether prescribed semaglutide was associated with NAION in patients with type 2 diabetes (T2D) or overweight/obesity, in each case accounting for covarying factors (sex, age, systemic hypertension, T2D, obstructive sleep apnea, obesity, hyperlipidemia, and coronary artery disease) and contraindications for use of semaglutide. The cumulative incidence of NAION was determined with the Kaplan-Meier method and a Cox proportional hazards regression model adjusted for potential confounding comorbidities. Data were analyzed from December 1, 2017, through November 30, 2023. Exposures: Prescriptions for semaglutide vs non-GLP-1 RA medications to manage either T2D or weight. Main Outcomes and Measures: Cumulative incidence and hazard ratio of NAION. Results: Among 16 827 patients, 710 had T2D (194 prescribed semaglutide; 516 prescribed non-GLP-1 RA antidiabetic medications; median [IQR] age, 59 [49-68] years; 369 [52%] female) and 979 were overweight or obese (361 prescribed semaglutide; 618 prescribed non-GLP-1 RA weight-loss medications; median [IQR] age, 47 [32-59] years; 708 [72%] female). In the population with T2D, 17 NAION events occurred in patients prescribed semaglutide vs 6 in the non-GLP-1 RA antidiabetes cohort. The cumulative incidence of NAION for the semaglutide and non-GLP-1 RA cohorts over 36 months was 8.9% (95% CI, 4.5%-13.1%) and 1.8% (95% CI, 0%-3.5%), respectively. A Cox proportional hazards regression model showed higher risk of NAION for patients receiving semaglutide (hazard ratio [HR], 4.28; 95% CI, 1.62-11.29); P < .001). In the population of patients who were overweight or obese, 20 NAION events occurred in the prescribed semaglutide cohort vs 3 in the non-GLP-1 RA cohort. The cumulative incidence of NAION for the semaglutide vs non-GLP-1 RA cohorts over 36 months was 6.7% (95% CI, 3.6%-9.7%) and 0.8% (95% CI, 0%-1.8%), respectively. A Cox proportional hazards regression model showed a higher risk of NAION for patients prescribed semaglutide (HR, 7.64; 95% CI, 2.21-26.36; P < .001). Conclusions and Relevance: This study's findings suggest an association between semaglutide and NAION. As this was an observational study, future study is required to assess causality.",
+          "ano": 2024,
+          "autores": "Jimena Tatiana Hathaway; Madhura P Shah; David B Hathaway; et al.",
+          "periodico": "JAMA ophthalmology",
+          "citacoes_totais": 290,
           "citacoes_influentes": 0,
+          "rank_fonte": 1,
           "tipos": [
-            "JournalArticle",
-            "SystematicReview",
-            "MetaAnalysis"
-          ],
-          "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12795056/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/41517697/",
-          "score_prioridade_editorial": 81.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 8.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
-          "acesso_status": "Texto completo aberto identificado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_41239260",
-          "doi": "10.1186/s12865-025-00770-z",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "The effect of disrupted sleep on macrophage polarization: a systematic review and meta-analysis of animal studies.",
-          "abstract": "Based on the bidirectional relationship between sleep and macrophages in healthy and diseased states, this systematic review and meta-analysis investigated the effect of disrupted sleep on macrophage polarization. A literature search was conducted in PubMed, Scopus, and Web of Science (WoS) databases up to October 2023, identifying English-language studies on disrupted sleep's effects on macrophage polarization. After screening and data extraction, the standardized mean difference (SMD) with a 95% Confidence Interval (CI) was calculated for M1 pro-inflammatory and M2 anti-inflammatory markers. Heterogeneity was assessed using Cochran's Q test and the I-square (I2) statistic, and subgroup analyses were performed. The methodological quality was assessed using SYRCLE's RoB tool. Publication bias was examined through Egger's test and the trim-and-fill method, and a sensitivity analysis was also conducted. The meta-analysis was performed using STATA version 14.2 software. Thirteen studies were included. Results indicated that disrupted sleep significantly increased CD11c levels [SMD: 2.450, 95% CI: 1.517 to 3.383, I² = 11.7%], and decreased CD206 levels [SMD: -2.616, 95% CI: -4.911 to -0.321, I² = 83.3%]. The association between disrupted sleep and M1/M2 was uncertain, with sex identified as a potential source of heterogeneity. No publication bias or sensitivity was detected, which strengthens the reliability and robustness of the findings. Disrupted sleep significantly influenced macrophage polarization towards a CD11c+ M1 inflammatory phenotype. Given the heterogeneity and limited number of studies, these findings should be interpreted as exploratory. Further research on the underlying mechanisms, particularly concerning biological sex, to better understand sleep's impact on immune function and treatment strategies for inflammatory conditions.",
-          "ano": 2025,
-          "autores": "Monireh Askarzadeh; Rezvan Yazdian-Robati; Misagh Rajabinejad; et al.",
-          "periodico": "BMC immunology",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "SystematicReview",
-            "MetaAnalysis"
-          ],
-          "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12619322/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/41239260/",
-          "score_prioridade_editorial": 79.5,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 18.5,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 8.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
-          "acesso_status": "Texto completo aberto identificado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_42219959",
-          "doi": "10.1097/ajp.0000000000001398",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Effect of Pain Neuroscience Education on Pain, Sleep, and Psychosocial Factors in Chronic Musculoskeletal Pain Conditions: A Systematic Review and Meta-Analysis.",
-          "abstract": "<h4>Objective</h4>This systematic review and meta-analysis examined the efficacy of pain neuroscience education (PNE) on pain, sleep parameters, and psychosocial factors in chronic musculoskeletal pain conditions in adults and adolescents.<h4>Methods</h4>The review was conducted in accordance with the PRISMA guidelines. A systematic search was performed using the databases Medline (PubMed), Scopus, PEDro, and Web of Science. The qualitative assessment was done by using the Physiotherapy Evidence Database (PEDro) scale and the Cochrane Risk of Bias (ROB 2.0) tool. The quantitative analysis was performed using RevMan 5.4.1 using a random-effects model, an standarized mean diffeerence (SMD) with 95% confidence intervals (CIs), and the certainty of evidence was evaluated using GRADEpro/GDT.<h4>Results</h4>Twelve randomized-controlled trials (n=1485) met the inclusion criteria. The meta-analysis showed a statistically significant effect in favor of PNE on reducing pain intensity (SMD: -0.27 [95% CI: -0.5 to 0.00; I2 =67%]) and total sleep time with a small to medium effect size (SMD: 0.42 [95% CI: 0.12-0.71; I2 =0%]). However, no statistically significant differences were observed for other sleep parameters and psychosocial outcomes, despite some outcomes indicating a moderate clinical effect.<h4>Discussion</h4>The findings suggest that PNE alone can reduce pain intensity, but greater improvements in sleep and psychosocial outcomes are seen when it is combined with interventions such as cognitive-behavioral therapy (CBT) and therapeutic exercises. These results highlight the potential role of PNE within a multimodal approach to pain management, while also underscoring the need for further research on its impact on sleep parameters in a specific population.",
-          "ano": 2026,
-          "autores": "Khan Z, Sehgal CA, Rehman S, Abbas A, Iram I, Veqar Z.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "MetaAnalysis",
-            "SystematicReview",
             "JournalArticle"
           ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42219959/",
-          "score_prioridade_editorial": 78.85,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 6.85
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "https://pmc.ncbi.nlm.nih.gov/articles/instance/11223051/bin/jamaophthalmol-e242296-s001.pdf",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11223051/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38958939/",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
           },
-          "tipo_principal": "MetaAnalysis",
-          "desenho_estudo_rotulo": "Meta-análise",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 1,
           "fontes_descoberta": [
-            "EuropePMC"
+            "OpenAlex",
+            "PubMed"
           ]
         },
         {
-          "paper_id": "pmid_36900873",
-          "doi": "10.3390/ijerph20053862",
-          "fonte_origem": "PubMed",
+          "paper_id": "oa_W3127371223",
+          "doi": "10.1056/nejmoa2032183",
+          "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
-            "PubMed"
+            "OpenAlex"
           ],
-          "titulo": "Exploring Clinical Trials to Manage Firefighters' Sleep Quality: A PRISMA Compliant Systematic Review.",
-          "abstract": "Sleep research has grown over the past decades and investigators are deeply involved in studying sleep and its impact on human health and body regulation. Despite the understanding that insufficient sleep is strongly linked to the development of several disorders, unsatisfactory sleep exposes health and safety to innumerous risks. The present study aims to review and analyze the main results of clinical trials, registered at ClinicalTrials.gov and ICTRT databases, and developed construct strategies to improve sleep quality on firefighters and enhance professionals' sleep and health conditions. The protocol was registered in PROSPERO under number CRD42022334719. Trials registered between first registry and 2022 were included. We retrieved 11 registered clinical trials; seven met eligibility criteria and were included in the review. A relation between sleep disorders, shift work, and occupational health problems was found, and retrieved trials showed that sleep education programs can improve sleep quality and sleep hygiene. Science has already recognized sleep's importance for metabolic functioning and survivorship. Nevertheless, it continues to play a major role in discovering methods to diminish the problems faced. Strategies contemplating sleep education, or intervention, should be presented to fire services to tackle this problem and promote healthier and safer environments.",
+          "titulo": "Once-Weekly Semaglutide in Adults with Overweight or Obesity",
+          "abstract": "BACKGROUND: Obesity is a global health challenge with few pharmacologic options. Whether adults with obesity can achieve weight loss with once-weekly semaglutide at a dose of 2.4 mg as an adjunct to lifestyle intervention has not been confirmed. METHODS: In this double-blind trial, we enrolled 1961 adults with a body-mass index (the weight in kilograms divided by the square of the height in meters) of 30 or greater (≥27 in persons with ≥1 weight-related coexisting condition), who did not have diabetes, and randomly assigned them, in a 2:1 ratio, to 68 weeks of treatment with once-weekly subcutaneous semaglutide (at a dose of 2.4 mg) or placebo, plus lifestyle intervention. The coprimary end points were the percentage change in body weight and weight reduction of at least 5%. The primary estimand (a precise description of the treatment effect reflecting the objective of the clinical trial) assessed effects regardless of treatment discontinuation or rescue interventions. RESULTS: The mean change in body weight from baseline to week 68 was -14.9% in the semaglutide group as compared with -2.4% with placebo, for an estimated treatment difference of -12.4 percentage points (95% confidence interval [CI], -13.4 to -11.5; P<0.001). More participants in the semaglutide group than in the placebo group achieved weight reductions of 5% or more (1047 participants [86.4%] vs. 182 [31.5%]), 10% or more (838 [69.1%] vs. 69 [12.0%]), and 15% or more (612 [50.5%] vs. 28 [4.9%]) at week 68 (P<0.001 for all three comparisons of odds). The change in body weight from baseline to week 68 was -15.3 kg in the semaglutide group as compared with -2.6 kg in the placebo group (estimated treatment difference, -12.7 kg; 95% CI, -13.7 to -11.7). Participants who received semaglutide had a greater improvement with respect to cardiometabolic risk factors and a greater increase in participant-reported physical functioning from baseline than those who received placebo. Nausea and diarrhea were the most common adverse events with semaglutide; they were typically transient and mild-to-moderate in severity and subsided with time. More participants in the semaglutide group than in the placebo group discontinued treatment owing to gastrointestinal events (59 [4.5%] vs. 5 [0.8%]). CONCLUSIONS: In participants with overweight or obesity, 2.4 mg of semaglutide once weekly plus lifestyle intervention was associated with sustained, clinically relevant reduction in body weight. (Funded by Novo Nordisk; STEP 1 ClinicalTrials.gov number, NCT03548935).",
+          "ano": 2021,
+          "autores": "John Wilding; Rachel L. Batterham; Salvatore Calanna; et al.",
+          "periodico": "New England Journal of Medicine",
+          "citacoes_totais": 4980,
+          "citacoes_influentes": 0,
+          "rank_fonte": 1,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "https://discovery.ucl.ac.uk/10127569/1/nejmoa2032183.pdf",
+          "url_texto_completo": "https://discovery.ucl.ac.uk/id/eprint/10127569/",
+          "url_artigo": "https://doi.org/10.1056/nejmoa2032183",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 2,
+          "fontes_descoberta": [
+            "OpenAlex"
+          ]
+        },
+        {
+          "paper_id": "oa_W4388592674",
+          "doi": "10.1056/nejmoa2307563",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "Semaglutide and Cardiovascular Outcomes in Obesity without Diabetes",
+          "abstract": "BACKGROUND: Semaglutide, a glucagon-like peptide-1 receptor agonist, has been shown to reduce the risk of adverse cardiovascular events in patients with diabetes. Whether semaglutide can reduce cardiovascular risk associated with overweight and obesity in the absence of diabetes is unknown. METHODS: In a multicenter, double-blind, randomized, placebo-controlled, event-driven superiority trial, we enrolled patients 45 years of age or older who had preexisting cardiovascular disease and a body-mass index (the weight in kilograms divided by the square of the height in meters) of 27 or greater but no history of diabetes. Patients were randomly assigned in a 1:1 ratio to receive once-weekly subcutaneous semaglutide at a dose of 2.4 mg or placebo. The primary cardiovascular end point was a composite of death from cardiovascular causes, nonfatal myocardial infarction, or nonfatal stroke in a time-to-first-event analysis. Safety was also assessed. RESULTS: A total of 17,604 patients were enrolled; 8803 were assigned to receive semaglutide and 8801 to receive placebo. The mean (±SD) duration of exposure to semaglutide or placebo was 34.2±13.7 months, and the mean duration of follow-up was 39.8±9.4 months. A primary cardiovascular end-point event occurred in 569 of the 8803 patients (6.5%) in the semaglutide group and in 701 of the 8801 patients (8.0%) in the placebo group (hazard ratio, 0.80; 95% confidence interval, 0.72 to 0.90; P<0.001). Adverse events leading to permanent discontinuation of the trial product occurred in 1461 patients (16.6%) in the semaglutide group and 718 patients (8.2%) in the placebo group (P<0.001). CONCLUSIONS: In patients with preexisting cardiovascular disease and overweight or obesity but without diabetes, weekly subcutaneous semaglutide at a dose of 2.4 mg was superior to placebo in reducing the incidence of death from cardiovascular causes, nonfatal myocardial infarction, or nonfatal stroke at a mean follow-up of 39.8 months. (Funded by Novo Nordisk; SELECT ClinicalTrials.gov number, NCT03574597.).",
           "ano": 2023,
-          "autores": "Sara Alves; Josiana Vaz; Adília Fernandes",
-          "periodico": "International journal of environmental research and public health",
-          "citacoes_totais": 0,
+          "autores": "A. Michael Lincoff; Kirstine Brown‐Frandsen; Helen M. Colhoun; et al.",
+          "periodico": "New England Journal of Medicine",
+          "citacoes_totais": 2994,
           "citacoes_influentes": 0,
+          "rank_fonte": 2,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "https://discovery.ucl.ac.uk/10184940/1/nejmoa2307563.pdf",
+          "url_texto_completo": "https://discovery.ucl.ac.uk/id/eprint/10184940/",
+          "url_artigo": "https://doi.org/10.1056/nejmoa2307563",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 3,
+          "fontes_descoberta": [
+            "OpenAlex"
+          ]
+        },
+        {
+          "paper_id": "pmid_33667417",
+          "doi": "10.1016/s0140-6736(21)00213-0",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "OpenAlex",
+            "PubMed"
+          ],
+          "titulo": "Semaglutide 2·4 mg once a week in adults with overweight or obesity, and type 2 diabetes (STEP 2): a randomised, double-blind, double-dummy, placebo-controlled, phase 3 trial.",
+          "abstract": "This trial assessed the efficacy and safety of the GLP-1 analogue once a week subcutaneous semaglutide 2·4 mg versus semaglutide 1·0 mg (the dose approved for diabetes treatment) and placebo for weight management in adults with overweight or obesity, and type 2 diabetes. This double-blind, double-dummy, phase 3, superiority study enrolled adults with a body-mass index of at least 27 kg/m2 and glycated haemoglobin 7-10% (53-86 mmol/mol) who had been diagnosed with type 2 diabetes at least 180 days before screening. Patients were recruited from 149 outpatient clinics in 12 countries across Europe, North America, South America, the Middle East, South Africa, and Asia. Patients were randomly allocated (1:1:1) via an interactive web-response system and stratified by background glucose-lowering medication and glycated haemoglobin, to subcutaneous injection of semaglutide 2·4 mg, or semaglutide 1·0 mg, or visually matching placebo, once a week for 68 weeks, plus a lifestyle intervention. Patients, investigators, and those assessing outcomes were masked to group assignment. Coprimary endpoints were percentage change in bodyweight and achievement of weight reduction of at least 5% at 68 weeks for semaglutide 2·4 mg versus placebo, assessed by intention to treat. Safety was assessed in all patients who received at least one dose of study drug. This study is registered with ClinicalTrials.gov, NCT03552757 and is closed to new participants. From June 4 to Nov 14, 2018, 1595 patients were screened, of whom 1210 were randomly assigned to semaglutide 2·4 mg (n=404), semaglutide 1·0 mg (n=403), or placebo (n=403) and included in the intention-to-treat analysis. Estimated change in mean bodyweight from baseline to week 68 was -9·6% (SE 0·4) with semaglutide 2·4 mg vs -3·4% (0·4) with placebo. Estimated treatment difference for semaglutide 2·4 mg versus placebo was -6·2 percentage points (95% CI -7·3 to -5·2; p<0·0001). At week 68, more patients on semaglutide 2·4 mg than on placebo achieved weight reductions of at least 5% (267 [68·8%] of 388 vs 107 [28·5%] of 376; odds ratio 4·88, 95% CI 3·58 to 6·64; p<0·0001). Adverse events were more frequent with semaglutide 2·4 mg (in 353 [87·6%] of 403 patients) and 1·0 mg (329 [81·8%] of 402) than with placebo (309 [76·9%] of 402). Gastrointestinal adverse events, which were mostly mild to moderate, were reported in 256 (63·5%) of 403 patients with semaglutide 2·4 mg, 231 (57·5%) of 402 with semaglutide 1·0 mg, and 138 (34·3%) of 402 with placebo. In adults with overweight or obesity, and type 2 diabetes, semaglutide 2·4 mg once a week achieved a superior and clinically meaningful decrease in bodyweight compared with placebo. Novo Nordisk.",
+          "ano": 2021,
+          "autores": "Melanie J. Davies; Louise Færch; Ole Kleist Jeppesen; et al.",
+          "periodico": "Lancet (London, England)",
+          "citacoes_totais": 1368,
+          "citacoes_influentes": 0,
+          "rank_fonte": 2,
           "tipos": [
             "JournalArticle",
-            "SystematicReview"
+            "RCT"
           ],
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
           "open_access": true,
           "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10001586/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/36900873/",
-          "score_prioridade_editorial": 76.5,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 15.5,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 8.0,
-            "relevancia_na_fonte": 3.0
+          "url_texto_completo": "https://figshare.com/articles/journal_contribution/Semaglutide_2_4_mg_once_a_week_in_adults_with_overweight_or_obesity_and_type_2_diabetes_STEP_2_a_randomised_doubleblind_double-dummy_placebo-controlled_phase_3_trial/14510538",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/33667417/",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
           },
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
-          "acesso_status": "Texto completo aberto identificado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 4,
           "fontes_descoberta": [
+            "OpenAlex",
             "PubMed"
           ]
         },
         {
-          "paper_id": "pmid_42373586",
-          "doi": "10.1002/msc.70242",
-          "fonte_origem": "EuropePMC",
+          "paper_id": "pmid_32213703",
+          "doi": "10.1172/jci.insight.133429",
+          "fonte_origem": "PubMed",
           "fontes_encontradas": [
-            "EuropePMC"
+            "OpenAlex",
+            "PubMed"
           ],
-          "titulo": "Effect of Multimodal Physiotherapy on Sleep Quality and Architecture in Patients With Chronic Neck Pain With Sleep Disturbance: A Randomised Clinical Trial.",
-          "abstract": "<h4>Background</h4>Chronic neck pain is frequently associated with disturbed sleep, yet evidence on physiotherapy's impact on objective sleep parameters remains limited. To our knowledge, this study is the first to evaluate the effects of exercises, interferential current therapy (IFT) and myofascial release therapy on sleep quality and polysomnographic parameters in this population.<h4>Methods</h4>Thirty adult men with chronic neck pain and poor sleep were randomised (1:1) in a two-arm, assessor-blinded trial. Group 1 received therapeutic exercise plus interferential current therapy; Group 2 received the same plus myofascial release (MFR), 7 weeks. Outcomes included subjective sleep quality as a primary outcme, polysomnographic (PSG) architecture and pain as secondary outcomes.<h4>Results</h4>Sleep quality improved significantly in both groups (time effect p < 0.001), with greater overall improvement in Group 2 (group effect p = 0.003). For PSG parameters, both groups improved. Compared with exercise + IFT, adding MFR produced greater changes in PSG N1% and REM% (Time × Group interaction), while other PSG parameters showed similar improvements across groups.<h4>Conclusion</h4>Physiotherapy significantly improved pain and sleep outcomes in patients with chronic neck pain. Exercise with IFT enhanced sleep continuity, while combining exercise with myofascial release further optimized sleep architecture, particularly N1% and REM%. These findings highlight the added value of multimodal physiotherapy for pain management and sleep improvement.<h4>Trial registration</h4>This clinical trial was registered at the Clinical Trials Registry of India under the registration number CTRI/2019/09/021028.",
-          "ano": 2026,
-          "autores": "Aldabbas MM, Tanwar T, Iram I, Veqar Z.",
-          "periodico": "",
-          "citacoes_totais": 0,
+          "titulo": "Semaglutide lowers body weight in rodents via distributed neural pathways.",
+          "abstract": "Semaglutide, a glucagon-like peptide 1 (GLP-1) analog, induces weight loss, lowers glucose levels, and reduces cardiovascular risk in patients with diabetes. Mechanistic preclinical studies suggest weight loss is mediated through GLP-1 receptors (GLP-1Rs) in the brain. The findings presented here show that semaglutide modulated food preference, reduced food intake, and caused weight loss without decreasing energy expenditure. Semaglutide directly accessed the brainstem, septal nucleus, and hypothalamus but did not cross the blood-brain barrier; it interacted with the brain through the circumventricular organs and several select sites adjacent to the ventricles. Semaglutide induced central c-Fos activation in 10 brain areas, including hindbrain areas directly targeted by semaglutide, and secondary areas without direct GLP-1R interaction, such as the lateral parabrachial nucleus. Automated analysis of semaglutide access, c-Fos activity, GLP-1R distribution, and brain connectivity revealed that activation may involve meal termination controlled by neurons in the lateral parabrachial nucleus. Transcriptomic analysis of microdissected brain areas from semaglutide-treated rats showed upregulation of prolactin-releasing hormone and tyrosine hydroxylase in the area postrema. We suggest semaglutide lowers body weight by direct interaction with diverse GLP-1R populations and by directly and indirectly affecting the activity of neural pathways involved in food intake, reward, and energy expenditure.",
+          "ano": 2020,
+          "autores": "Sanaz Gabery; Casper G. Salinas; Sarah Juel Paulsen; et al.",
+          "periodico": "JCI insight",
+          "citacoes_totais": 713,
           "citacoes_influentes": 0,
+          "rank_fonte": 3,
           "tipos": [
-            "RCT",
             "JournalArticle"
           ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42373586/",
-          "score_prioridade_editorial": 75.6,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 8.6
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "http://insight.jci.org/articles/view/133429/files/pdf",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7213778/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/32213703/",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
           },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 5,
           "fontes_descoberta": [
-            "EuropePMC"
+            "OpenAlex",
+            "PubMed"
           ]
         },
         {
-          "paper_id": "pmid_42545422",
-          "doi": "10.1007/s00484-026-03281-7",
-          "fonte_origem": "EuropePMC",
+          "paper_id": "oa_W4206445899",
+          "doi": "10.1056/nejmoa1901118",
+          "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
-            "EuropePMC"
+            "OpenAlex"
           ],
-          "titulo": "The effect of water immersion thermotherapy on sleep quality: a systematic review and meta-analysis of randomized controlled trials.",
-          "abstract": "A systematic review of the effects of water immersion thermotherapy (WIT) on sleep quality in healthy adults. A comprehensive search was conducted in PubMed, Cochrane Library, Web of science, Embase, Scopus, Ovid MEDLINE, Wiley Online Library, PEDro, CNKI, SinoMed and Yiigle databases. A meta-analysis method was adopted to evaluate the improvement of sleep quality by using WIT. By calculating the standardized mean difference (SMD) and its 95% confidence interval (CI), and selecting either a common effects model or a random effects model for data pooling and analysis. A total of ten randomized controlled trials were included in this study. The results showed that WIT significantly increased total sleep time (SMD = 0.63, P = 0.0438) and significantly improved sleep efficiency (SMD = 0.64, P = 0.0419). However, there were no significant effects on sleep latency (P = 0.0877) or the pittsburgh sleep quality index (PSQI). Furthermore, there were no significant effects on PSQI-total score (P = 0.1136), PSQI-subjective sleep quality (P = 0.3721), PSQI-sleep latency (P = 0.0864), PSQI-sleep duration (P = 0.1402), PSQI-sleep efficiency (P = 0.6793), PSQI-sleep disturbances (P = 0.0580), PSQI-use of sleep medication (P = 0.9991), or PSQI-day time dysfunction (P = 0.6525) among the various indicators of the PSQI. WIT can significantly prolong total sleep time and improve sleep efficiency, but has no significant effect on the improvement of subjective sleep quality, indicating that the sleep-improving effect of WIT has certain limitations.",
-          "ano": 2026,
-          "autores": "Chen H, Gao S, Chen W, Gao B.",
-          "periodico": "",
-          "citacoes_totais": 0,
+          "titulo": "Oral Semaglutide and Cardiovascular Outcomes in Patients with Type 2 Diabetes",
+          "abstract": "BACKGROUNDEstablishing cardiovascular safety of new therapies for type 2 diabetes is important.Safety data are available for the subcutaneous form of the glucagon-like peptide-1 receptor agonist semaglutide but are needed for oral semaglutide. METHODSWe assessed cardiovascular outcomes of once-daily oral semaglutide in an event-driven, randomized, double-blind, placebo-controlled trial involving patients at high cardiovascular risk (age of ≥50 years with established cardiovascular or chronic kidney disease, or age of ≥60 years with cardiovascular risk factors only).The primary outcome in a timeto-event analysis was the first occurrence of a major adverse cardiovascular event (death from cardiovascular causes, nonfatal myocardial infarction, or nonfatal stroke).The trial was designed to rule out 80% excess cardiovascular risk as compared with placebo (noninferiority margin of 1.8 for the upper boundary of the 95% confidence interval for the hazard ratio for the primary outcome). RESULTSA total of 3183 patients were randomly assigned to receive oral semaglutide or placebo.The mean age of the patients was 66 years; 2695 patients (84.7%) were 50 years of age or older and had cardiovascular or chronic kidney disease.The median time in the trial was 15.9 months.Major adverse cardiovascular events occurred in 61 of 1591 patients (3.8%) in the oral semaglutide group and 76 of 1592 (4.8%) in the placebo group (hazard ratio, 0.79; 95% confidence interval [CI], 0.57 to 1.11; P<0.001 for noninferiority).Results for components of the primary outcome were as follows: death from cardiovascular causes, 15 of 1591 patients (0.9%) in the oral semaglutide group and 30 of 1592 (1.9%) in the placebo group (hazard ratio, 0.49; 95% CI, 0.27 to 0.92); nonfatal myocardial infarction, 37 of 1591 patients (2.3%) and 31 of 1592 (1.9%), respectively (hazard ratio, 1.18; 95% CI, 0.73 to 1.90); and nonfatal stroke, 12 of 1591 patients (0.8%) and 16 of 1592 (1.0%), respectively (hazard ratio, 0.74; 95% CI, 0.35 to 1.57).Death from any cause occurred in 23 of 1591 patients (1.4%) in the oral semaglutide group and 45 of 1592 (2.8%) in the placebo group (hazard ratio, 0.51; 95% CI, 0.31 to 0.84).Gastrointestinal adverse events leading to discontinuation of oral semaglutide or placebo were more common with oral semaglutide. CONCLUSIONSIn this trial involving patients with type 2 diabetes, the cardiovascular risk profile of oral semaglutide was not inferior to that of placebo.(Funded by Novo Nordisk; PIONEER 6 ClinicalTrials.govnumber, NCT02692716.",
+          "ano": 2019,
+          "autores": "Mansoor Husain; Andreas L. Birkenfeld; Morten Donsmark; et al.",
+          "periodico": "New England Journal of Medicine",
+          "citacoes_totais": 1993,
           "citacoes_influentes": 0,
+          "rank_fonte": 3,
           "tipos": [
-            "MetaAnalysis",
-            "SystematicReview",
-            "Review",
             "JournalArticle"
           ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42545422/",
-          "score_prioridade_editorial": 75.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "https://www.nejm.org/doi/pdf/10.1056/NEJMoa1901118?articleTools=true",
+          "url_texto_completo": "https://doi.org/10.1056/nejmoa1901118",
+          "url_artigo": "https://doi.org/10.1056/nejmoa1901118",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
           },
-          "tipo_principal": "MetaAnalysis",
-          "desenho_estudo_rotulo": "Meta-análise",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 6,
           "fontes_descoberta": [
-            "EuropePMC"
+            "OpenAlex"
           ]
         },
         {
-          "paper_id": "pmid_42537441",
-          "doi": "10.1016/j.sleep.2026.109180",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Electroencephalographic correlates of sleepiness: A meta-analysis and narrative review.",
-          "abstract": "Excessive daytime sleepiness has become a significant problem in society. Despite evidence for the effect of sleep need on EEG and calls for better EEG-derived predictors and diagnostics, no study has conducted a review to determine the best practice for using EEG to measure sleepiness. We aimed to provide this. Correlation coefficients were calculated for beta, alpha, theta, and delta wake EEG power across normal and sleep restriction/deprivation conditions, in order to determine which measures are most predictive of sleep need, in what conditions and using which parameters. Our results demonstrate that increases in EEG theta power are associated with increases in subjective sleepiness during both normal and sleep loss conditions. A similar increase was observed for EEG delta power, but only in the conditions of sleep loss. EEG alpha power showed no correlation with subjective sleepiness in either condition. This review also identified novel EEG markers, such as microstates and event-related potentials, and a limited number of studies that examined EEG measures of sleepiness in clinical sleep-disorder cohorts. Our study is the first to thoroughly examine the current EEG markers of sleepiness and the influence of recording conditions on sleepiness assessment using the EEG.",
-          "ano": 2026,
-          "autores": "Poethke T, Lushington K, Chatburn A.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "MetaAnalysis",
-            "Review",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42537441/",
-          "score_prioridade_editorial": 75.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "MetaAnalysis",
-          "desenho_estudo_rotulo": "Meta-análise",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42563341",
-          "doi": "10.29271/jcpsp.2026.08.1045",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Association Between Sleep Duration and Hypertension Development in Women: A Meta-Analysis.",
-          "abstract": "This study examined the association between females' sleep duration and the development of hypertension (HTN). Searches were conducted in Embase, PubMed, Cochrane Library, Web of Science, CNKI, VIP, and Wanfang databases up to March 15, 2024. Using RR as the effect measure, the combined RR and 95% CI were calculated using Stata 15.0. A total of 10 articles, comprising 12 cohort studies, were included in the meta-analysis. Inadequate sleep duration is associated with HTN in women (RR: 1.10, 95% CI: 1.06-1.13, p <0.001). However, long sleep duration was not associated with HTN in women (RR: 1.00, 95% CI: 0.96-1.05, p = 0.958). Short- and long-sleep duration groups showed no publication bias. Subgroup and meta-regression analyses indicated that age and variation in the operational definition of sleep duration were the principal sources of heterogeneity. In age-stratified analysis, both <50 years (RR = 1.19, 95% CI: 1.11-1.28, p <0.001) and ≥50 years (RR = 1.06, 95% CI: 1.00-1.12, p = 0.036) showed increased HTN risk among women with short sleep duration. The dose-response association was L-shaped; using 4 hours/day as the reference, the lowest risk was observed at approximately 7.5 hours/day. For women, insufficient sleep duration is linked to a higher risk of developing HTN. Key Words: Hypertension, Women, Sleep duration, Prospective cohort study, Meta-analysis.",
-          "ano": 2026,
-          "autores": "Bai Y, Kong D, Hou J, Bai L.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "MetaAnalysis",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42563341/",
-          "score_prioridade_editorial": 75.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "MetaAnalysis",
-          "desenho_estudo_rotulo": "Meta-análise",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42478101",
-          "doi": "10.1111/obr.70199",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Sleep and Its Impact on the Success of Weight Loss Interventions in Adults With Excess Weight: A Systematic Review.",
-          "abstract": "<h4>Objective</h4>To evaluate evidence on the impact of sleep health on weight loss in adults with excess weight undergoing behavioral or surgical weight loss interventions.<h4>Methods</h4>We conducted a systematic review of randomized controlled trials and quasi-experimental studies including adults aged ≥ 18 years with BMI ≥ 25 kg/m<sup>2</sup>. MEDLINE, Embase, and CENTRAL were searched from inception to September 2025. Screening, data extraction, and risk of bias assessment were performed in duplicate. Sleep was examined either as an exposure or as an intervention component. A narrative synthesis was conducted using the RU-SATED framework and stratified by sleep exposure versus sleep intervention studies.<h4>Results</h4>Thirty studies (13 randomized controlled trials and 17 quasi-experimental studies; 10,944 participants from 13 countries) were included. Evidence was mixed across sleep dimensions. In behavioral weight loss interventions, sleep manipulation studies suggested that sleep restriction reduced fat loss, whereas observational studies reported inconsistent associations between sleep duration and weight loss. Limited evidence suggested that greater sleep satisfaction and higher sleep efficiency may support weight loss, with approximately half of the studies reporting positive associations. Evidence for sleep regularity, timing, and alertness was sparse and inconsistent because of the small number of studies and methodological heterogeneity.<h4>Conclusion</h4>Sleep satisfaction and sleep efficiency may support weight loss in behavioral interventions, whereas sleep duration shows inconsistent associations and sleep restriction may impair fat loss. Evidence for sleep regularity, timing, and alertness remains limited. High-quality experimental studies are needed to clarify the causal role of sleep health in weight loss outcomes.",
-          "ano": 2026,
-          "autores": "Duan L, Berryhill J, Dai N, Sica G, Chaput JP.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "SystematicReview",
-            "Review",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42478101/",
-          "score_prioridade_editorial": 75.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_41219733",
-          "doi": "10.1186/s12916-025-04411-5",
+          "paper_id": "pmid_36578889",
+          "doi": "10.15605/jafes.037.02.14",
           "fonte_origem": "PubMed",
           "fontes_encontradas": [
             "PubMed"
           ],
-          "titulo": "REM sleep reduction leads to fear overgeneralization via negatively modulating prefrontal theta oscillations.",
-          "abstract": "Fear overgeneralization, defined as the excessive fear response to non-threatening stimuli, is a hallmark of anxiety-related disorders. Sleep has long been recognized as a critical factor in the consolidation and processing of fear memories, with research suggesting that different sleep phases, particularly rapid eye movement (REM) and non-rapid eye movement (NREM) sleep, may have distinct roles. However, how sleep influences fear generalization remains largely unknown. We systematically investigated the dynamic effects of sleep phases and their associated neural oscillations on fear generalization recently after sleep manipulation and remotely 1 week later. In a randomized controlled between-subjects experiment, 126 participants were assigned to the four groups: total sleep deprivation (SD), early-night (dominated by NREM sleep) SD, late-night (dominated by REM sleep) SD, and total sleep. Participants completed the fear conditioning test before the sleep-manipulated night, the recent fear generalization test after sleep, and the remote fear generalization test 1 week later. Both neuroimaging data and behavioral data (subjective risk ratings and objective skin conductance responses) were collected synchronously to analyze brain functional changes during generalized stimuli processing. Sleep, particularly REM sleep phase, inhibits fear generalization, whereas late-night SD, by reducing REM sleep, induces fear overgeneralization comparable to total SD. The percentage of REM sleep was negatively associated with the degree of fear generalization and positively correlated with dorsolateral prefrontal cortex BOLD activity during the recent generalization test. Notably, prefrontal theta oscillations mediated 44% of REM sleep's effects on fear generalization. These findings demonstrate the essential role of post-conditioning REM sleep, particularly its reliance on theta oscillations in the frontal lobe, in mitigating fear overgeneralization.",
+          "titulo": "Efficacy and Safety of Semaglutide for Weight Loss in Obesity Without Diabetes: A Systematic Review and Meta-Analysis.",
+          "abstract": "The weight loss benefit of semaglutide in patients with diabetes is well-documented, but its clinical utility in treating obesity among patients without diabetes is less described. We therefore assessed the efficacy and safety of subcutaneous semaglutide as treatment for obesity in patients without diabetes. A comprehensive search of PubMed/MEDLINE, Cochrane and Google scholar was performed to identify trials on the efficacy and safety of subcutaneous semaglutide on patients with obesity without diabetes. Primary outcome was expressed as percent mean weight difference. Secondary outcomes including risk for gastrointestinal adverse events, discontinuation of treatment and serious adverse events were expressed as risk ratios. These were calculated using the random effects model. The study included 4 randomized controlled trials having a total of 3,613 individuals with obesity without diabetes. The mean difference for weight reduction was -11.85%, favoring semaglutide [95% confidence interval (CI) (-12.81,-10.90), p<0.00001]. Secondary outcomes showed that the risk of developing gastrointestinal adverse events was 1.59 times more likely with semaglutide (RR 1.59, 95%CI [1.34, 1.88], p<0.00001). Risk for discontinuation due to adverse events was twice as likely in the semaglutide group (RR 2.19, 95%CI [1.36,3.55], p=0.001) and the risk for serious adverse events was 1.6 times more likely for semaglutide (RR1.60, 95%CI [1.24, 2.07], p=0.0003). Serious events were mostly of gastrointestinal and hepatobiliary disorders such as acute pancreatitis and cholelithiasis. Among individuals with obesity without type 2 diabetes, subcutaneous semaglutide is effective for weight loss with an 11.85% reduction from baseline compared to placebo. This supports the use of semaglutide for weight management in obesity. However, risk of gastrointestinal adverse events, discontinuation of treatment and serious adverse events were higher in the semaglutide group versus placebo.",
+          "ano": 2022,
+          "autores": "Hanna Clementine Tan; Oliver Allan Dampil; Maricar Mae Marquez",
+          "periodico": "Journal of the ASEAN Federation of Endocrine Societies",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "rank_fonte": 4,
+          "tipos": [
+            "MetaAnalysis",
+            "SystematicReview",
+            "JournalArticle"
+          ],
+          "tipo_principal": "MetaAnalysis",
+          "desenho_estudo_rotulo": "Meta-análise",
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9758543/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/36578889/",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "sintese_evidencia",
+          "categoria_selecao_rotulo": "Revisão sistemática / meta-análise",
+          "criterio_selecao": "Revisão sistemática/meta-análise elegível.",
+          "ordem_selecao": 7,
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "oa_W3102426258",
+          "doi": "10.1056/nejmoa2028395",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "A Placebo-Controlled Trial of Subcutaneous Semaglutide in Nonalcoholic Steatohepatitis",
+          "abstract": "BACKGROUND: Nonalcoholic steatohepatitis (NASH) is a common disease that is associated with increased morbidity and mortality, but treatment options are limited. The efficacy and safety of the glucagon-like peptide-1 receptor agonist semaglutide in patients with NASH is not known. METHODS: We conducted a 72-week, double-blind phase 2 trial involving patients with biopsy-confirmed NASH and liver fibrosis of stage F1, F2, or F3. Patients were randomly assigned, in a 3:3:3:1:1:1 ratio, to receive once-daily subcutaneous semaglutide at a dose of 0.1, 0.2, or 0.4 mg or corresponding placebo. The primary end point was resolution of NASH with no worsening of fibrosis. The confirmatory secondary end point was an improvement of at least one fibrosis stage with no worsening of NASH. The analyses of these end points were performed only in patients with stage F2 or F3 fibrosis; other analyses were performed in all the patients. RESULTS: In total, 320 patients (of whom 230 had stage F2 or F3 fibrosis) were randomly assigned to receive semaglutide at a dose of 0.1 mg (80 patients), 0.2 mg (78 patients), or 0.4 mg (82 patients) or to receive placebo (80 patients). The percentage of patients in whom NASH resolution was achieved with no worsening of fibrosis was 40% in the 0.1-mg group, 36% in the 0.2-mg group, 59% in the 0.4-mg group, and 17% in the placebo group (P<0.001 for semaglutide 0.4 mg vs. placebo). An improvement in fibrosis stage occurred in 43% of the patients in the 0.4-mg group and in 33% of the patients in the placebo group (P = 0.48). The mean percent weight loss was 13% in the 0.4-mg group and 1% in the placebo group. The incidence of nausea, constipation, and vomiting was higher in the 0.4-mg group than in the placebo group (nausea, 42% vs. 11%; constipation, 22% vs. 12%; and vomiting, 15% vs. 2%). Malignant neoplasms were reported in 3 patients who received semaglutide (1%) and in no patients who received placebo. Overall, neoplasms (benign, malignant, or unspecified) were reported in 15% of the patients in the semaglutide groups and in 8% in the placebo group; no pattern of occurrence in specific organs was observed. CONCLUSIONS: This phase 2 trial involving patients with NASH showed that treatment with semaglutide resulted in a significantly higher percentage of patients with NASH resolution than placebo. However, the trial did not show a significant between-group difference in the percentage of patients with an improvement in fibrosis stage. (Funded by Novo Nordisk; ClinicalTrials.gov number, NCT02970942.).",
+          "ano": 2020,
+          "autores": "Philip N. Newsome; Kristine Buchholtz; Kenneth Cusi; et al.",
+          "periodico": "New England Journal of Medicine",
+          "citacoes_totais": 1994,
+          "citacoes_influentes": 0,
+          "rank_fonte": 4,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "https://www.nejm.org/doi/pdf/10.1056/NEJMoa2028395?articleTools=true",
+          "url_texto_completo": "https://doi.org/10.1056/nejmoa2028395",
+          "url_artigo": "https://doi.org/10.1056/nejmoa2028395",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 8,
+          "fontes_descoberta": [
+            "OpenAlex"
+          ]
+        },
+        {
+          "paper_id": "pmid_38952487",
+          "doi": "10.2147/dddt.s470826",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Clinical Pharmacokinetics of Semaglutide: A Systematic Review.",
+          "abstract": "The aim of this review was to provide all the pharmacokinetic data for semaglutide in humans concerning its pharmacokinetics after subcutaneously and oral applications in healthy and diseased populations, to provide recommendations for clinical use. The PubMed and Embase databases were searched to screen studies associated with the pharmacokinetics of semaglutide. The pharmacokinetic parameters included area under the curve plasma concentrations (AUC), maximal plasma concentration (Cmax), time to Cmax, half-life (t1/2), and clearance. The systematic literature search retrieved 17 articles including data on pharmacokinetic profiles after subcutaneously and oral applications of semaglutide, and at least one of the above pharmacokinetic parameter was reported in all included studies. Semaglutide has a predictable pharmacokinetic profile with a long t1/2 that allows for once-weekly subcutaneous administration. The AUC and Cmax of both oral and subcutaneous semaglutide increased with dose. Food and various dosing conditions including water volume and dosing schedules can affect the oral semaglutide exposure. There are limited drug-drug interactions and no dosing adjustments in patients with upper gastrointestinal disease, renal impairment or hepatic impairment. Body weight may affect semaglutide exposure, but further studies are needed to confirm this. This review encompasses all the pharmacokinetic data for subcutaneous and oral semaglutide in both healthy and diseased participants. The existing pharmacokinetic data can assist in developing and evaluating pharmacokinetic models of semaglutide and will help clinicians predict semaglutide dosages. In addition, it can also help optimize future clinical trials.",
+          "ano": 2024,
+          "autores": "Xi-Ding Yang; Yong-Yu Yang",
+          "periodico": "Drug design, development and therapy",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "rank_fonte": 5,
+          "tipos": [
+            "JournalArticle",
+            "SystematicReview"
+          ],
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11215664/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38952487/",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "sintese_evidencia",
+          "categoria_selecao_rotulo": "Revisão sistemática / meta-análise",
+          "criterio_selecao": "Revisão sistemática/meta-análise elegível.",
+          "ordem_selecao": 9,
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "oa_W3177122952",
+          "doi": "10.1056/nejmoa2107519",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "Tirzepatide versus Semaglutide Once Weekly in Patients with Type 2 Diabetes",
+          "abstract": "BACKGROUND: Tirzepatide is a dual glucose-dependent insulinotropic polypeptide and glucagon-like peptide-1 (GLP-1) receptor agonist that is under development for the treatment of type 2 diabetes. The efficacy and safety of once-weekly tirzepatide as compared with semaglutide, a selective GLP-1 receptor agonist, are unknown. METHODS: In an open-label, 40-week, phase 3 trial, we randomly assigned 1879 patients, in a 1:1:1:1 ratio, to receive tirzepatide at a dose of 5 mg, 10 mg, or 15 mg or semaglutide at a dose of 1 mg. At baseline, the mean glycated hemoglobin level was 8.28%, the mean age 56.6 years, and the mean weight 93.7 kg. The primary end point was the change in the glycated hemoglobin level from baseline to 40 weeks. RESULTS: The estimated mean change from baseline in the glycated hemoglobin level was -2.01 percentage points, -2.24 percentage points, and -2.30 percentage points with 5 mg, 10 mg, and 15 mg of tirzepatide, respectively, and -1.86 percentage points with semaglutide; the estimated differences between the 5-mg, 10-mg, and 15-mg tirzepatide groups and the semaglutide group were -0.15 percentage points (95% confidence interval [CI], -0.28 to -0.03; P = 0.02), -0.39 percentage points (95% CI, -0.51 to -0.26; P<0.001), and -0.45 percentage points (95% CI, -0.57 to -0.32; P<0.001), respectively. Tirzepatide at all doses was noninferior and superior to semaglutide. Reductions in body weight were greater with tirzepatide than with semaglutide (least-squares mean estimated treatment difference, -1.9 kg, -3.6 kg, and -5.5 kg, respectively; P<0.001 for all comparisons). The most common adverse events were gastrointestinal and were primarily mild to moderate in severity in the tirzepatide and semaglutide groups (nausea, 17 to 22% and 18%; diarrhea, 13 to 16% and 12%; and vomiting, 6 to 10% and 8%, respectively). Of the patients who received tirzepatide, hypoglycemia (blood glucose level, <54 mg per deciliter) was reported in 0.6% (5-mg group), 0.2% (10-mg group), and 1.7% (15-mg group); hypoglycemia was reported in 0.4% of those who received semaglutide. Serious adverse events were reported in 5 to 7% of the patients who received tirzepatide and in 3% of those who received semaglutide. CONCLUSIONS: In patients with type 2 diabetes, tirzepatide was noninferior and superior to semaglutide with respect to the mean change in the glycated hemoglobin level from baseline to 40 weeks. (Funded by Eli Lilly; SURPASS-2 ClinicalTrials.gov number, NCT03987919.).",
+          "ano": 2021,
+          "autores": "Juan P. Frías; Melanie J. Davies; Julio Rosenstock; et al.",
+          "periodico": "New England Journal of Medicine",
+          "citacoes_totais": 2004,
+          "citacoes_influentes": 0,
+          "rank_fonte": 5,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://figshare.com/articles/journal_contribution/Tirzepatide_versus_Semaglutide_Once_Weekly_in_Patients_with_Type_2_Diabetes/16972132",
+          "url_artigo": "https://doi.org/10.1056/nejmoa2107519",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 10,
+          "fontes_descoberta": [
+            "OpenAlex"
+          ]
+        },
+        {
+          "paper_id": "oa_W4386154055",
+          "doi": "10.1056/nejmoa2306963",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "Semaglutide in Patients with Heart Failure with Preserved Ejection Fraction and Obesity",
+          "abstract": "BACKGROUND: Heart failure with preserved ejection fraction is increasing in prevalence and is associated with a high symptom burden and functional impairment, especially in persons with obesity. No therapies have been approved to target obesity-related heart failure with preserved ejection fraction. METHODS: We randomly assigned 529 patients who had heart failure with preserved ejection fraction and a body-mass index (the weight in kilograms divided by the square of the height in meters) of 30 or higher to receive once-weekly semaglutide (2.4 mg) or placebo for 52 weeks. The dual primary end points were the change from baseline in the Kansas City Cardiomyopathy Questionnaire clinical summary score (KCCQ-CSS; scores range from 0 to 100, with higher scores indicating fewer symptoms and physical limitations) and the change in body weight. Confirmatory secondary end points included the change in the 6-minute walk distance; a hierarchical composite end point that included death, heart failure events, and differences in the change in the KCCQ-CSS and 6-minute walk distance; and the change in the C-reactive protein (CRP) level. RESULTS: The mean change in the KCCQ-CSS was 16.6 points with semaglutide and 8.7 points with placebo (estimated difference, 7.8 points; 95% confidence interval [CI], 4.8 to 10.9; P<0.001), and the mean percentage change in body weight was -13.3% with semaglutide and -2.6% with placebo (estimated difference, -10.7 percentage points; 95% CI, -11.9 to -9.4; P<0.001). The mean change in the 6-minute walk distance was 21.5 m with semaglutide and 1.2 m with placebo (estimated difference, 20.3 m; 95% CI, 8.6 to 32.1; P<0.001). In the analysis of the hierarchical composite end point, semaglutide produced more wins than placebo (win ratio, 1.72; 95% CI, 1.37 to 2.15; P<0.001). The mean percentage change in the CRP level was -43.5% with semaglutide and -7.3% with placebo (estimated treatment ratio, 0.61; 95% CI, 0.51 to 0.72; P<0.001). Serious adverse events were reported in 35 participants (13.3%) in the semaglutide group and 71 (26.7%) in the placebo group. CONCLUSIONS: In patients with heart failure with preserved ejection fraction and obesity, treatment with semaglutide (2.4 mg) led to larger reductions in symptoms and physical limitations, greater improvements in exercise function, and greater weight loss than placebo. (Funded by Novo Nordisk; STEP-HFpEF ClinicalTrials.gov number, NCT04788511.).",
+          "ano": 2023,
+          "autores": "Mikhail Kosiborod; Steen Z. Abildstrøm; Barry A. Borlaug; et al.",
+          "periodico": "New England Journal of Medicine",
+          "citacoes_totais": 1585,
+          "citacoes_influentes": 0,
+          "rank_fonte": 6,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "https://www.nejm.org/doi/pdf/10.1056/NEJMoa2306963",
+          "url_texto_completo": "https://doi.org/10.1056/nejmoa2306963",
+          "url_artigo": "https://doi.org/10.1056/nejmoa2306963",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 11,
+          "fontes_descoberta": [
+            "OpenAlex"
+          ]
+        },
+        {
+          "paper_id": "pmid_38629387",
+          "doi": "10.1080/14656566.2024.2343092",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "A systematic review of the effect of semaglutide on lean mass: insights from clinical trials.",
+          "abstract": "Semaglutide, a glucagon-like peptide-1 receptor agonist, is associated with significant weight loss, yet its impact on lean body mass remains insufficiently understood. This review investigates the effect of semaglutide on lean mass in the context of obesity management. This study investigates through different databases (PubMed, Elsevier, and Google Scholar) from 2016 for randomized control trials (RCTs) or observational studies that assessed the use of semaglutide in overweight or obese patients, regardless of whether they have type 2 diabetes or not. The studies compared semaglutide to a placebo or alternative medications. Six studies with 1,541 overweight or obese adults were included, and significant weight reductions were observed primarily due to fat mass loss. While the lean mass remained stable in some cases, notable reductions ranging from almost 0% to 40% of total weight reduction were observed in others. Noteworthy decreases in lean mass were particularly evident in larger trials, yet the proportion of lean mass relative to total body mass increased, suggesting a positive overall outcome. Semaglutide displays potential for weight loss primarily through fat mass reduction. However, concerns arise from notable reductions in lean mass, especially in trials with a larger number of patients.",
+          "ano": 2024,
+          "autores": "Alexia Bikou; Foteini Dermiki-Gkana; Michail Penteris; et al.",
+          "periodico": "Expert opinion on pharmacotherapy",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "rank_fonte": 7,
+          "tipos": [
+            "SystematicReview",
+            "JournalArticle"
+          ],
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38629387/",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "sintese_evidencia",
+          "categoria_selecao_rotulo": "Revisão sistemática / meta-análise",
+          "criterio_selecao": "Revisão sistemática/meta-análise elegível.",
+          "ordem_selecao": 12,
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "oa_W4398781461",
+          "doi": "10.1056/nejmoa2403347",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "Effects of Semaglutide on Chronic Kidney Disease in Patients with Type 2 Diabetes",
+          "abstract": "Background Patients with type 2 diabetes and chronic kidney disease are at high risk for kidney failure, cardiovascular events, and death. Whether treatment with semaglutide would mitigate these risks is unknown. Methods We randomly assigned patients with type 2 diabetes and chronic kidney disease (defined by an estimated glomerular filtration rate [eGFR] of 50 to 75 ml per minute per 1.73 m 2 of body-surface area and a urinary albumin-to-creatinine ratio [with albumin measured in milligrams and creatinine measured in grams] of >300 and <5000 or an eGFR of 25 to <50 ml per minute per 1.73 m 2 and a urinary albumin-to-creatinine ratio of >100 and <5000) to receive subcutaneous semaglutide at a dose of 1.0 mg weekly or placebo. The primary outcome was major kidney disease events, a composite of the onset of kidney failure (dialysis, transplantation, or an eGFR of <15 ml per minute per 1.73 m 2 ), at least a 50% reduction in the eGFR from baseline, or death from kidney-related or cardiovascular causes. Prespecified confirmatory secondary outcomes were tested hierarchically. Results Among the 3533 participants who underwent randomization (1767 in the semaglutide group and 1766 in the placebo group), median follow-up was 3.4 years, after early trial cessation was recommended at a prespecified interim analysis. The risk of a primary-outcome event was 24% lower in the semaglutide group than in the placebo group (331 vs. 410 first events; hazard ratio, 0.76; 95% confidence interval [CI], 0.66 to 0.88; P=0.0003). Results were similar for a composite of the kidney-specific components of the primary outcome (hazard ratio, 0.79; 95% CI, 0.66 to 0.94) and for death from cardiovascular causes (hazard ratio, 0.71; 95% CI, 0.56 to 0.89). The results for all confirmatory secondary outcomes favored semaglutide: the mean annual eGFR slope was less steep (indicating a slower decrease) by 1.16 ml per minute per 1.73 m 2 in the semaglutide group (P<0.001), the risk of major cardiovascular events 18% lower (hazard ratio, 0.82; 95% CI, 0.68 to 0.98; P=0.029), and the risk of death from any cause 20% lower (hazard ratio, 0.80; 95% CI, 0.67 to 0.95, P=0.01). Serious adverse events were reported in a lower percentage of participants in the semaglutide group than in the placebo group (49.6% vs. 53.8%). Conclusions Semaglutide reduced the risk of clinically important kidney outcomes and death from cardiovascular causes in patients with type 2 diabetes and chronic kidney disease. (Funded by Novo Nordisk; FLOW ClinicalTrials.gov number, NCT03819153 .)",
+          "ano": 2024,
+          "autores": "Vlado Perkovic; Katherine R. Tuttle; Peter Rossing; et al.",
+          "periodico": "New England Journal of Medicine",
+          "citacoes_totais": 1760,
+          "citacoes_influentes": 0,
+          "rank_fonte": 7,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": false,
+          "url_pdf": "",
+          "url_texto_completo": "",
+          "url_artigo": "https://doi.org/10.1056/nejmoa2403347",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 13,
+          "fontes_descoberta": [
+            "OpenAlex"
+          ]
+        },
+        {
+          "paper_id": "oa_W2924479779",
+          "doi": "10.3389/fendo.2019.00155",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "The Discovery and Development of Liraglutide and Semaglutide",
+          "abstract": "The discovery of glucagon-like peptide-1 (GLP-1), an incretin hormone with important effects on glycemic control and body weight regulation, led to efforts to extend its half-life and make it therapeutically effective in people with type 2 diabetes (T2D). The development of short- and then long-acting GLP-1 receptor agonists (GLP-1RAs) followed. Our article charts the discovery and development of the long-acting GLP-1 analogs liraglutide and, subsequently, semaglutide. We examine the chemistry employed in designing liraglutide and semaglutide, the human and non-human studies used to investigate their cellular targets and pharmacological effects, and ongoing investigations into new applications and formulations of these drugs. Reversible binding to albumin was used for the systemic protraction of liraglutide and semaglutide, with optimal fatty acid and linker combinations identified to maximize albumin binding while maintaining GLP-1 receptor (GLP-1R) potency. GLP-1RAs mediate their effects via this receptor, which is expressed in the pancreas, gastrointestinal tract, heart, lungs, kidneys, and brain. GLP-1Rs in the pancreas and brain have been shown to account for the respective improvements in glycemic control and body weight that are evident with liraglutide and semaglutide. Both liraglutide and semaglutide also positively affect cardiovascular (CV) outcomes in individuals with T2D, although the precise mechanism is still being explored. Significant weight loss, through an effect to reduce energy intake, led to the approval of liraglutide (3.0 mg) for the treatment of obesity, an indication currently under investigation with semaglutide. Other ongoing investigations with semaglutide include the treatment of non-alcoholic fatty liver disease (NASH) and its use in an oral formulation for the treatment of T2D. In summary, rational design has led to the development of two long-acting GLP-1 analogs, liraglutide and semaglutide, that have made a vast contribution to the management of T2D in terms of improvements in glycemic control, body weight, blood pressure, lipids, beta-cell function, and CV outcomes. Furthermore, the development of an oral formulation for semaglutide may provide individuals with additional benefits in relation to treatment adherence. In addition to T2D, liraglutide is used in the treatment of obesity, while semaglutide is currently under investigation for use in obesity and NASH.",
+          "ano": 2019,
+          "autores": "Lotte Bjerre Knudsen; Jesper Lau",
+          "periodico": "Frontiers in Endocrinology",
+          "citacoes_totais": 954,
+          "citacoes_influentes": 0,
+          "rank_fonte": 8,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "https://www.frontiersin.org/articles/10.3389/fendo.2019.00155/pdf",
+          "url_texto_completo": "https://doi.org/10.3389/fendo.2019.00155",
+          "url_artigo": "https://doi.org/10.3389/fendo.2019.00155",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 14,
+          "fontes_descoberta": [
+            "OpenAlex"
+          ]
+        },
+        {
+          "paper_id": "pmid_28110911",
+          "doi": "10.1016/s2213-8587(17)30013-x",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "OpenAlex",
+            "PubMed"
+          ],
+          "titulo": "Efficacy and safety of once-weekly semaglutide monotherapy versus placebo in patients with type 2 diabetes (SUSTAIN 1): a double-blind, randomised, placebo-controlled, parallel-group, multinational, multicentre phase 3a trial.",
+          "abstract": "Despite a broad range of pharmacological options for the treatment of type 2 diabetes, optimum glycaemic control remains challenging for many patients and new therapies are necessary. Semaglutide is a glucagon-like peptide-1 (GLP-1) analogue in phase 3 development for type 2 diabetes. We assessed the efficacy, safety, and tolerability of semaglutide monotherapy, compared with placebo, in treatment-naive patients with type 2 diabetes who had insufficient glycaemic control with diet and exercise alone. We did a double-blind, randomised, parallel-group, international, placebo-controlled phase 3a trial (SUSTAIN 1) at 72 sites in Canada, Italy, Japan, Mexico, Russia, South Africa, UK, and USA (including hospitals, clinical research units, and private offices). Eligible participants were treatment-naive individuals aged 18 years or older with type 2 diabetes treated with only diet and exercise alone for at least 30 days before screening, with a baseline HbA1c of 7·0%-10·0% (53-86 mmol/mol). We randomly assigned participants (2:2:1:1) to either once-weekly subcutaneously injected semaglutide (0·5 mg or 1·0 mg), or volume-matched placebo (0·5 mg or 1·0 mg), for 30 weeks via prefilled PDS290 pen-injectors. Participants did their own injections and were encouraged to administer them on the same day of each week in the same area of their body; the time of day and proximity of meal times was not specified. We did the randomisation with an interactive voice or web response system. Investigators, participants, and the funder of the study remained masked throughout the trial. The primary endpoint was the change in mean HbA1c from baseline to week 30, and the confirmatory secondary endpoint was the change in mean bodyweight from baseline to week 30. We assessed efficacy and safety in the modified intention-to-treat population (ie, all participants who were exposed to at least one dose of study drug); both placebo groups were pooled for assessment. This trial was registered with ClinicalTrials.gov, number NCT02054897. Between February 3, 2014, and August 21, 2014, we randomly assigned 388 participants to treatment; 387 received at least one dose of study medication (128 0·5 mg semaglutide, 130 1·0 mg semaglutide, 129 placebo). 17 (13%) of those assigned to 0·5 mg semaglutide, 16 (12%) assigned to 1·0 mg semaglutide, and 14 (11%) assigned to placebo discontinued treatment; the main reason for discontinuation was gastrointestinal adverse events such as nausea. Mean baseline HbA1c was 8·05% (SD 0·85); at week 30, HbA1c significantly decreased by 1·45% (95% CI -1·65 to -1·26) with 0·5 mg semaglutide (estimated treatment difference vs placebo -1·43%, 95% CI -1·71 to -1·15; p<0·0001), significantly decreased by 1·55% (-1·74 to -1·36) with 1·0 mg semaglutide (estimated treatment difference vs placebo -1·53%, -1·81 to -1·25; p<0·0001), and non-significantly decreased by 0·02% (-0·23 to 0·18) with placebo. Mean baseline bodyweight was 91·93 kg (SD 23·83); at week 30, bodyweight significantly decreased by 3·73 kg (95% CI -4·54 to -2·91) with 0·5 mg semaglutide (estimated treatment difference vs placebo -2·75 kg, 95% CI -3·92 to -1·58; p<0·0001), significantly decreased by 4·53 kg (-5·34 to -3·72) with 1·0 mg semaglutide (estimated treatment difference vs placebo -3·56 kg, -4·74 to -2·38; p<0·0001), and non-significantly decreased by 0·98 kg (-1·82 to -0·13) with placebo. No deaths were reported in any of the study groups and most reported adverse events were of mild or moderate severity. The most frequently reported adverse events in both semaglutide groups were gastrointestinal in nature: nausea was reported in 26 (20%) who received 0·5 mg semaglutide, 31 (24%) who received 1·0 mg semaglutide, and 10 (8%) who received placebo, and diarrhoea was reported in 16 (13%) who received 0·5 mg semaglutide, 14 (11%) who received 1·0 mg semaglutide, and three (2%) who received placebo. Semaglutide significantly improved HbA1c and bodyweight in patients with type 2 diabetes compared with placebo, and showed a similar safety profile to currently available GLP-1 receptor agonists, representing a potential treatment option for such patients. Novo Nordisk A/S, Denmark.",
+          "ano": 2017,
+          "autores": "Christopher Sorli; Shin-Ichi Harashima; George M Tsoukas; et al.",
+          "periodico": "The lancet. Diabetes & endocrinology",
+          "citacoes_totais": 731,
+          "citacoes_influentes": 0,
+          "rank_fonte": 8,
+          "tipos": [
+            "JournalArticle",
+            "RCT"
+          ],
+          "tipo_principal": "RCT",
+          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://cronfa.swan.ac.uk/Record/cronfa31739",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/28110911/",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 15,
+          "fontes_descoberta": [
+            "OpenAlex",
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "oa_W3138431202",
+          "doi": "10.1001/jama.2021.3224",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "Effect of Continued Weekly Subcutaneous Semaglutide vs Placebo on Weight Loss Maintenance in Adults With Overweight or Obesity",
+          "abstract": "Importance: The effect of continuing vs withdrawing treatment with semaglutide, a glucagon-like peptide 1 receptor agonist, on weight loss maintenance in people with overweight or obesity is unknown. Objective: To compare continued once-weekly treatment with subcutaneous semaglutide, 2.4 mg, with switch to placebo for weight maintenance (both with lifestyle intervention) in adults with overweight or obesity after a 20-week run-in with subcutaneous semaglutide titrated to 2.4 mg weekly. Design, Setting, and Participants: Randomized, double-blind, 68-week phase 3a withdrawal study conducted at 73 sites in 10 countries from June 2018 to March 2020 in adults with body mass index of at least 30 (or ≥27 with ≥1 weight-related comorbidity) and without diabetes. Interventions: A total of 902 participants received once-weekly subcutaneous semaglutide during run-in. After 20 weeks (16 weeks of dose escalation; 4 weeks of maintenance dose), 803 participants (89.0%) who reached the 2.4-mg/wk semaglutide maintenance dose were randomized (2:1) to 48 weeks of continued subcutaneous semaglutide (n = 535) or switched to placebo (n = 268), plus lifestyle intervention in both groups. Main Outcomes and Measures: The primary end point was percent change in body weight from week 20 to week 68; confirmatory secondary end points were changes in waist circumference, systolic blood pressure, and physical functioning (assessed using the Short Form 36 Version 2 Health Survey, Acute Version [SF-36]). Results: Among 803 study participants who completed the 20-week run-in period (with a mean weight loss of 10.6%) and were randomized (mean age, 46 [SD, 12] years; 634 [79%] women; mean body weight, 107.2 kg [SD, 22.7 kg]), 787 participants (98.0%) completed the trial and 741 (92.3%) completed treatment. With continued semaglutide, mean body weight change from week 20 to week 68 was -7.9% vs +6.9% with the switch to placebo (difference, -14.8 [95% CI, -16.0 to -13.5] percentage points; P < .001). Waist circumference (-9.7 cm [95% CI, -10.9 to -8.5 cm]), systolic blood pressure (-3.9 mm Hg [95% CI, -5.8 to -2.0 mm Hg]), and SF-36 physical functioning score (2.5 [95% CI, 1.6-3.3]) also improved with continued subcutaneous semaglutide vs placebo (all P < .001). Gastrointestinal events were reported in 49.1% of participants who continued subcutaneous semaglutide vs 26.1% with placebo; similar proportions discontinued treatment because of adverse events with continued semaglutide (2.4%) and placebo (2.2%). Conclusions and Relevance: Among adults with overweight or obesity who completed a 20-week run-in period with subcutaneous semaglutide, 2.4 mg once weekly, maintaining treatment with semaglutide compared with switching to placebo resulted in continued weight loss over the following 48 weeks. Trial Registration: ClinicalTrials.gov Identifier: NCT03548987.",
+          "ano": 2021,
+          "autores": "Domenica Rubino; Domenica Rubino; Niclas Abrahamsson; et al.",
+          "periodico": "JAMA",
+          "citacoes_totais": 1349,
+          "citacoes_influentes": 0,
+          "rank_fonte": 9,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "https://jamanetwork.com/journals/jama/articlepdf/2777886/jama_rubino_2021_oi_210023_1618250221.55359.pdf",
+          "url_texto_completo": "https://doi.org/10.1001/jama.2021.3224",
+          "url_artigo": "https://doi.org/10.1001/jama.2021.3224",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 16,
+          "fontes_descoberta": [
+            "OpenAlex"
+          ]
+        },
+        {
+          "paper_id": "pmid_38574433",
+          "doi": "10.1016/j.redox.2024.103129",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "OpenAlex",
+            "PubMed"
+          ],
+          "titulo": "Semaglutide attenuates doxorubicin-induced cardiotoxicity by ameliorating BNIP3-Mediated mitochondrial dysfunction.",
+          "abstract": "AIMS: Doxorubicin is a powerful chemotherapeutic agent for cancer, whose use is limited due to its potential cardiotoxicity. Semaglutide (SEMA), a novel analog of glucagon-like peptide-1 (GLP-1), has received widespread attention for the treatment of diabetes. However, increasing evidence has highlighted its potential therapeutic benefits on cardiac function. Therefore, the objective of this study was to examine the efficacy of semaglutide in ameliorating doxorubicin-induced cardiotoxicity. METHODS AND RESULTS: Doxorubicin-induced cardiotoxicity is an established model to study cardiac function. Cardiac function was studied by transthoracic echocardiography and invasive hemodynamic monitoring. The results showed that semaglutide significantly ameliorated doxorubicin-induced cardiac dysfunction. RNA sequencing suggested that Bnip3 is the candidate gene that impaired the protective effect of semaglutide in doxorubicin-induced cardiotoxicity. To determine the role of BNIP3 on the effect of semaglutide in doxorubicin-induced cardiotoxicity, BNIP3 with adeno-associated virus serotype 9 (AAV9) expressing cardiac troponin T (cTnT) promoter was injected into tail vein of C57/BL6J mice to overexpress BNIP3, specifically in the heart. Overexpression of BNIP3 prevented the improvement in cardiac function caused by semaglutide. In vitro experiments showed that semaglutide, via PI3K/AKT pathway, reduced BNIP3 expression in the mitochondria, improving mitochondrial function. CONCLUSION: Semaglutide ameliorates doxorubicin-induced mitochondrial and cardiac dysfunction via PI3K/AKT pathway, by reducing BNIP3 expression in mitochondria. The improvement in mitochondrial function reduces doxorubicin-mediated cardiac injury and improves cardiac function. Therefore, semaglutide is a potential therapy to reduce doxorubicin-induced acute cardiotoxicity.",
+          "ano": 2024,
+          "autores": "Xiaoping Li; Wenbin Luo; Yang Tang; et al.",
+          "periodico": "Redox biology",
+          "citacoes_totais": 67,
+          "citacoes_influentes": 0,
+          "rank_fonte": 10,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11000183/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38574433/",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 17,
+          "fontes_descoberta": [
+            "OpenAlex",
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "oa_W4308053954",
+          "doi": "10.1056/nejmoa2208601",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "Once-Weekly Semaglutide in Adolescents with Obesity",
+          "abstract": "BACKGROUND: A once-weekly, 2.4-mg dose of subcutaneous semaglutide, a glucagon-like peptide-1 receptor agonist, is used to treat obesity in adults, but assessment of the drug in adolescents has been lacking. METHODS: In this double-blind, parallel-group, randomized, placebo-controlled trial, we enrolled adolescents (12 to <18 years of age) with obesity (a body-mass index [BMI] in the 95th percentile or higher) or with overweight (a BMI in the 85th percentile or higher) and at least one weight-related coexisting condition. Participants were randomly assigned in a 2:1 ratio to receive once-weekly subcutaneous semaglutide (at a dose of 2.4 mg) or placebo for 68 weeks, plus lifestyle intervention. The primary end point was the percentage change in BMI from baseline to week 68; the secondary confirmatory end point was weight loss of at least 5% at week 68. RESULTS: A total of 201 participants underwent randomization, and 180 (90%) completed treatment. All but one of the participants had obesity. The mean change in BMI from baseline to week 68 was -16.1% with semaglutide and 0.6% with placebo (estimated difference, -16.7 percentage points; 95% confidence interval [CI], -20.3 to -13.2; P<0.001). At week 68, a total of 95 of 131 participants (73%) in the semaglutide group had weight loss of 5% or more, as compared with 11 of 62 participants (18%) in the placebo group (estimated odds ratio, 14.0; 95% CI, 6.3 to 31.0; P<0.001). Reductions in body weight and improvement with respect to cardiometabolic risk factors (waist circumference and levels of glycated hemoglobin, lipids [except high-density lipoprotein cholesterol], and alanine aminotransferase) were greater with semaglutide than with placebo. The incidence of gastrointestinal adverse events was greater with semaglutide than with placebo (62% vs. 42%). Five participants (4%) in the semaglutide group and no participants in the placebo group had cholelithiasis. Serious adverse events were reported in 15 of 133 participants (11%) in the semaglutide group and in 6 of 67 participants (9%) in the placebo group. CONCLUSIONS: Among adolescents with obesity, once-weekly treatment with a 2.4-mg dose of semaglutide plus lifestyle intervention resulted in a greater reduction in BMI than lifestyle intervention alone. (Funded by Novo Nordisk; STEP TEENS ClinicalTrials.gov number, NCT04102189.).",
+          "ano": 2022,
+          "autores": "Daniel Weghuber; Timothy Barrett; Margarita Barrientos‐Pérez; et al.",
+          "periodico": "New England Journal of Medicine",
+          "citacoes_totais": 693,
+          "citacoes_influentes": 0,
+          "rank_fonte": 10,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": true,
+          "url_pdf": "https://www.nejm.org/doi/pdf/10.1056/NEJMoa2208601?articleTools=true",
+          "url_texto_completo": "https://doi.org/10.1056/nejmoa2208601",
+          "url_artigo": "https://doi.org/10.1056/nejmoa2208601",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 18,
+          "fontes_descoberta": [
+            "OpenAlex"
+          ]
+        },
+        {
+          "paper_id": "pmid_38613667",
+          "doi": "10.1007/s00125-024-06144-1",
+          "fonte_origem": "PubMed",
+          "fontes_encontradas": [
+            "PubMed"
+          ],
+          "titulo": "Subcutaneously administered tirzepatide vs semaglutide for adults with type 2 diabetes: a systematic review and network meta-analysis of randomised controlled trials.",
+          "abstract": "We conducted a systematic review and network meta-analysis to compare the efficacy and safety of s.c. administered tirzepatide vs s.c. administered semaglutide for adults of both sexes with type 2 diabetes mellitus. We searched PubMed and Cochrane up to 11 November 2023 for RCTs with an intervention duration of at least 12 weeks assessing s.c. tirzepatide at maintenance doses of 5 mg, 10 mg or 15 mg once weekly, or s.c. semaglutide at maintenance doses of 0.5 mg, 1.0 mg or 2.0 mg once weekly, in adults with type 2 diabetes, regardless of background glucose-lowering treatment. Eligible trials compared any of the specified doses of tirzepatide and semaglutide against each other, placebo or other glucose-lowering drugs. Primary outcomes were changes in HbA1c and body weight from baseline. Secondary outcomes were achievement of HbA1c target of ≤48 mmol/mol (≤6.5%) or <53 mmol/mol (<7.0%), body weight loss of at least 10%, and safety outcomes including gastrointestinal adverse events and severe hypoglycaemia. We used version 2 of the Cochrane risk-of-bias tool (ROB 2) to assess the risk of bias, conducted frequentist random-effects network meta-analyses and evaluated confidence in effect estimates utilising the Confidence In Network Meta-Analysis (CINeMA) framework. A total of 28 trials with 23,622 participants (44.2% female) were included. Compared with placebo, tirzepatide 15 mg was the most efficacious treatment in reducing HbA1c (mean difference -21.61 mmol/mol [-1.96%]) followed by tirzepatide 10 mg (-20.19 mmol/mol [-1.84%]), semaglutide 2.0 mg (-17.74 mmol/mol [-1.59%]), tirzepatide 5 mg (-17.60 mmol/mol [-1.60%]), semaglutide 1.0 mg (-15.25 mmol/mol [-1.39%]) and semaglutide 0.5 mg (-12.00 mmol/mol [-1.09%]). In between-drug comparisons, all tirzepatide doses were comparable with semaglutide 2.0 mg and superior to semaglutide 1.0 mg and 0.5 mg. Compared with placebo, tirzepatide was more efficacious than semaglutide for reducing body weight, with reductions ranging from 9.57 kg (tirzepatide 15 mg) to 5.27 kg (tirzepatide 5 mg). Semaglutide had a less pronounced effect, with reductions ranging from 4.97 kg (semaglutide 2.0 mg) to 2.52 kg (semaglutide 0.5 mg). In between-drug comparisons, tirzepatide 15 mg, 10 mg and 5 mg demonstrated greater efficacy than semaglutide 2.0 mg, 1.0 mg and 0.5 mg, respectively. Both drugs increased incidence of gastrointestinal adverse events compared with placebo, while neither tirzepatide nor semaglutide increased the risk of serious adverse events or severe hypoglycaemia. Our data show that s.c. tirzepatide had a more pronounced effect on HbA1c and weight reduction compared with s.c. semaglutide in people with type 2 diabetes. Both drugs, particularly higher doses of tirzepatide, increased gastrointestinal adverse events. PROSPERO registration no. CRD42022382594.",
+          "ano": 2024,
+          "autores": "Thomas Karagiannis; Konstantinos Malandris; Ioannis Avgerinos; et al.",
+          "periodico": "Diabetologia",
+          "citacoes_totais": 0,
+          "citacoes_influentes": 0,
+          "rank_fonte": 11,
+          "tipos": [
+            "JournalArticle",
+            "SystematicReview"
+          ],
+          "tipo_principal": "SystematicReview",
+          "desenho_estudo_rotulo": "Revisão sistemática",
+          "open_access": true,
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11153294/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38613667/",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
+          },
+          "categoria_selecao": "sintese_evidencia",
+          "categoria_selecao_rotulo": "Revisão sistemática / meta-análise",
+          "criterio_selecao": "Revisão sistemática/meta-análise elegível.",
+          "ordem_selecao": 19,
+          "fontes_descoberta": [
+            "PubMed"
+          ]
+        },
+        {
+          "paper_id": "oa_W4409963211",
+          "doi": "10.1056/nejmoa2413258",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "Phase 3 Trial of Semaglutide in Metabolic Dysfunction–Associated Steatohepatitis",
+          "abstract": "BACKGROUND: Semaglutide, a glucagon-like peptide-1 receptor agonist, is a candidate for the treatment of metabolic dysfunction-associated steatohepatitis (MASH). METHODS: In this ongoing phase 3, multicenter, randomized, double-blind, placebo-controlled trial, we assigned 1197 patients with biopsy-defined MASH and fibrosis stage 2 or 3 in a 2:1 ratio to receive once-weekly subcutaneous semaglutide at a dose of 2.4 mg or placebo for 240 weeks. The results of a planned interim analysis conducted at week 72 involving the first 800 patients are reported here (part 1). The primary end points for part 1 were the resolution of steatohepatitis without worsening of liver fibrosis and reduction in liver fibrosis without worsening of steatohepatitis. RESULTS: Resolution of steatohepatitis without worsening of fibrosis occurred in 62.9% of the 534 patients in the semaglutide group and in 34.3% of the 266 patients in the placebo group (estimated difference, 28.7 percentage points; 95% confidence interval [CI], 21.1 to 36.2; P<0.001). A reduction in liver fibrosis without worsening of steatohepatitis was reported in 36.8% of the patients in the semaglutide group and in 22.4% of those in the placebo group (estimated difference, 14.4 percentage points; 95% CI, 7.5 to 21.3; P<0.001). Results for the three secondary outcomes that were included in the plan to adjust for multiple testing were as follows: combined resolution of steatohepatitis and reduction in liver fibrosis was reported in 32.7% of the patients in the semaglutide group and in 16.1% of those in the placebo group (estimated difference, 16.5 percentage points; 95% CI, 10.2 to 22.8; P<0.001). The mean change in body weight was -10.5% with semaglutide and -2.0% with placebo (estimated difference, -8.5 percentage points; 95% CI, -9.6 to -7.4; P<0.001). Mean changes in bodily pain scores did not differ significantly between the two groups. Gastrointestinal adverse events were more common in the semaglutide group. CONCLUSIONS: In patients with MASH and moderate or advanced liver fibrosis, once-weekly semaglutide at a dose of 2.4 mg improved liver histologic results. (Funded by Novo Nordisk; ClinicalTrials.gov number, NCT04822181.).",
           "ano": 2025,
-          "autores": "Tianqi Di; Jianfeng Liu; Wangyue Liu; et al.",
-          "periodico": "BMC medicine",
-          "citacoes_totais": 0,
+          "autores": "Arun J. Sanyal; Philip N. Newsome; Iris Kliers; et al.",
+          "periodico": "New England Journal of Medicine",
+          "citacoes_totais": 911,
           "citacoes_influentes": 0,
+          "rank_fonte": 11,
           "tipos": [
-            "JournalArticle",
-            "RCT"
-          ],
-          "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC12607157/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/41219733/",
-          "score_prioridade_editorial": 74.5,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 18.5,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 8.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "Texto completo aberto identificado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_38091060",
-          "doi": "10.1007/s00417-023-06338-0",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "Association between sleep and myopia in children and adolescents: a systematic review and meta-analysis.",
-          "abstract": "There is a scarcity of literature focusing on sleep's impact on myopia in children despite an epidemic rise of myopia among the age group and the importance of early prevention. As such, this systematic review-meta-analysis aims to evaluate the association between various aspects of sleep and myopia in children and adolescents aged 0-19 years. We searched PubMed, EMBASE, and Cochrane Library on 08/12/2022 for studies reporting sleep in relation to myopia among children and adolescents. Myopia was defined as spherical equivalent refraction < -0.5 diopter. The primary outcome was the relationship between sleep duration and myopia prevalence. Secondary outcomes include the effect of sleep quality, bedtime, and waketime on myopia prevalence, incidence, and progression. Odds ratio (OR) was estimated with a 95% confidence interval (95% CI). Eighteen studies (49,277 participants) were included in the review, and six studies (14,116 participants) were included in the meta-analysis for the primary outcome. There was no significant correlation between sleep and myopia prevalence (OR = 0.905, 95% CI = 0.782 to 1.047). Some studies suggested that better sleep quality (2 of 6 studies), earlier bedtime (3 of 5 studies), and later waketimes (2 of 3 studies) had protective effects on myopia. Sleep duration did not affect myopia prevalence in children, while other aspects of sleep had plausible but inconclusive impacts on myopia development and progression. More research with diverse populations and standardized methods of reporting is needed.",
-          "ano": 2024,
-          "autores": "Eric Jin; Chae Eun Lee; Hengtong Li; et al.",
-          "periodico": "Graefe's archive for clinical and experimental ophthalmology = Albrecht von Graefes Archiv fur klinische und experimentelle Ophthalmologie",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "SystematicReview",
-            "JournalArticle",
-            "MetaAnalysis"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38091060/",
-          "score_prioridade_editorial": 72.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 17.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_39119732",
-          "doi": "10.1111/jocn.17401",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "A qualitative systematic review of adolescent's perceptions of sleep: Awareness of, barriers to and strategies for promoting healthy sleep patterns.",
-          "abstract": "To consolidate adolescents' perspectives regarding various aspects of sleep and offer insights to promote healthier sleep habits during their critical developmental years. Six electronic databases (PubMed, CINAHL, Embase, Scopus, PsycINFO and Web of Science) were searched from their inception dates to June 2023. Data were extracted and meta-summarised using Sandelowski and Barroso's approach and synthesised using Thomas and Harden's thematic analysis framework. Meta-synthesis from 11 peer-reviewed published studies identified four main themes: (1) Awareness and understanding of sleep's significance, (2) The shadows and radiance of slumber, (3) Traversing the sleepscape: trouble bubbles and (4) Illuminating the path: Guiding lights to enhanced sleep. Our review findings suggest a lack of awareness and guidance regarding the significance of sleep and the cultivation of good sleep habits among adolescents. Identified barriers to adequate sleep encompass various factors, including overthinking, poor habits, family/environmental influences, extensive technology use, peer pressure, the fear of missing out, academic demands and involvement in extracurricular activities. Strategies to improve adolescents' sleep health involve multiple sleep strategies, including sleep education, workshops/seminars, parental involvement, incorporating digital well-being practices, the promotion of relaxation techniques and the provision of essential resources. Prioritising sleep health and implementing targeted interventions are key steps to empower adolescents, create supportive environments and shape a healthier future generation. Future research endeavours should focus on evaluating the effectiveness of interventions and exploring the influence of cultural factors. There exists a notable lack of awareness and guidance regarding the significance of sleep and the cultivation of good sleep habits among adolescents. Barriers to achieving adequate sleep among adolescents include overthinking, poor habits, family/environmental influences, extensive technology use, peer pressure, the fear of missing out, academic demands and involvement in extracurricular activities. The collaboration between healthcare institutions, professionals and educational institutions is crucial to facilitate (1) the implementation of sleep education workshops/seminars targeting adolescents, (2) increased parental involvement and role-modelling to instil good sleep practices among adolescents and (3) enhanced integration of digital well-being practices, the promotion of relaxation techniques and accessibility to essential sleep hygiene resources. Preferred Reporting Items for Systematic Reviews and Meta-Analyses (PRISMA) guidelines. No patient or public contribution. This review was registered on the Prospective Register of Systematic Reviews (CRD42023403775).",
-          "ano": 2024,
-          "autores": "Yumi Yeo; John Chee Meng Wong; Travis Lanz-Brian Pereira; et al.",
-          "periodico": "Journal of clinical nursing",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "SystematicReview"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/39119732/",
-          "score_prioridade_editorial": 72.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 17.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_32414060",
-          "doi": "10.3390/s20102770",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "A Systematic Review of Closed-Loop Feedback Techniques in Sleep Studies-Related Issues and Future Directions.",
-          "abstract": "Advances in computer processing technology have enabled researchers to analyze real-time brain activity and build real-time closed-loop paradigms. In many fields, the effectiveness of these closed-loop protocols has proven to be better than that of the simple open-loop paradigms. Recently, sleep studies have attracted much attention as one possible application of closed-loop paradigms. To date, several studies that used closed-loop paradigms have been reported in the sleep-related literature and recommend a closed-loop feedback system to enhance specific brain activity during sleep, which leads to improvements in sleep's effects, such as memory consolidation. However, to the best of our knowledge, no report has reviewed and discussed the detailed technical issues that arise in designing sleep closed-loop paradigms. In this paper, we reviewed the most recent reports on sleep closed-loop paradigms and offered an in-depth discussion of some of their technical issues. We found 148 journal articles strongly related with 'sleep and stimulation' and reviewed 20 articles on closed-loop feedback sleep studies. We focused on human sleep studies conducting any modality of feedback stimulation. Then we introduced the main component of the closed-loop system and summarized several open-source libraries, which are widely used in closed-loop systems, with step-by-step guidelines for closed-loop system implementation for sleep. Further, we proposed future directions for sleep research with closed-loop feedback systems, which provide some insight into closed-loop feedback systems.",
-          "ano": 2020,
-          "autores": "Jinyoung Choi; Moonyoung Kwon; Sung Chan Jun",
-          "periodico": "Sensors (Basel, Switzerland)",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "SystematicReview"
-          ],
-          "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7285770/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/32414060/",
-          "score_prioridade_editorial": 72.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 11.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 8.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
-          "acesso_status": "Texto completo aberto identificado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_35153168",
-          "doi": "10.1016/j.sleh.2021.12.001",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "Waking up to sleep's role in obesity and blood pressure among Black adolescent girls in low-income, US urban communities: A longitudinal analysis.",
-          "abstract": "To identify longitudinal bidirectional associations between unique sleep trajectories and obesity and hypertension among Black, adolescent girls. Longitudinal data were from a randomized controlled trial (2009-2013) implemented in schools serving low-income communities aimed at preventing obesity among adolescent girls (mean age = 12.2 years (standard deviation ± 0.72). Nocturnal sleep data were extracted from accelerometers at T1 (enrollment, n = 470), T2 (6-month, n = 348), and T3 (18-month follow-up, n = 277); height and weight were measured at T1-T3; and systolic/diastolic blood pressure at T1 and T3 using an oscillometric monitor. Multilevel models examined longitudinal associations. Finite mixture models identified sleep trajectory groups. Structural equation models examined whether T1 chronic disease risk predicted sleep profiles, and conversely, if sleep trajectories predicted T3 chronic disease risk. Data were analyzed in 2021. For each additional hour of sleep and 1% increase in efficiency there was a 7% lower risk of overweight/obesity at T1 and 6% lower risk at T2, but not at T3. Four sleep trajectories emerged: Worsened, Irregular, Improved, and Regular, with no demographic or metabolic differences between the trajectories. Improved sleep trajectory predicted lower diastolic percentile at T3 (b = -8.81 [95% confidence interval -16.23, -1.40]). Group-based trajectories of sleep duration and quality provide information on modifiable factors that can be targeted in interventions to evaluate their impact on reducing chronic diseases and addressing disparities. Additional research is needed on samples beyond those recruited in the context of an intervention study.",
-          "ano": 2022,
-          "autores": "Angela Cristina Bizzotto Trude; Bridget Armstrong; Adriana Kramer Fiala Machado; et al.",
-          "periodico": "Sleep health",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "RCT"
-          ],
-          "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9019769/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35153168/",
-          "score_prioridade_editorial": 70.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 14.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 8.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "Texto completo aberto identificado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_35982481",
-          "doi": "10.1186/s40101-022-00303-2",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "Validity of an algorithm for determining sleep/wake states using FS-760 in school-aged children.",
-          "abstract": "Actigraphy is a method used for determining sleep (S)/wakefulness (W) by actigraph, a device equipped with a built-in accelerometer and an algorithm validated for each device. The S/W determination algorithm for the waist-worn actigraph FS-760 has been formulated for adults. However, the algorithm for children has not been established. The purpose of this study was to formulate an algorithm for discriminating S/W in school-aged children using FS-760 and to evaluate its validity. We further tested the generalizability of existing algorithm for adults by applying it to the children's activity data and then examined factors associated with adult algorithm agreement rates by multiple regression analysis using combined adult and children data. Sixty-five, healthy, school-aged children (aged 6 to 15 years) were recruited and randomly assigned to two groups: A (n = 33) and B (n = 32). They underwent 8-h polysomnography (PSG) and wore FS-760 simultaneously to obtain activity data. To determine the central epoch of the sleep/wake states (𝑥), a five-order linear discriminant analysis was conducted using the activity intensity of group A for five epochs (𝑥-2, 𝑥-1, 𝑥, 𝑥+1, 𝑥+2; 10 min) and evaluate its accuracy with the activity of group B. To reveal the factors associated with adult algorithm agreement rate, we integrated the activity, age, sleep efficiency of 15 adults (aged 20 to 39 years) and those of 65 children for multiple regression analysis. The mean agreement rate of the developed algorithm was 91.0%, with a mean sensitivity (true sleep detection rate) of 93.0% and a mean specificity (true wakefulness detection rate) of 63.9%. The agreement rate of the adult algorithm applied to children's activity was significantly lower (81.8%) than that of the children algorithm. Multiple regression analysis showed that the agreement rates calculated by the adult algorithm were significantly related to mean activity of the 𝑥 epoch in NREM and REM sleep as well as age and sleep efficiency. The S/W states in school-aged children can be reliably assessed using the developed algorithm for waist-worn actigraph FS-760. Since the accuracy of the adult algorithms decreased when applied it to children which have different activity levels during sleep, the establishment and validation of population-specific S/W algorithms should be required.",
-          "ano": 2022,
-          "autores": "Minori Enomoto; Shingo Kitamura; Kyoko Nakazaki",
-          "periodico": "Journal of physiological anthropology",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "RCT"
-          ],
-          "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9387041/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35982481/",
-          "score_prioridade_editorial": 70.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 14.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 8.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "Texto completo aberto identificado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_42547644",
-          "doi": "10.1007/s44470-026-00146-z",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Psychometric evaluation of the Pittsburgh Sleep Quality Index among South African women participating in the Bukhali trial: Healthy Life Trajectories Initiative.",
-          "abstract": "<h4>Purpose</h4>We examined the psychometric properties of the Pittsburgh Sleep Quality Index (PSQI) in a large sample of young women in Soweto, South Africa, to assess its reliability and structural validity in this context.<h4>Methods</h4>Data were collected from 7182 women enrolled in the Bukhali randomized controlled trial, part of the Healthy Life Trajectories Initiative (HeLTI). Sociodemographic information and PSQI data were collected through interviewer-administered surveys. Internal consistency was assessed using Cronbach's alpha, McDonald's omega and item-level correlations. Confirmatory factor analysis (CFA) evaluated the original one-factor and established two- and three-factor multidimensional models. Model fit was examined using Root Mean Square Error of Approximation (RMSEA), Comparative Fit Index (CFI), and Tucker-Lewis Index (TLI).<h4>Results</h4>Most women (57.4%) reported good sleep quality (PSQI ≤ 5). Poor sleep quality was associated with higher household socioeconomic status (assets score), higher education, and single relationship status. Average sleep was 7.8 hours, characterized by prolonged onset latency and high fragmentation, suggesting that continuity disruptions rather than opportunity shortage drove poor sleep. The PSQI had modest internal consistency (α = .57; ω = .57; item-total r = .33 - .65). The one-factor model demonstrated poor fit (χ<sup>2</sup>(14) = 1677.70; CFI = .65; TLI = .48; RMSEA = .13) whereas fit was good for the two-factor (χ<sup>2</sup>(13) = 291.46; CFI = .94; TLI = .91; RMSEA = .05) and three-factor models (χ<sup>2</sup>(11) = 285.21; CFI = .94; TLI = .89; RMSEA = .06).<h4>Conclusion</h4>The PSQI showed a multidimensional structure in this population. While both multidimensional models performed well, the two-factor model showed slightly better fit and is recommended for use in this population. Interpreting PSQI components rather than the global score offers more meaningful insight into sleep quality and highlights the need for context-specific psychometric validation in diverse settings.<h4>Current knowledge/study rationale</h4>The Pittsburgh Sleep Quality Index is widely used, but prior evidence shows its reliability and factor structure vary across populations, settings, and sex. Young women in under-resourced urban South African settings may experience sleep disruption shaped by psychosocial stress, safety concerns, caregiving demands, and environmental factors, yet the PSQI had not been evaluated in this population.<h4>Study impact</h4>In this large Soweto cohort, sleep problems appeared driven more by fragmented sleep and continuity disruptions than by insufficient sleep opportunity. The PSQI performed better as a multidimensional measure, particularly a parsimonious two-factor structure, than as a single global score. The findings support using component- or factor-informed PSQI interpretation and highlight the need for context-specific validation of sleep measures in diverse populations.",
-          "ano": 2026,
-          "autores": "Alcock S, Beukes J, Hart C, Scheuermaier K, Lye SJ, Norris SA.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "RCT",
             "JournalArticle"
           ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
           "open_access": false,
           "url_pdf": "",
           "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42547644/",
-          "score_prioridade_editorial": 70.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
+          "url_artigo": "https://doi.org/10.1056/nejmoa2413258",
+          "triagem_elegibilidade": {
+            "elegivel": true,
+            "criterios": {
+              "nao_retratado": true,
+              "tipo_publicacao_aceito": true,
+              "abstract_minimo_100_caracteres": true
+            },
+            "motivos_exclusao": [],
+            "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
           },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
+          "ordem_selecao": 20,
           "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42565254",
-          "doi": "10.1111/ggi.70756",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Effect of Sleep Report Feedback With Health Guidance Using a Sleep Monitoring Device for Improving Sleep in Community-Dwelling Older People: A Three-Arm Randomized Controlled Trial.",
-          "abstract": "<h4>Aim</h4>To evaluate the effectiveness of sleep monitoring, report feedback, and telephone-based guidance regarding sleep hygiene and daytime activity for community-dwelling older adults.<h4>Methods</h4>We conducted a three-arm randomized controlled trial among community-dwelling adults in Japan. Participants were divided into three groups: (A) sleep report feedback and telephone-based health guidance for 6 months; (B) sleep report feedback and telephone-based health guidance for the first 3 months followed by sleep report feedback alone for the subsequent 3 months; and (C) sleep report feedback alone for 6 months. All groups used a sleep monitoring device. The Athens Insomnia Scale (AIS) score was the primary outcome. We analyzed time-series data by comparing different groups before and after the intervention to determine factors influencing the AIS score. All significance levels were set at p < 0.05.<h4>Results</h4>In total, 229 participants (80, 74, and 75 participants in groups A, B, and C, respectively) were randomized (men: 37.1%; mean age: 78.5 years; average AIS score: 6.5). Linear mixed model analysis revealed a significant group-by-time interaction for AIS scores (p = 0.002). Both intervention groups showed significant within-group improvements in AIS scores at 3 months compared with baseline, whereas the control group showed no significant change over time. In between-group comparisons, Group B showed significantly lower AIS scores than the control group at 3 months.<h4>Conclusions</h4>Combining sleep report feedback with telephone-based health guidance may support improvement in subjective sleep status among community-dwelling older adults.<h4>Trial registration</h4>Committee and registered in the UMIN Clinical Trials Registry (study number: 21249; date of first registration: December 15, 2021; receipt number: R000052743; https://center6.umin.ac.jp/cgi-open-bin/ctr_e/ctr_view.cgi?recptno=R000052743).",
-          "ano": 2026,
-          "autores": "Chikama H, Yamakawa M, Shigenobu K, Kurakami H, Nobuhara K, Umemura K, Mizukami W, Takeya Y, Koujiya E, Adachi H, Ikeda M.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "RCT",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42565254/",
-          "score_prioridade_editorial": 70.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42560468",
-          "doi": "10.1007/s11325-026-03778-w",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Polygraphic evaluation of the effects of functional orthodontic treatment with twin block and herbst appliances on sleep quality: a randomized clinical trial.",
-          "abstract": "<h4>Background</h4>The aim of this clinical study was to investigate the effects of functional treatment with twin block (TB) and Herbst appliances on sleep quality.<h4>Materials and methods</h4>A total of 46 patients having mandibular retrognathia and identified with OSA were divided randomly into two groups: Twin Block (TB) and Herbst appliances. Changes in sleep parameters (apnoea-hypopnea index (AHI), supine AHI, oxygen desaturation index (ODI), minimum oxygen saturation) at baseline (B/L) and an average of 8-month follow-up (F/U) detected by polygraphy and Pittsburgh Sleep Quality Index (PSQI) were the primary outcomes. Treatment of the mandibular retrognathia was the secondary outcome. Shapiro Wilk test and Q-Q graphs were used to evaluate the distribution of variables according to groups, Mann Whitney U test was used to evaluate the two independent group means of measurements. Paired sample t test was used to evaluate the differences between the B/L and F/U times at p < 0.05 significance level.<h4>Results</h4>Among 46 patients randomized, AHI changed from B/L to F/U in Herbst group statistically significant (1.08 (-0.47-2.63), p = 0.031). While the change from B/L to F/U in the supine AHI was significant in Herbst group (3.29 (-0.20-6.78), 95% (CI), p = 0.001), this value did not reach statistical significance in TB group (0.39 (-0.59-1.37), 95% (CI), p = 0.531). ODI altered from B/L to F/U in Herbst group statistically significant (2.09 (0.58-3.60), p = 0.013). There was no change in minimum oxygen saturation following treatment in all groups (3.81 (-1.38-9.00), p = 0.166; 0.87 (-3.17-4.91), p = 0.680, respectively). The F/U values of SNB, ANB and Wits were statistically significantly higher than the B/L values (95% (CI), p < 0.001) in both groups. The average PSQI values were decreased significantly in both groups following functional treatment (95% (CI), p < 0.05).<h4>Conclusions</h4>Significant improvement was observed in sleep parameters with Herbst appliance. Functional orthodontic treatment was found to be effective for adjunctive treatment for OSA. Changes in skeletal sagittal measurements were significant in all groups.",
-          "ano": 2026,
-          "autores": "Gokce G, Akan B, Basoglu OK, Tasbakan MS, Emir B.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "RCT",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42560468/",
-          "score_prioridade_editorial": 70.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_42545530",
-          "doi": "10.1007/s00520-026-11038-6",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Effects of motivational music on sleep quality for caregivers of patients with advanced cancer: a randomized controlled trial.",
-          "abstract": "<h4>Purpose</h4>To investigate the benefits of listening to pre-bedtime music on sleep quality and daytime sleepiness for family caregivers of palliative care patients at home.<h4>Methods</h4>Multicenter, randomized controlled clinical trial. Seventy-six caregivers were randomly assigned to intervention (n = 38) and control (n = 38) groups. The intervention group listened to individually chosen music for 30 min before bedtime for 7 days, and the control group listened to pre-recorded basic nursing education messages. The primary endpoint was the change in global subjective sleep quality, evaluated via the global Pittsburgh Sleep Quality Index (PSQI) score. Secondary endpoints included daytime sleepiness (Epworth Sleepiness Scale [ESS]), accelerometer-derived sleep parameters, and client satisfaction (CSQ-8).<h4>Results</h4>Significant intergroup differences favoring the music intervention were observed in the mean changes from baseline for the primary endpoint of global sleep quality (PSQI Global Score: + 0.60 vs. + 2.05 points; p = 0.006). Descriptive intergroup differences favoring the intervention were observed for subjective nighttime sleep duration (+ 0.55 h; 95% CI 0.19 to 0.94) and daytime sleepiness (ESS: -2.74 points; 95% CI -4.11 to -0.56). Post-intervention satisfaction was significantly higher in the music group (CSQ-8: 27.61 vs. 24.63 points).<h4>Conclusions</h4>Listening to pre-bedtime music maintains global subjective sleep quality for family caregivers in a home palliative care setting. Furthermore, exploratory signals suggest it may also prolong subjective sleep duration and reduce daytime sleepiness.<h4>Clinical trial registration</h4>The study is registered at Clinical Trials.gov, NCT04491110. Date: 29 July 2020.",
-          "ano": 2026,
-          "autores": "Valero-Cantero I, Vázquez-Sánchez MÁ, Espinar-Toledo M, Corral-Pérez J, Casals-Sánchez JL, Casals C.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "RCT",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42545530/",
-          "score_prioridade_editorial": 70.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_34212428",
-          "doi": "10.1111/jan.14947",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "Sleep and hypoglycaemia symptom perception in adults with type-1 diabetes mellitus: A mixed-methods review.",
-          "abstract": "The study aims to review, synthesize and integrate primary research on the relationship between sleep and hypoglycaemia symptom perception in adults with type-1 diabetes. This mixed-methods review follows a convergent segregated approach to synthesis and integration of qualitative and quantitative evidence. With assistance of a biomedical librarian, a search of four databases was conducted (PubMed, CINAHL, Embase and PsycINFO) in June 2020. The review included primary research measuring sleep and hypoglycaemia symptom perception in adults (age ≥ 18 years) with type-1 diabetes in English. Studies that exclusively addressed children, type-2 diabetes or outcomes unrelated to sleep and hypoglycaemia symptom perception were excluded. Screening focused on title and abstract review (n = 624). Studies not excluded after screening (n = 35) underwent full-text review. References of each study selected for inclusion (n = 6) were hand searched with one study added. All studies included in the review (n = 7) were critically appraised with JBI Critical Appraisal tools, and then data were extracted with systematic evaluation. Quantitative synthesis found sleep reduces the magnitude of detectable symptoms and one's capacity to detect them. Qualitative synthesis found that individuals with type-1 diabetes perceive unpredictable severity, frequency and awareness of symptoms while asleep as an oppressive, lingering threat. Integration of findings highlights the troublesome duality of sleep's relationship with hypoglycaemia symptom perception. Sleep presents a challenging time for individuals with type-1 diabetes. Further research examining the relationship between sleep and hypoglycaemia symptom perception is recommended as the number of studies limits this review. Symptom perception is the main physiologic defense against severe hypoglycaemia in type-1 diabetes. This review found that sleep's relationship with hypoglycaemia symptoms has unique physiological and psychological components to address when providing comprehensive care. This review may inform future lines of inquiry that develop into interventions, improvements in practice and risk reduction for hypoglycaemia-related complications.",
-          "ano": 2022,
-          "autores": "Austin Matus; Kimberly K Trout; Amy M Sawyer; et al.",
-          "periodico": "Journal of advanced nursing",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "SystematicReview"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/34212428/",
-          "score_prioridade_editorial": 69.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 14.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_32179376",
-          "doi": "10.1016/j.smrv.2020.101280",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "Sleep's impact on emotional recognition memory: A meta-analysis of whole-night, nap, and REM sleep effects.",
-          "abstract": "Numerous studies have shown that post-learning sleep enhances visual episodic recognition memory. However, it remains unclear whether this consolidation benefit is moderated by the emotional valence of the learned material. To clarify whether sleep selectively enhances memory for emotional material, we conducted a meta-analysis including N = 1059 post-sleep/wake observations. Overall, our results do not support this hypothesis. When only studies with a sleep group/wake group comparison were included in the analysis (k = 22), the retention advantage for emotional (negative/positive) over neutral material was not significantly different between sleep and wake groups. When studies without wake groups were included in the analysis after statistical estimation of wake-group parameters, the retention advantage for emotional material was significantly larger in wake groups than in sleep groups (k = 34). Interestingly, however, an additional analysis of eight studies investigating the selective effects of rapid-eye-movement sleep and slow-wave sleep on post-interval emotional memory provided evidence for a selective enhancement of emotional over neutral memory performance after rapid-eye-movement sleep compared to slow-wave sleep. These findings suggest that sleep does not generally enhance visual recognition memory for emotional stimuli. However, the result pattern is consistent with the idea that specific sleep stages preferentially enhance consolidation of emotional and neutral material, respectively.",
-          "ano": 2020,
-          "autores": "Sarah K Schäfer; Benedikt E Wirth; Marlene Staginnus; et al.",
-          "periodico": "Sleep medicine reviews",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "MetaAnalysis",
-            "SystematicReview"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/32179376/",
-          "score_prioridade_editorial": 66.0,
-          "componentes_prioridade": {
-            "desenho": 50,
-            "atualidade": 11.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "MetaAnalysis",
-          "desenho_estudo_rotulo": "Meta-análise",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_42577429",
-          "doi": "10.3389/fnut.2026.1892442",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Effects of almond consumption on sleep quality in adults: a randomized controlled trial.",
-          "abstract": "<h4>Background</h4>Sleep disturbances are associated with adverse metabolic, neurocognitive, and inflammatory outcomes. This study examined the effects of a 5-month whole-almond intervention on objective and subjective sleep parameters, biochemical and inflammatory markers in adults with poor sleep quality.<h4>Methods</h4>In this open-label, parallel-arm, randomized controlled community-based trial with blinded outcome assessment, 175 adults aged 21-55 years with poor sleep quality (Pittsburgh Sleep Quality Index [PSQI] ≥ 5 and/or Epworth Sleepiness Scale [ESS] ≥ 10) were randomized to either an almond group (<i>n</i> = 88) or a control group receiving an isocaloric snack (<i>n</i> = 87) using computer-generated allocation. We hypothesized that regular almond consumption would improve subjective and objective sleep outcomes. Assessments conducted at baseline and after 5 months included polysomnography, PSQI, ESS, anthropometry, and biochemical markers. Per-protocol analyses were performed to evaluate between-group differences in mean changes.<h4>Results</h4>Baseline characteristics were comparable between groups (<i>p</i> > 0.05). The almond group demonstrated significantly greater improvement in subjective sleep efficiency compared with controls (mean change: 9.7 ± 13.4 vs. 5.4 ± 10.6; <i>p</i> = 0.021). After adjustment for baseline values and sex, the almond group had lower global PSQI scores (3.94 ± 0.24 vs. 4.79 ± 0.32; <i>p</i> = 0.013), higher subjective sleep efficiency (94.45 ± 0.72% vs. 91.85 ± 0.42%; <i>p</i> = 0.012), and shorter subjective sleep latency (18.46 ± 2.25 vs. 26.29 ± 2.27 min; <i>p</i> = 0.016) than the control group. No significant treatment effects were observed for most PSG-derived sleep parameters, although wake during sleep tended to be lower in the almond group (<i>p</i> = 0.081). Endline melatonin concentrations were significantly higher following almond consumption (250.63 ± 15.98 vs. 206.19 ± 16.07 pg./mL, <i>p</i> = 0.050), whereas no significant differences were observed for other biochemical or anthropometric outcomes. A higher proportion of participants in the almond group achieved a clinically meaningful improvement in PSQI score and demonstrated reduced wake during sleep (<i>p</i> = 0.043).<h4>Conclusion</h4>Almond consumption was associated with improvements in subjective sleep efficiency and sleep continuity in adults with poor sleep quality. These findings suggest that almonds may enhance perceived sleep quality, with slight objective improvements among responders.<h4>Clinical trial</h4>https://ctri.nic.in/Clinicaltrials/showallp.php?mid1=80395&EncHid=&userName=Almond, Clinical Trials Registry-India (CTRI/2023/02/049727; registered 15 February 2023).",
-          "ano": 2026,
-          "autores": "Desai SR, Pinto L, Halbe A, Vaidya RA, Udipi SA, Kalita S.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "ClinicalTrial",
-            "JournalArticle"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42577429/",
-          "score_prioridade_editorial": 65.0,
-          "componentes_prioridade": {
-            "desenho": 40,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "ClinicalTrial",
-          "desenho_estudo_rotulo": "Ensaio clínico",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
-          ]
-        },
-        {
-          "paper_id": "pmid_35732089",
-          "doi": "10.1016/j.cortex.2022.04.018",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "Sleep affects higher-level categorization of speech sounds, but not frequency encoding.",
-          "abstract": "Sleep can increase consolidation of new knowledge and skills. It is less clear whether sleep plays a role in other aspects of experience-dependent neuroplasticity, which underlie important human capabilities such as spoken language processing. Theories of sensory learning differ in their predictions; some imply rapid learning at early sensory levels, while other propose a slow, progressive timecourse such that higher-level categorical representations guide immediate, novice learning, while lower-level sensory changes do not emerge until later stages. In this study, we investigated the role of sleep across both behavioural and physiological indices of auditory neuroplasticity. Forty healthy young human adults (23 female) who did not speak a tonal language participated in the study. They learned to categorize non-native Mandarin lexical tones using a sound-to-category training paradigm, and were then randomly assigned to a Nap or Wake condition. Polysomnographic data were recorded to quantify sleep during a 3 h afternoon nap opportunity, or equivalent period of quiet wakeful activity. Measures of behavioural performance accuracy revealed a significant improvement in learning the sound-to-category training paradigm between Nap and Wake groups. Conversely, a neural index of fine sound encoding fidelity of speech sounds known as the frequency-following response (FFR) suggested no change due to sleep, and a null model was supported, using Bayesian statistics. Together, these results support theories that propose a slow, progressive and hierarchical timecourse for sensory learning. Sleep's effect may play the biggest role in the higher-level learning, although contributions to more protracted processes of plasticity that exceed the study duration cannot be ruled out.",
-          "ano": 2022,
-          "autores": "Aurélien de la Chapelle; Marie-Anick Savard; Reyan Restani; et al.",
-          "periodico": "Cortex; a journal devoted to the study of the nervous system and behavior",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "RCT"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35732089/",
-          "score_prioridade_editorial": 64.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 14.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_35439637",
-          "doi": "10.1016/j.nlm.2022.107621",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "The role of sleep for episodic memory consolidation: Stabilizing or rescuing?",
-          "abstract": "Prior studies suggest a role for sleep in memory consolidation, with specific contributions from slow oscillations and sleep spindles (Rasch & Born, 2013). However, recent studies failed to replicate sleep's superiority over wake in strengthening memory against interference (Cordi & Rasch, 2021). The goal of the current study is to investigate whether sleep protects newly formed memory from unspecific interference induced by daytime experiences over 24 h, as well as to elucidate the sleep features that are involved. 56 healthy adults were randomly assigned to either the Sleep First or Wake First group. The Sleep First group encoded word pairs at night before sleep, while the Wake First group encoded word pairs in the morning before a day of wakefulness. Memory was tested 30 min, 12 h, and 24 h after encoding for both groups. The Sleep First group performed significantly better 12 h after encoding, replicating prior findings that memory is better after a period of sleep compared to wake. However, after 24 h, the two groups performed similarly. The Wake First group showed a positive correlation between overnight memory improvement and the theta and delta band power during slow wave sleep, an effect not found in the Sleep First group. These correlations suggest the possibility that after a day of waking interference, the brain recruits extra sleep resources to rescue memories from further forgetting. Our results are not consistent with prior studies showing a significant role for sleep in stabilizing memory from future interference, but they may suggest that sleep rescues memories after interference has occurred.",
-          "ano": 2022,
-          "autores": "Jing Zhang; Lauren N Whitehurst; Sara C Mednick",
-          "periodico": "Neurobiology of learning and memory",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "RCT"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/35439637/",
-          "score_prioridade_editorial": 64.0,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 14.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_33446812",
-          "doi": "10.1038/s41598-020-80671-w",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "Sleep reactivation did not boost suppression-induced forgetting.",
-          "abstract": "Sleep's role in memory consolidation is widely acknowledged, but its role in weakening memories is still debated. Memory weakening is evolutionary beneficial and makes an integral contribution to cognition. We sought evidence on whether sleep-based memory reactivation can facilitate memory suppression. Participants learned pairs of associable words (e.g., DIET-CREAM) and were then exposed to hint words (e.g., DIET) and instructed to either recall (\"think\") or suppress (\"no-think\") the corresponding target words (e.g., CREAM). As expected, suppression impaired retention when tested immediately after a 90-min nap. To test if reactivation could selectively enhance memory suppression during sleep, we unobtrusively presented one of two sounds conveying suppression instructions during sleep, followed by hint words. Results showed that targeted memory reactivation did not enhance suppression-induced forgetting. Although not predicted, post-hoc analyses revealed that sleep cues strengthened memory, but only for suppressed pairs that were weakly encoded before sleep. The results leave open the question of whether memory suppression can be augmented during sleep, but suggest strategies for future studies manipulating memory suppression during sleep. Additionally, our findings support the notion that sleep reactivation is particularly beneficial for weakly encoded information, which may be prioritized for consolidation.",
-          "ano": 2021,
-          "autores": "Eitan Schechtman; Anna Lampe; Brianna J Wilson; et al.",
-          "periodico": "Scientific reports",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "ClinicalTrial",
-            "JournalArticle"
-          ],
-          "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7809483/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/33446812/",
-          "score_prioridade_editorial": 63.5,
-          "componentes_prioridade": {
-            "desenho": 40,
-            "atualidade": 12.5,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 8.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "ClinicalTrial",
-          "desenho_estudo_rotulo": "Ensaio clínico",
-          "acesso_status": "Texto completo aberto identificado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_34153105",
-          "doi": "10.1093/sleep/zsab155",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "PubMed"
-          ],
-          "titulo": "Sleep's short-term memory preservation and long-term affect depotentiation effect in emotional memory consolidation: behavioral and EEG evidence.",
-          "abstract": "Sleep plays a pivotal role in the off-line processing of emotional memory. However, much remains unknown for its immediate vs. long-term influences. We employed behavioral and electrophysiological measures to investigate the short- and long-term impacts of sleep vs. sleep deprivation on emotional memory. Fifty-nine participants incidentally learned 60 negative and 60 neutral pictures in the evening and were randomly assigned to either sleep or sleep deprivation conditions. We measured memory recognition and subjective affective ratings in 12- and 60-h post-encoding tests, with EEGs in the delayed test. In a 12-h post-encoding test, compared to sleep deprivation, sleep equally preserved both negative and neutral memory, and their affective tones. In the 60-h post-encoding test, negative and neutral memories declined significantly in the sleep group, with attenuated emotional responses to negative memories over time. Furthermore, two groups showed spatial-temporally distinguishable ERPs at the delayed test: while both groups showed the old-new frontal negativity (300-500 ms, FN400), sleep-deprived participants additionally showed an old-new parietal, Late Positive Component effect (600-1000 ms, LPC). Multivariate whole-brain ERPs analyses further suggested that sleep prioritized neural representation of emotion over memory processing, while they were less distinguishable in the sleep deprivation group. These data suggested that sleep's impact on emotional memory and affective responses is time-dependent: sleep preserved memories and affective tones in the short term, while ameliorating affective tones in the long term. Univariate and multivariate EEG analyses revealed different neurocognitive processing of remote, emotional memories between sleep and sleep deprivation groups.",
-          "ano": 2021,
-          "autores": "Shengzi Zeng; Xuanyi Lin; Jingxuan Wang; et al.",
-          "periodico": "Sleep",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "RCT"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/34153105/",
-          "score_prioridade_editorial": 62.5,
-          "componentes_prioridade": {
-            "desenho": 45,
-            "atualidade": 12.5,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 3.0
-          },
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "PubMed"
-          ]
-        },
-        {
-          "paper_id": "pmid_42544029",
-          "doi": "10.1002/pri.70281",
-          "fonte_origem": "EuropePMC",
-          "fontes_encontradas": [
-            "EuropePMC"
-          ],
-          "titulo": "Movement Behaviors and Quality of Life in Cardiac Rehabilitation Programs: A Study Based on the Canadian 24-Hour Movement Guidelines.",
-          "abstract": "<h4>Background and purpose</h4>The Canadian 24-Hour Movement Guidelines integrate recommendations on physical activity (PA), sedentary behavior (SB), and sleep. Individuals in cardiac rehabilitation programs (CRPs) have specific characteristics that may influence adherence to these 24-Hour Movement Guidelines and their relationship with quality of life. This study aimed to investigate the proportion of CRP participants who meet the recommendations of the Canadian 24-Hour Movement Guidelines and to evaluate the association between levels of PA, SB, and sleep duration with the quality-of-life domains of these individuals.<h4>Methods</h4>This was a cross-sectional observational study including CRP participants (mean age: 68.46 ± 10.15 years; 58.1% with coronary artery disease). Quality of life was assessed using the 36-Item Short-Form Health Survey (SF-36). Movement behaviors (PA, SB, and sleep) were measured by accelerometers. Compliance with the guidelines was described using percentage values. Associations between PA, SB, and sleep with quality-of-life domains were analyzed using quantile regression. The significance level was set at 5%.<h4>Results</h4>Among the 105 participants analyzed, only 2.9% simultaneously met all three recommendations. Individual adherence was 29.5% (PA), 9.5% (SB), and 34.3% (sleep). A negative association was identified between SB and functional capacity, and positive associations were found between PA and the domains of functional capacity, vitality, and social aspects. Sleep duration was not associated with quality-of-life domains.<h4>Discussion</h4>Few CRP participants simultaneously meet all three recommendations of the Canadian 24-Hour Movement Guidelines, with partial adherence being more frequent. Higher levels of PA and lower time spent in SB were associated with better quality of life, whereas sleep duration showed no significant association.",
-          "ano": 2026,
-          "autores": "Soares JCÁ, Vigilato MEM, Valente HB, Moliterno AH, Silva JPLN, Christofaro DGD, Vanderlei LCM.",
-          "periodico": "",
-          "citacoes_totais": 0,
-          "citacoes_influentes": 0,
-          "tipos": [
-            "JournalArticle",
-            "ObservationalStudy"
-          ],
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/42544029/",
-          "score_prioridade_editorial": 60.0,
-          "componentes_prioridade": {
-            "desenho": 28,
-            "atualidade": 20.0,
-            "impacto_bibliometrico": 0.0,
-            "acesso": 2.0,
-            "relevancia_na_fonte": 10.0
-          },
-          "tipo_principal": "ObservationalStudy",
-          "desenho_estudo_rotulo": "Estudo observacional",
-          "acesso_status": "DOI disponível; acesso aberto não confirmado",
-          "aviso_evidencia": "Classificação baseada em metadados. Não substitui avaliação crítica do método, risco de viés, pergunta clínica ou certeza da evidência.",
-          "fontes_descoberta": [
-            "EuropePMC"
+            "OpenAlex"
           ]
         }
       ]
     }
   },
-  "total_artigos": 27
+  "total_artigos": 20
 }

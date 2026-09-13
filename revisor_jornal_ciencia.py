@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-revisor.py — painel editorial simples do Jornal Cienc.IA
+revisor.py — painel editorial simples do Jornal Cienc.IA · Google + fallback OPUS-MT
 
 Uma única tela para:
 - acompanhar publicados, para aprovar, pendentes e rejeitados;
@@ -22,6 +22,7 @@ import os
 import random
 import re
 import shutil
+import threading
 import time
 import tempfile
 import unicodedata
@@ -46,48 +47,338 @@ RASCUNHOS = BASE_DIR / "rascunhos.json"
 HISTORICO = BASE_DIR / "historico_editorial.json"
 ESTADOS = BASE_DIR / "estado_editorial.json"
 TRADUCOES_BASE = BASE_DIR / "traducoes_base.json"
+TRADUCOES_TEMAS = BASE_DIR / "traducoes_temas.json"
 
-VERSAO_PROMPT = "jornal_ciencia_v7.1_n2_mais_acessivel"
+VERSAO_PROMPT = "jornal_ciencia_v13_ncl_idf_definitivo_balanceado"
 MINILM_MODEL = os.getenv("MINILM_MODEL", "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
 MINILM_TOP_K = 5
 
-# Modelos de geração/auditoria. Todos podem ser sobrescritos pelo .env.
+# Modelos do pipeline.
+# Gemini: somente simplificação (Divulgação, Leitura Facilitada e reparo).
+# Llama via Groq: ficha factual, checagens e auditoria de fidelidade.
 # A proveniência de cada chamada é salva no rascunho e exibida no painel.
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash")
 GEMINI_FALLBACK_MODEL = os.getenv("GEMINI_FALLBACK_MODEL", "gemini-3.6-flash")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
-LLM_TENTATIVAS_TRANSITORIAS = max(1, int(os.getenv("LLM_TENTATIVAS_TRANSITORIAS", "3")))
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
+LLM_TENTATIVAS_TRANSITORIAS = max(1, int(os.getenv("LLM_TENTATIVAS_TRANSITORIAS", "4")))
+PIPELINE_TENTATIVAS_ETAPA = max(1, int(os.getenv("PIPELINE_TENTATIVAS_ETAPA", "4")))
+
+# Tradução-base: Google Translate permanece como método principal.
+# OPUS-MT entra somente como fallback técnico quando o Google fica indisponível
+# após as tentativas previstas. Nenhuma LLM geral é usada como tradutor.
 TRADUCAO_RETRY_SEGUNDOS = (0, 3, 8, 20)
+GOOGLE_TRADUCAO_MAX_CHARS = max(1000, min(4500, int(os.getenv("GOOGLE_TRADUCAO_MAX_CHARS", "3800"))))
+GOOGLE_TRADUCAO_INTERVALO_SEGUNDOS = max(0.25, float(os.getenv("GOOGLE_TRADUCAO_INTERVALO_SEGUNDOS", "1.1")))
+_GOOGLE_TRADUCAO_LOCK = threading.Lock()
+_GOOGLE_ULTIMA_CHAMADA = 0.0
+
+# OPUS-MT é um modelo de tradução neural especializado (Marian NMT), não uma LLM geral.
+# O modelo é carregado apenas se o fallback for realmente necessário.
+OPUS_MT_MODEL = os.getenv(
+    "OPUS_MT_MODEL",
+    "Helsinki-NLP/opus-mt-tc-big-en-pt",
+)
+OPUS_MT_MAX_INPUT_TOKENS = max(
+    128, min(480, int(os.getenv("OPUS_MT_MAX_INPUT_TOKENS", "430")))
+)
+OPUS_MT_BATCH_SIZE = max(1, min(16, int(os.getenv("OPUS_MT_BATCH_SIZE", "4"))))
 
 
-# Rótulos editoriais em português. O termo original de busca continua salvo nos JSONs
-# para preservar a rastreabilidade da coleta; esta tabela altera apenas a apresentação.
-TEMAS_PT = {
-    "diet": "Dieta",
-    "nutrition": "Nutrição",
-    "health": "Saúde",
-    "sunscreen skin cancer prevention": "Protetor solar e prevenção do câncer de pele",
-    "cancer alternative medicine treatment": "Câncer e tratamentos alternativos",
-    "nutrition diet health outcomes": "Alimentação, dieta e saúde",
-    "influenza transmission cold weather": "Influenza, transmissão e clima frio",
-    "red meat processed food cancer risk": "Carne vermelha, processados e risco de câncer",
-    "vaccine safety adverse effects": "Segurança de vacinas e efeitos adversos",
-    "sugar consumption mental health anxiety": "Consumo de açúcar, saúde mental e ansiedade",
-    "ivermectin antiparasitic clinical use": "Ivermectina e uso clínico antiparasitário",
-    "egg cholesterol cardiovascular disease": "Ovos, colesterol e doença cardiovascular",
-    "detox diet liver kidney health": "Dietas detox, fígado e rins",
+def _aguardar_janela_google() -> None:
+    """Serializa chamadas ao endpoint gratuito para evitar rajadas no mesmo processo."""
+    global _GOOGLE_ULTIMA_CHAMADA
+    with _GOOGLE_TRADUCAO_LOCK:
+        agora = time.monotonic()
+        espera = GOOGLE_TRADUCAO_INTERVALO_SEGUNDOS - (agora - _GOOGLE_ULTIMA_CHAMADA)
+        if espera > 0:
+            time.sleep(espera)
+        _GOOGLE_ULTIMA_CHAMADA = time.monotonic()
+
+
+def _quebrar_texto_google(texto: str) -> List[str]:
+    """Divide somente quando necessário para respeitar o limite prático do Google."""
+    texto = str(texto or "").strip()
+    if not texto:
+        return []
+    limite = GOOGLE_TRADUCAO_MAX_CHARS
+    if len(texto) <= limite:
+        return [texto]
+
+    unidades = [u.strip() for u in re.split(r"(?<=[.!?])\s+|\n{2,}", texto) if u.strip()]
+    blocos: List[str] = []
+    atual = ""
+
+    for unidade in unidades:
+        # Proteção para uma unidade excepcionalmente maior que o limite.
+        partes = [unidade[i:i + limite] for i in range(0, len(unidade), limite)] if len(unidade) > limite else [unidade]
+        for parte in partes:
+            candidato = f"{atual} {parte}".strip() if atual else parte
+            if atual and len(candidato) > limite:
+                blocos.append(atual)
+                atual = parte
+            else:
+                atual = candidato
+    if atual:
+        blocos.append(atual)
+    return blocos
+
+
+def _traduzir_google_bloco(bloco: str, idioma_origem: str) -> str:
+    from deep_translator import GoogleTranslator
+
+    _aguardar_janela_google()
+    return GoogleTranslator(source=idioma_origem, target="pt").translate(bloco)
+
+
+@st.cache_resource(show_spinner=False)
+def _carregar_opus_mt():
+    """Carrega uma única instância do tradutor neural inglês -> português."""
+    try:
+        import torch
+        from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+    except Exception as exc:
+        raise RuntimeError(
+            "Dependências do tradutor local ausentes. Execute no mesmo ambiente do Streamlit: "
+            "python -m pip install -U transformers sentencepiece torch. "
+            f"Detalhe: {type(exc).__name__}: {exc}"
+        ) from exc
+
+    tokenizer = AutoTokenizer.from_pretrained(OPUS_MT_MODEL)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    dtype = torch.float16 if device == "cuda" else torch.float32
+    model = AutoModelForSeq2SeqLM.from_pretrained(OPUS_MT_MODEL, torch_dtype=dtype)
+    model.to(device)
+    model.eval()
+    return tokenizer, model, device
+
+
+def _quantidade_tokens_opus(texto: str, tokenizer: Any) -> int:
+    return len(tokenizer(str(texto or ""), add_special_tokens=True)["input_ids"])
+
+
+def _quebrar_unidade_opus(unidade: str, tokenizer: Any, limite: int) -> List[str]:
+    """Quebra uma unidade excepcionalmente longa sem truncar silenciosamente o conteúdo."""
+    palavras = str(unidade or "").split()
+    if not palavras:
+        return []
+
+    partes: List[str] = []
+    atual: List[str] = []
+    for palavra in palavras:
+        candidato = " ".join(atual + [palavra])
+        if atual and _quantidade_tokens_opus(candidato, tokenizer) > limite:
+            partes.append(" ".join(atual))
+            atual = [palavra]
+        else:
+            atual.append(palavra)
+    if atual:
+        partes.append(" ".join(atual))
+    return partes
+
+
+def _quebrar_texto_para_opus(texto: str, tokenizer: Any) -> List[str]:
+    """Divide o texto por parágrafos/frases respeitando o limite real de tokens do Marian."""
+    texto = str(texto or "").strip()
+    if not texto:
+        return []
+
+    limite = OPUS_MT_MAX_INPUT_TOKENS
+    paragrafos = [p.strip() for p in re.split(r"\n{2,}", texto) if p.strip()]
+    blocos: List[str] = []
+
+    for paragrafo in paragrafos:
+        frases = [
+            f.strip()
+            for f in re.split(r"(?<=[.!?])\s+", paragrafo)
+            if f.strip()
+        ] or [paragrafo]
+
+        unidades: List[str] = []
+        for frase in frases:
+            if _quantidade_tokens_opus(frase, tokenizer) <= limite:
+                unidades.append(frase)
+            else:
+                unidades.extend(_quebrar_unidade_opus(frase, tokenizer, limite))
+
+        atual = ""
+        for unidade in unidades:
+            candidato = f"{atual} {unidade}".strip() if atual else unidade
+            if atual and _quantidade_tokens_opus(candidato, tokenizer) > limite:
+                blocos.append(atual)
+                atual = unidade
+            else:
+                atual = candidato
+        if atual:
+            blocos.append(atual)
+
+    return blocos
+
+
+def _traduzir_opus_mt_local(texto: str) -> Tuple[str, int]:
+    """Traduz inglês -> português localmente, sem chamadas de API e sem rate limit."""
+    import torch
+
+    tokenizer, model, device = _carregar_opus_mt()
+    blocos = _quebrar_texto_para_opus(texto, tokenizer)
+    if not blocos:
+        return "", 0
+
+    traduzidos: List[str] = []
+    for inicio in range(0, len(blocos), OPUS_MT_BATCH_SIZE):
+        lote = blocos[inicio:inicio + OPUS_MT_BATCH_SIZE]
+        entradas = tokenizer(
+            lote,
+            return_tensors="pt",
+            padding=True,
+            truncation=False,
+        )
+        entradas = {chave: valor.to(device) for chave, valor in entradas.items()}
+        with torch.inference_mode():
+            saidas = model.generate(
+                **entradas,
+                max_length=512,
+                num_beams=4,
+                early_stopping=True,
+            )
+        traduzidos.extend(
+            texto_saida.strip()
+            for texto_saida in tokenizer.batch_decode(saidas, skip_special_tokens=True)
+        )
+
+    return "\n\n".join(t for t in traduzidos if t), len(blocos)
+
+
+# Os temas continuam salvos no idioma original para preservar a rastreabilidade.
+# O rótulo exibido é traduzido automaticamente e armazenado em cache persistente.
+# Mantemos apenas normalizações de siglas cujo nome muda entre inglês e português.
+SIGLAS_TEMA_PT = {
+    "sti": "IST",  # sexually transmitted infection -> infecção sexualmente transmissível
 }
+
+TEMA_TRADUCAO_RETRY_SEGUNDOS = (0, 2, 5)
+
+
+def _rotulo_tema_fallback(valor: str) -> str:
+    """Formata o tema sem depender do tradutor, usado apenas em falha temporária."""
+    limpo = re.sub(r"\s+", " ", str(valor or "").replace("_", " ")).strip()
+    if not limpo:
+        return "Geral"
+    sigla = SIGLAS_TEMA_PT.get(limpo.lower())
+    if sigla:
+        return sigla
+    return limpo[:1].upper() + limpo[1:]
+
+
+def _rotulo_tema_traduzido_valido(valor: Any) -> bool:
+    """Impede que páginas/mensagens de erro sejam salvas como nome de tema."""
+    texto = re.sub(r"\s+", " ", str(valor or "")).strip()
+    if not texto:
+        return False
+
+    normalizado = texto.lower()
+    sinais_erro = (
+        "error 500",
+        "500 (server error)",
+        "server error",
+        "internal server error",
+        "bad gateway",
+        "service unavailable",
+        "gateway timeout",
+        "please try again later",
+        "that's an error",
+        "that’s an error",
+        "that's all we know",
+        "that’s all we know",
+        "<!doctype html",
+        "<html",
+    )
+    if any(sinal in normalizado for sinal in sinais_erro):
+        return False
+
+    # Um tema é um rótulo curto. Respostas enormes indicam página de erro ou conteúdo indevido.
+    if len(texto) > 180:
+        return False
+
+    return True
 
 
 def traduzir_tema_exibicao(tema: Any) -> str:
-    """Traduz apenas o rótulo exibido; não altera o tema original usado na coleta."""
-    bruto = str(tema or "geral").strip()
+    """Traduz rótulos de tema com Google e usa OPUS-MT apenas em falha externa."""
+    bruto = re.sub(r"\s+", " ", str(tema or "geral").replace("_", " ")).strip()
     if not bruto:
         return "Geral"
-    chave = bruto.lower().replace("_", " ").strip()
-    if chave in TEMAS_PT:
-        return TEMAS_PT[chave]
-    return chave[:1].upper() + chave[1:]
+
+    chave = bruto.lower()
+    if chave in SIGLAS_TEMA_PT:
+        return SIGLAS_TEMA_PT[chave]
+
+    cache = carregar_json(TRADUCOES_TEMAS, {})
+    if not isinstance(cache, dict):
+        cache = {}
+
+    salvo = cache.get(chave)
+    if isinstance(salvo, dict):
+        rotulo_salvo = str(salvo.get("rotulo_pt") or "").strip()
+        if rotulo_salvo and _rotulo_tema_traduzido_valido(rotulo_salvo):
+            return rotulo_salvo
+    elif isinstance(salvo, str) and _rotulo_tema_traduzido_valido(salvo):
+        return salvo.strip()
+
+    # Tema não faz parte da tradução-base experimental, então usamos tentativas curtas
+    # para não atrasar a montagem da interface.
+    erro_google = ""
+    try:
+        for atraso in TEMA_TRADUCAO_RETRY_SEGUNDOS:
+            if atraso:
+                time.sleep(atraso)
+            try:
+                resposta = _traduzir_google_bloco(f"Health topic: {bruto}", "auto")
+                resposta = re.sub(r"\s+", " ", str(resposta or "")).strip()
+                if not _rotulo_tema_traduzido_valido(resposta):
+                    continue
+                traduzido = resposta.split(":", 1)[1].strip() if ":" in resposta else resposta
+                if traduzido.lower() in SIGLAS_TEMA_PT:
+                    traduzido = SIGLAS_TEMA_PT[traduzido.lower()]
+                rotulo = _rotulo_tema_fallback(traduzido)
+                if not _rotulo_tema_traduzido_valido(rotulo):
+                    continue
+                cache[chave] = {
+                    "tema_original": bruto,
+                    "rotulo_pt": rotulo,
+                    "tradutor": "Google Translate via deep-translator",
+                    "salvo_em": agora_iso(),
+                }
+                salvar_json_atomico(TRADUCOES_TEMAS, cache)
+                return rotulo
+            except Exception as exc:
+                erro_google = f"{type(exc).__name__}: {exc}"
+    except Exception as exc:
+        erro_google = f"{type(exc).__name__}: {exc}"
+
+    # Fallback local: se o modelo ainda não estiver disponível, apenas exibe o tema original.
+    try:
+        resposta, _ = _traduzir_opus_mt_local(f"Health topic: {bruto}")
+        resposta = re.sub(r"\s+", " ", str(resposta or "")).strip()
+        if not _rotulo_tema_traduzido_valido(resposta):
+            return _rotulo_tema_fallback(bruto)
+        traduzido = resposta.split(":", 1)[1].strip() if ":" in resposta else resposta
+        if traduzido.lower() in SIGLAS_TEMA_PT:
+            traduzido = SIGLAS_TEMA_PT[traduzido.lower()]
+        rotulo = _rotulo_tema_fallback(traduzido)
+        if not _rotulo_tema_traduzido_valido(rotulo):
+            return _rotulo_tema_fallback(bruto)
+        cache[chave] = {
+            "tema_original": bruto,
+            "rotulo_pt": rotulo,
+            "tradutor": f"OPUS-MT local ({OPUS_MT_MODEL}) — fallback após falha do Google Translate",
+            "motivo_fallback": erro_google[:1000],
+            "salvo_em": agora_iso(),
+        }
+        salvar_json_atomico(TRADUCOES_TEMAS, cache)
+        return rotulo
+    except Exception:
+        return _rotulo_tema_fallback(bruto)
+
 
 st.set_page_config(
     page_title="Painel Editorial — Jornal Cienc.IA",
@@ -307,14 +598,104 @@ def carregar_json(caminho: Path, padrao: Any) -> Any:
 
 
 def salvar_json_atomico(caminho: Path, dados: Any) -> None:
+    """
+    Salva JSON com segurança.
+
+    No Windows/OneDrive, o arquivo de destino pode ficar bloqueado
+    temporariamente durante a sincronização. Nesse caso:
+
+    1. cria o arquivo temporário;
+    2. tenta substituir o destino algumas vezes;
+    3. se o OneDrive continuar bloqueando renomeação/substituição,
+       tenta gravar diretamente no arquivo;
+    4. remove o temporário ao final.
+    """
+    caminho = Path(caminho)
     caminho.parent.mkdir(parents=True, exist_ok=True)
-    with tempfile.NamedTemporaryFile(
-        "w", delete=False, dir=caminho.parent, encoding="utf-8", suffix=".tmp"
-    ) as temporario:
-        json.dump(dados, temporario, indent=2, ensure_ascii=False)
-        temporario.flush()
-        nome_tmp = temporario.name
-    os.replace(nome_tmp, caminho)
+
+    conteudo = json.dumps(
+        dados,
+        indent=2,
+        ensure_ascii=False,
+    )
+
+    nome_tmp = None
+
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            delete=False,
+            dir=caminho.parent,
+            encoding="utf-8",
+            suffix=".tmp",
+        ) as temporario:
+            temporario.write(conteudo)
+            temporario.flush()
+
+            try:
+                os.fsync(temporario.fileno())
+            except OSError:
+                pass
+
+            nome_tmp = temporario.name
+
+        # O OneDrive pode bloquear o arquivo por alguns milissegundos
+        # enquanto sincroniza. Fazemos várias tentativas antes do fallback.
+        ultimo_erro = None
+
+        for tentativa in range(8):
+            try:
+                os.replace(nome_tmp, caminho)
+                nome_tmp = None
+                return
+
+            except PermissionError as exc:
+                ultimo_erro = exc
+
+                # 0.15, 0.30, 0.45 ... até 1.2 s
+                time.sleep(0.15 * (tentativa + 1))
+
+        # -------------------------------------------------------------
+        # FALLBACK PARA WINDOWS / ONEDRIVE
+        # -------------------------------------------------------------
+        #
+        # O OneDrive às vezes permite escrever no arquivo existente,
+        # mas impede temporariamente que ele seja substituído por rename.
+        #
+        # Nesse caso gravamos diretamente.
+        try:
+            with caminho.open(
+                "w",
+                encoding="utf-8",
+            ) as arquivo:
+                arquivo.write(conteudo)
+                arquivo.flush()
+
+                try:
+                    os.fsync(arquivo.fileno())
+                except OSError:
+                    pass
+
+            return
+
+        except PermissionError as exc:
+            raise PermissionError(
+                "\nNão foi possível atualizar o arquivo:\n"
+                f"{caminho}\n\n"
+                "O Windows ou o OneDrive está mantendo o arquivo bloqueado.\n"
+                "Feche qualquer programa que esteja com o JSON aberto e "
+                "aguarde a sincronização do OneDrive terminar.\n\n"
+                f"Erro original: {ultimo_erro or exc}"
+            ) from exc
+
+    finally:
+        # Se o os.replace() não consumiu o arquivo temporário,
+        # tentamos eliminá-lo.
+        if nome_tmp:
+            try:
+                Path(nome_tmp).unlink(missing_ok=True)
+            except OSError:
+                pass
 
 
 def somente_dicionarios(valor: Any) -> List[Dict[str, Any]]:
@@ -455,13 +836,15 @@ def traduzir_com_google(
     texto: str,
     artigo: Dict[str, Any],
 ) -> Tuple[str, str, Optional[str], bool]:
-    """Cria a tradução-base exclusivamente com GoogleTranslator.
+    """Tradução-base: Google Translate principal; OPUS-MT é fallback técnico.
 
     Regras metodológicas:
-    - nenhuma LLM substitui o tradutor;
-    - uma tradução válida é armazenada em cache persistente por artigo + hash da fonte;
-    - falhas temporárias usam 4 tentativas: imediata, depois 3 s, 8 s e 20 s;
-    - se todas falharem, a geração do rascunho é interrompida para não misturar métodos.
+    - Google Translate permanece como método principal;
+    - nenhuma LLM geral é usada como tradutor;
+    - o Google mantém as 4 tentativas já previstas (0, +3 s, +8 s, +20 s);
+    - se qualquer bloco do Google falhar definitivamente, sua saída parcial é descartada;
+    - nesse caso, o OPUS-MT traduz o texto COMPLETO, evitando misturar tradutores no mesmo abstract;
+    - cache e rascunho registram qual tradutor efetivamente produziu a tradução-base.
     """
     texto = limpar_texto_editorial(texto)
     if not texto:
@@ -469,7 +852,6 @@ def traduzir_com_google(
 
     idioma_origem = _idioma_origem_artigo(artigo)
     if idioma_origem == "pt":
-        # Não há transformação linguística quando a própria fonte já está em português.
         return texto, "Fonte original em português", None, False
 
     paper_id = artigo.get("paper_id") or artigo.get("doi") or artigo.get("pmid")
@@ -479,61 +861,146 @@ def traduzir_com_google(
     cache = carregar_json(TRADUCOES_BASE, {})
     if not isinstance(cache, dict):
         cache = {}
+
+    # Reaproveita Google antigo e fallback OPUS desta estratégia híbrida.
+    # Um cache OPUS de uma versão que o usava como método principal é ignorado,
+    # para que esta versão volte a tentar o Google primeiro.
     registro = cache.get(chave)
     if isinstance(registro, dict):
         traducao_salva = limpar_texto_editorial(registro.get("traducao_pt"))
+        tradutor_salvo = str(registro.get("tradutor") or "")
+        cache_compativel = (
+            "Google Translate" in tradutor_salvo
+            or (OPUS_MT_MODEL in tradutor_salvo and "fallback" in tradutor_salvo.lower())
+        )
         if (
             registro.get("hash_fonte") == hash_fonte
+            and cache_compativel
             and traducao_salva
             and fonte_cientifica_valida(traducao_salva)
         ):
-            return traducao_salva, "Google Translate", None, True
+            return traducao_salva, tradutor_salvo, None, True
+
+    erros_google: List[str] = []
+    blocos_google = _quebrar_texto_google(texto)
+    google_ok = True
+    traduzidos_google: List[str] = []
 
     try:
-        from deep_translator import GoogleTranslator
+        import deep_translator  # noqa: F401  # valida dependência antes de iniciar
     except Exception as exc:
+        google_ok = False
+        erros_google.append(
+            "deep-translator indisponível: "
+            f"{type(exc).__name__}: {exc}"
+        )
+
+    if google_ok:
+        for indice_bloco, bloco in enumerate(blocos_google, start=1):
+            traducao_bloco = ""
+            sucesso_bloco = False
+            for numero_tentativa, atraso in enumerate(TRADUCAO_RETRY_SEGUNDOS, start=1):
+                if atraso:
+                    time.sleep(atraso)
+                try:
+                    resposta = _traduzir_google_bloco(bloco, idioma_origem)
+                    resposta = limpar_texto_editorial(resposta)
+                    if resposta and fonte_cientifica_valida(resposta):
+                        traducao_bloco = resposta
+                        sucesso_bloco = True
+                        break
+                    erros_google.append(
+                        f"bloco {indice_bloco}/{len(blocos_google)}, tentativa {numero_tentativa}: "
+                        "resposta vazia ou página de erro do servidor"
+                    )
+                except Exception as exc:
+                    erros_google.append(
+                        f"bloco {indice_bloco}/{len(blocos_google)}, tentativa {numero_tentativa}: "
+                        f"{type(exc).__name__}: {exc}"
+                    )
+
+            if not sucesso_bloco:
+                google_ok = False
+                traduzidos_google = []  # não misturamos tradução parcial com fallback
+                break
+            traduzidos_google.append(traducao_bloco)
+
+    if google_ok and traduzidos_google:
+        resposta_final = limpar_texto_editorial("\n\n".join(traduzidos_google))
+        if resposta_final and fonte_cientifica_valida(resposta_final):
+            nome_tradutor = "Google Translate via deep-translator"
+            cache[chave] = {
+                "paper_id": str(paper_id or ""),
+                "hash_fonte": hash_fonte,
+                "idioma_origem": idioma_origem,
+                "traducao_pt": resposta_final,
+                "tradutor": nome_tradutor,
+                "fallback_utilizado": False,
+                "blocos_traducao": len(blocos_google),
+                "salvo_em": agora_iso(),
+            }
+            salvar_json_atomico(TRADUCOES_BASE, cache)
+            return resposta_final, nome_tradutor, None, False
+
+    # Google falhou: traduzimos o abstract inteiro com OPUS-MT.
+    # Esta etapa só é permitida para inglês ou quando a origem não veio informada.
+    if idioma_origem not in {"en", "auto"}:
+        detalhe_google = " | ".join(erros_google[-8:])
         return (
             "",
             "Google Translate",
-            "Não foi possível carregar deep-translator. Instale com: "
-            f"python -m pip install -U deep-translator. Detalhe: {exc}",
+            "Google Translate ficou indisponível e o fallback OPUS-MT desta versão "
+            f"suporta inglês→português; idioma detectado/informado: {idioma_origem}. "
+            + detalhe_google,
             False,
         )
 
-    erros: List[str] = []
-    for numero_tentativa, atraso in enumerate(TRADUCAO_RETRY_SEGUNDOS, start=1):
-        if atraso:
-            time.sleep(atraso)
-        try:
-            resposta = GoogleTranslator(source=idioma_origem, target="pt").translate(texto)
-            resposta = limpar_texto_editorial(resposta)
-            if resposta and fonte_cientifica_valida(resposta):
-                cache[chave] = {
-                    "paper_id": str(paper_id or ""),
-                    "hash_fonte": hash_fonte,
-                    "idioma_origem": idioma_origem,
-                    "traducao_pt": resposta,
-                    "tradutor": "Google Translate via deep-translator",
-                    "salvo_em": agora_iso(),
-                }
-                salvar_json_atomico(TRADUCOES_BASE, cache)
-                return resposta, "Google Translate", None, False
+    try:
+        resposta_opus, quantidade_blocos_opus = _traduzir_opus_mt_local(texto)
+        resposta_opus = limpar_texto_editorial(resposta_opus)
+    except Exception as exc:
+        detalhe_google = " | ".join(erros_google[-8:])
+        return (
+            "",
+            f"OPUS-MT local ({OPUS_MT_MODEL}) — fallback do Google Translate",
+            "Google Translate ficou indisponível e o fallback local OPUS-MT também não pôde ser executado. "
+            "No mesmo ambiente virtual do Streamlit, instale o fallback com: "
+            "python -m pip install -U transformers sentencepiece torch. "
+            f"Erro OPUS-MT: {type(exc).__name__}: {exc}. "
+            f"Últimos erros do Google: {detalhe_google}",
+            False,
+        )
 
-            erros.append(
-                f"tentativa {numero_tentativa}: resposta vazia ou página de erro do servidor"
-            )
-        except Exception as exc:
-            erros.append(f"tentativa {numero_tentativa}: {type(exc).__name__}: {exc}")
+    if not resposta_opus or not fonte_cientifica_valida(resposta_opus):
+        detalhe_google = " | ".join(erros_google[-8:])
+        return (
+            "",
+            f"OPUS-MT local ({OPUS_MT_MODEL}) — fallback do Google Translate",
+            "Google Translate ficou indisponível e a tradução produzida pelo fallback OPUS-MT "
+            "foi considerada inválida. Nenhuma tradução parcial foi salva. "
+            f"Últimos erros do Google: {detalhe_google}",
+            False,
+        )
 
-    return (
-        "",
-        "Google Translate",
-        "Google Translate temporariamente indisponível após 4 tentativas "
-        "(imediata, +3 s, +8 s, +20 s). Para manter a consistência metodológica, "
-        "nenhuma LLM foi usada como tradutor. Tente gerar o rascunho novamente mais tarde. "
-        + " | ".join(erros),
-        False,
+    nome_tradutor = (
+        f"OPUS-MT local ({OPUS_MT_MODEL}) — fallback após indisponibilidade do Google Translate"
     )
+    cache[chave] = {
+        "paper_id": str(paper_id or ""),
+        "hash_fonte": hash_fonte,
+        "idioma_origem": idioma_origem,
+        "traducao_pt": resposta_opus,
+        "tradutor": nome_tradutor,
+        "fallback_utilizado": True,
+        "tradutor_principal": "Google Translate via deep-translator",
+        "motivo_fallback": " | ".join(erros_google[-8:])[:5000],
+        "blocos_google_tentados": len(blocos_google),
+        "blocos_opus": quantidade_blocos_opus,
+        "salvo_em": agora_iso(),
+    }
+    salvar_json_atomico(TRADUCOES_BASE, cache)
+    return resposta_opus, nome_tradutor, None, False
+
 
 def _erro_transitorio_llm(erro: Exception | str) -> bool:
     """Erros que justificam retry curto antes de trocar de modelo/provedor."""
@@ -577,6 +1044,33 @@ def _duracao_rate_limit_groq(erro: str) -> Optional[float]:
     return horas * 3600 + minutos * 60 + segundos
 
 
+def _duracao_retry_generico(erro: Exception | str) -> Optional[float]:
+    """Extrai retryDelay informado pelos provedores, quando houver."""
+    bruto = str(erro or "")
+    for padrao in (
+        r"Please retry in\s*([0-9.]+)s",
+        r"['\"]retryDelay['\"]\s*:\s*['\"]([0-9.]+)s",
+        r"retryDelay[^0-9]*([0-9.]+)s",
+    ):
+        achado = re.search(padrao, bruto, flags=re.I)
+        if achado:
+            try:
+                return max(0.0, float(achado.group(1)))
+            except ValueError:
+                pass
+    duracao_groq = _duracao_rate_limit_groq(bruto)
+    return float(duracao_groq) if duracao_groq is not None else None
+
+
+def _esperar_retry_provedor(tentativa: int, erro: Exception | str = "") -> None:
+    informado = _duracao_retry_generico(erro)
+    if informado is not None:
+        atraso = min(90.0, informado + 0.75)
+    else:
+        atraso = min(20.0, float(2 ** max(0, tentativa - 1)))
+    time.sleep(atraso + random.uniform(0.0, 0.30))
+
+
 def _chamar_gemini(
     cliente: Any,
     types: Any,
@@ -584,6 +1078,7 @@ def _chamar_gemini(
     prompt: str,
     json_mode: bool,
 ) -> Tuple[str, Optional[str]]:
+    """Gemini é usado SOMENTE nas etapas de simplificação textual."""
     ultimo_erro: Optional[str] = None
     for tentativa in range(1, LLM_TENTATIVAS_TRANSITORIAS + 1):
         try:
@@ -599,108 +1094,240 @@ def _chamar_gemini(
             if resposta.text and resposta.text.strip():
                 return resposta.text.strip(), None
             ultimo_erro = "Resposta vazia."
-            break
         except Exception as exc:
             ultimo_erro = str(exc)
             if tentativa >= LLM_TENTATIVAS_TRANSITORIAS or not _erro_transitorio_llm(exc):
                 break
-            _esperar_retry(tentativa)
+            _esperar_retry_provedor(tentativa, exc)
     return "", ultimo_erro or "Falha desconhecida."
 
 
-def chamar_llm(prompt: str, json_mode: bool = False) -> Tuple[str, str, Optional[str]]:
-    """Retorna (texto, modelo_usado, erro).
-
-    Ordem operacional:
-    1. Gemini principal, com retry em erros transitórios;
-    2. segundo modelo Gemini;
-    3. Groq.
-
-    Se o Groq já devolveu 429 nesta sessão, ele pode ser temporariamente pulado até o
-    tempo informado pelo próprio provedor terminar; essa decisão aparece no erro técnico.
-    O nome exato do modelo que respondeu é devolvido e persistido no rascunho.
-    """
-    gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+def _chamar_llama_groq(prompt: str, json_mode: bool = False) -> Tuple[str, str, Optional[str]]:
+    """Llama via Groq é usado para ficha, checagem e auditoria."""
     groq_key = os.getenv("GROQ_API_KEY")
-    erros: List[str] = []
+    if not groq_key:
+        return "", GROQ_MODEL, "GROQ_API_KEY ausente."
+    try:
+        from groq import Groq
+        cliente = Groq(api_key=groq_key)
+    except Exception as exc:
+        return "", GROQ_MODEL, f"Groq SDK: {exc}"
 
-    modelos_gemini = []
-    for modelo in (GEMINI_MODEL, GEMINI_FALLBACK_MODEL):
-        if modelo and modelo not in modelos_gemini:
-            modelos_gemini.append(modelo)
-
-    if gemini_key:
+    ultimo_erro: Optional[str] = None
+    for tentativa in range(1, LLM_TENTATIVAS_TRANSITORIAS + 1):
         try:
-            from google import genai
-            from google.genai import types
+            mensagens = []
+            if json_mode:
+                mensagens.append({
+                    "role": "system",
+                    "content": (
+                        "Retorne somente um objeto JSON válido, sem markdown, sem comentários "
+                        "e sem texto antes ou depois do JSON."
+                    ),
+                })
+            mensagens.append({"role": "user", "content": prompt})
 
-            cliente_gemini = genai.Client(api_key=gemini_key)
-            for modelo in modelos_gemini:
-                texto, erro = _chamar_gemini(
-                    cliente_gemini, types, modelo, prompt, json_mode
-                )
-                if texto:
-                    return texto, modelo, None
-                erros.append(f"Gemini {modelo}: {erro}")
-        except Exception as exc:
-            erros.append(f"Gemini SDK: {exc}")
-    else:
-        erros.append("Gemini: GEMINI_API_KEY ausente.")
-
-    # Se o Groq informou anteriormente um tempo de espera nesta sessão, evitamos
-    # chamadas repetidas que já sabemos que serão recusadas por 429/TPD.
-    bloqueado_ate = float(st.session_state.get("_groq_bloqueado_ate", 0.0) or 0.0)
-    if groq_key and time.time() >= bloqueado_ate:
-        try:
-            from groq import Groq
-
-            cliente = Groq(api_key=groq_key)
             kwargs = {
                 "model": GROQ_MODEL,
-                "messages": [{"role": "user", "content": prompt}],
-                "temperature": 0.15,
+                "messages": mensagens,
+                "temperature": 0.10,
             }
-            if json_mode:
-                kwargs["response_format"] = {"type": "json_object"}
-            resposta = cliente.chat.completions.create(**kwargs)
-            texto = resposta.choices[0].message.content or ""
-            if texto.strip():
-                return texto.strip(), GROQ_MODEL, None
-            erros.append(f"Groq {GROQ_MODEL}: resposta vazia.")
-        except Exception as exc:
-            erro_groq = str(exc)
-            erros.append(f"Groq {GROQ_MODEL}: {erro_groq}")
-            if "429" in erro_groq or "rate limit" in erro_groq.lower():
-                duracao = _duracao_rate_limit_groq(erro_groq)
-                if duracao:
-                    st.session_state["_groq_bloqueado_ate"] = time.time() + duracao
-    elif groq_key and bloqueado_ate > time.time():
-        restante = max(0, int(bloqueado_ate - time.time()))
-        erros.append(
-            f"Groq {GROQ_MODEL}: NÃO chamado nesta tentativa porque o próprio Groq informou "
-            f"rate limit anteriormente; bloqueio local restante: {restante}s."
-        )
-    else:
-        erros.append("Groq: GROQ_API_KEY ausente.")
 
-    return "", "nenhum", " | ".join(erros)
+            # GPT-OSS na Groq pode devolver json_validate_failed quando response_format
+            # é forçado pelo servidor. Para esse modelo pedimos JSON no prompt e fazemos
+            # o parse/validação local com extrair_json(), que é mais tolerante.
+            if str(GROQ_MODEL).startswith("openai/gpt-oss-"):
+                kwargs["reasoning_effort"] = "medium"
+                kwargs["reasoning_format"] = "hidden"
+            elif json_mode:
+                kwargs["response_format"] = {"type": "json_object"}
+
+            resposta = cliente.chat.completions.create(**kwargs)
+            conteudo = (resposta.choices[0].message.content or "").strip()
+            if conteudo:
+                return conteudo, GROQ_MODEL, None
+            ultimo_erro = "Resposta vazia."
+        except Exception as exc:
+            ultimo_erro = str(exc)
+            # 413 não melhora repetindo o mesmo prompt: retorna imediatamente para a etapa compactar/falhar.
+            if _erro_413_tokens(ultimo_erro):
+                break
+            if tentativa >= LLM_TENTATIVAS_TRANSITORIAS or not _erro_transitorio_llm(exc):
+                break
+            _esperar_retry_provedor(tentativa, exc)
+    return "", GROQ_MODEL, ultimo_erro or "Falha desconhecida."
+
+
+def chamar_llm(prompt: str, json_mode: bool = False) -> Tuple[str, str, Optional[str]]:
+    """Gemini 3.5 Flash: exclusivamente geração/reparo de textos simplificados."""
+    gemini_key = os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")
+    if not gemini_key:
+        return "", GEMINI_MODEL, "GEMINI_API_KEY ausente."
+    try:
+        from google import genai
+        from google.genai import types
+        cliente = genai.Client(api_key=gemini_key)
+        texto, erro = _chamar_gemini(cliente, types, GEMINI_MODEL, prompt, json_mode)
+        if texto:
+            return texto, GEMINI_MODEL, None
+        return "", GEMINI_MODEL, f"Gemini {GEMINI_MODEL}: {erro}"
+    except Exception as exc:
+        return "", GEMINI_MODEL, f"Gemini SDK: {exc}"
+
+
+
+def chamar_llm_auditoria_estruturada(
+    prompt: str,
+    schema: Dict[str, Any],
+    nome_schema: str,
+) -> Tuple[Dict[str, Any], str, Optional[str]]:
+    """Auditoria via Groq com JSON Schema estrito quando GPT-OSS estiver em uso.
+
+    O GPT-OSS 120B/20B suporta Structured Outputs strict na Groq. Nesse modo,
+    o servidor restringe a geração ao schema e evita respostas JSON incompletas.
+    """
+    groq_key = os.getenv("GROQ_API_KEY")
+    if not groq_key:
+        return {}, GROQ_MODEL, "GROQ_API_KEY ausente."
+
+    # Para outros modelos, mantém compatibilidade com o caminho anterior.
+    if not str(GROQ_MODEL).startswith("openai/gpt-oss-"):
+        resposta, modelo, erro = _chamar_llama_groq(prompt, json_mode=True)
+        dados = extrair_json(resposta)
+        return (dados or {}), modelo, erro if dados else (erro or "JSON inválido.")
+
+    try:
+        from groq import Groq
+        cliente = Groq(api_key=groq_key)
+    except Exception as exc:
+        return {}, GROQ_MODEL, f"Groq SDK: {exc}"
+
+    ultimo_erro = ""
+    for tentativa in range(1, LLM_TENTATIVAS_TRANSITORIAS + 1):
+        try:
+            resposta = cliente.chat.completions.create(
+                model=GROQ_MODEL,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "Você é um avaliador científico. Responda somente no formato "
+                            "estruturado solicitado. Não use conhecimento externo."
+                        ),
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                temperature=0.0,
+                reasoning_effort="low",
+                reasoning_format="hidden",
+                max_tokens=3000,
+                response_format={
+                    "type": "json_schema",
+                    "json_schema": {
+                        "name": nome_schema,
+                        "strict": True,
+                        "schema": schema,
+                    },
+                },
+            )
+            conteudo = (resposta.choices[0].message.content or "").strip()
+            if not conteudo:
+                ultimo_erro = "Resposta vazia."
+            else:
+                try:
+                    dados = json.loads(conteudo)
+                except Exception:
+                    dados = extrair_json(conteudo)
+                if isinstance(dados, dict):
+                    return dados, GROQ_MODEL, None
+                ultimo_erro = "Resposta estruturada não pôde ser lida."
+        except Exception as exc:
+            ultimo_erro = str(exc)
+
+            # Erros permanentes não melhoram com repetição idêntica.
+            if _erro_413_tokens(ultimo_erro):
+                break
+            if "404" in ultimo_erro or "model_not_found" in ultimo_erro.lower():
+                break
+
+            if tentativa >= LLM_TENTATIVAS_TRANSITORIAS:
+                break
+
+            if _erro_transitorio_llm(exc):
+                _esperar_retry_provedor(tentativa, exc)
+            else:
+                break
+
+    return {}, GROQ_MODEL, ultimo_erro or "Falha na resposta estruturada."
+
+def chamar_llm_auditoria(prompt: str, json_mode: bool = False) -> Tuple[str, str, Optional[str]]:
+    """Llama 3.3 70B via Groq: ficha factual, checagem e auditoria."""
+    return _chamar_llama_groq(prompt, json_mode=json_mode)
+
 
 def extrair_json(texto: str) -> Optional[Dict]:
+    """Extrai JSON de respostas de LLM de forma tolerante.
+
+    Ordem:
+    1. JSON padrão;
+    2. objeto entre a primeira { e a última };
+    3. literal Python (aspas simples/True/False);
+    4. YAML seguro, útil para pequenas imperfeições sintáticas.
+    """
     if not texto:
         return None
-    limpo = re.sub(r"^```(?:json)?\s*|\s*```$", "", texto.strip(), flags=re.I | re.S)
-    try:
-        valor = json.loads(limpo)
-        return valor if isinstance(valor, dict) else None
-    except json.JSONDecodeError:
-        inicio = limpo.find("{")
-        fim = limpo.rfind("}")
-        if inicio >= 0 and fim > inicio:
-            try:
-                valor = json.loads(limpo[inicio : fim + 1])
-                return valor if isinstance(valor, dict) else None
-            except json.JSONDecodeError:
-                return None
+
+    bruto = str(texto).strip()
+    bruto = re.sub(r"^```(?:json|javascript|python)?\s*", "", bruto, flags=re.I)
+    bruto = re.sub(r"\s*```$", "", bruto, flags=re.I)
+
+    candidatos = [bruto]
+    inicio = bruto.find("{")
+    fim = bruto.rfind("}")
+    if inicio >= 0 and fim > inicio:
+        objeto = bruto[inicio:fim + 1].strip()
+        if objeto not in candidatos:
+            candidatos.append(objeto)
+
+    for candidato in candidatos:
+        # JSON padrão.
+        try:
+            valor = json.loads(candidato)
+            if isinstance(valor, dict):
+                return valor
+        except Exception:
+            pass
+
+        # Corrige erros comuns antes de uma segunda tentativa.
+        reparado = candidato
+        reparado = reparado.replace("“", '"').replace("”", '"')
+        reparado = reparado.replace("‘", "'").replace("’", "'")
+        reparado = re.sub(r",\s*([}\]])", r"\1", reparado)
+
+        try:
+            valor = json.loads(reparado)
+            if isinstance(valor, dict):
+                return valor
+        except Exception:
+            pass
+
+        # Muitos modelos devolvem um dict Python válido em vez de JSON.
+        try:
+            valor = ast.literal_eval(reparado)
+            if isinstance(valor, dict):
+                return valor
+        except Exception:
+            pass
+
+        # Última tentativa local: YAML consegue interpretar vários JSONs imperfeitos.
+        try:
+            import yaml
+            valor = yaml.safe_load(reparado)
+            if isinstance(valor, dict):
+                return valor
+        except Exception:
+            pass
+
     return None
 
 
@@ -833,39 +1460,287 @@ def blocos_para_texto(blocos: Dict[str, str]) -> str:
     return "\n\n".join(partes).strip()
 
 
+
+BLOCOS_DIVULGACAO = (
+    ("o_principal", "O principal"),
+    ("o_que_o_artigo_fez", "O que o artigo fez"),
+    ("o_que_foi_encontrado", "O que foi encontrado"),
+    ("o_que_isso_significa", "O que isso significa"),
+)
+
+
+def _paragrafos_editoriais(texto: Any) -> List[str]:
+    """Separa um texto editorial em parágrafos sem reescrever o conteúdo."""
+    limpo = limpar_texto_editorial(texto)
+    if not limpo:
+        return []
+    return [parte.strip() for parte in re.split(r"\n\s*\n", limpo) if parte.strip()]
+
+
+def _chave_bloco_divulgacao(chave: str) -> Optional[str]:
+    normalizada = _sem_acentos_minusculo(str(chave or ""))
+    normalizada = re.sub(r"[^a-z0-9]+", "_", normalizada).strip("_")
+    aliases = {
+        "o_principal": "o_principal", "principal": "o_principal", "mensagem_principal": "o_principal",
+        "o_que_o_artigo_fez": "o_que_o_artigo_fez", "o_que_foi_feito": "o_que_o_artigo_fez",
+        "como_o_estudo_foi_feito": "o_que_o_artigo_fez", "metodo": "o_que_o_artigo_fez", "metodos": "o_que_o_artigo_fez",
+        "o_que_foi_encontrado": "o_que_foi_encontrado", "resultados": "o_que_foi_encontrado", "resultado": "o_que_foi_encontrado",
+        "o_que_isso_significa": "o_que_isso_significa", "significado": "o_que_isso_significa",
+        "interpretacao": "o_que_isso_significa", "conclusao": "o_que_isso_significa", "limitacoes": "o_que_isso_significa",
+    }
+    return aliases.get(normalizada)
+
+
+def normalizar_blocos_divulgacao(valor: Any) -> Dict[str, str]:
+    blocos = {chave: "" for chave, _ in BLOCOS_DIVULGACAO}
+    if valor is None:
+        return blocos
+    estruturado = valor
+    if isinstance(valor, str):
+        bruto = valor.strip()
+        if bruto[:1] in "[{" and bruto[-1:] in "]}":
+            for parser in (json.loads, ast.literal_eval):
+                try:
+                    estruturado = parser(bruto)
+                    break
+                except Exception:
+                    continue
+    if isinstance(estruturado, list):
+        for item in estruturado:
+            if not isinstance(item, dict):
+                continue
+            chave = _chave_bloco_divulgacao(str(item.get("chave") or item.get("titulo") or item.get("rotulo") or ""))
+            conteudo = limpar_texto_editorial(item.get("texto") or item.get("conteudo") or item.get("valor") or "")
+            if chave and conteudo:
+                blocos[chave] = conteudo
+        return blocos
+    if isinstance(estruturado, dict):
+        for chave_bruta, conteudo in estruturado.items():
+            chave = _chave_bloco_divulgacao(str(chave_bruta))
+            texto = limpar_texto_editorial(conteudo)
+            if chave and texto:
+                blocos[chave] = texto
+        return blocos
+    texto = limpar_texto_editorial(estruturado)
+    padrao = re.compile(r"(?im)^\s*(O principal|O que o artigo fez|O que foi encontrado|O que isso significa)\s*[:\-]?\s*$")
+    marcas = list(padrao.finditer(texto))
+    for indice, marca in enumerate(marcas):
+        inicio = marca.end(); fim = marcas[indice+1].start() if indice+1 < len(marcas) else len(texto)
+        chave = _chave_bloco_divulgacao(marca.group(1))
+        if chave:
+            blocos[chave] = texto[inicio:fim].strip()
+
+    if any(blocos.values()):
+        return blocos
+
+    # O editor do revisor salva a Divulgação como texto corrido sem os títulos
+    # dos cards. Como a geração produz exatamente quatro parágrafos semânticos,
+    # recuperamos os cards somente quando houver EXATAMENTE quatro parágrafos.
+    # Isso evita divisões arbitrárias de textos antigos.
+    paragrafos = _paragrafos_editoriais(texto)
+    if len(paragrafos) == 4:
+        for (chave, _), paragrafo in zip(BLOCOS_DIVULGACAO, paragrafos):
+            blocos[chave] = paragrafo
+
+    return blocos
+
+
+def blocos_divulgacao_para_texto(blocos: Dict[str, str]) -> str:
+    return "\n\n".join(
+        limpar_texto_editorial(blocos.get(chave, ""))
+        for chave, _ in BLOCOS_DIVULGACAO
+        if limpar_texto_editorial(blocos.get(chave, ""))
+    ).strip()
+
+
+def blocos_divulgacao_para_lista(blocos: Dict[str, str]) -> List[Dict[str, str]]:
+    resultado = []
+    for chave, titulo in BLOCOS_DIVULGACAO:
+        conteudo = limpar_texto_editorial(blocos.get(chave, ""))
+        if conteudo:
+            resultado.append({"chave": chave, "titulo": titulo, "texto": conteudo})
+    return resultado
+
+
+def divulgacao_tem_quatro_blocos(blocos: Dict[str, str]) -> bool:
+    return all(limpar_texto_editorial(blocos.get(chave, "")) for chave, _ in BLOCOS_DIVULGACAO)
+
+
+def estruturar_divulgacao_cientifica(valor: Any) -> List[Dict[str, str]]:
+    """Só cria cards quando a estrutura semântica está explícita; não separa por posição."""
+    return blocos_divulgacao_para_lista(normalizar_blocos_divulgacao(valor))
+
+def _sem_acentos_minusculo(texto: str) -> str:
+    base = "".join(
+        caractere
+        for caractere in unicodedata.normalize("NFKD", str(texto or "").lower())
+        if not unicodedata.combining(caractere)
+    )
+    return re.sub(r"\s+", " ", base).strip()
+
+
+
+_ROTULOS_RESUMO = {
+    "contexto": "contexto_objetivo",
+    "introducao": "contexto_objetivo",
+    "objetivo": "contexto_objetivo",
+    "objetivos": "contexto_objetivo",
+    "metodos": "metodos",
+    "metodo": "metodos",
+    "fontes de dados": "metodos",
+    "fonte de dados": "metodos",
+    "extracao de dados": "metodos",
+    "selecao dos estudos": "metodos",
+    "participantes": "metodos",
+    "analise de dados": "resultados",
+    "resultados": "resultados",
+    "resultado": "resultados",
+    "conclusao": "conclusao",
+    "conclusoes": "conclusao",
+    "limitacoes": "conclusao",
+    "registro de revisao sistematica": "conclusao",
+}
+
+_ROTULOS_RESUMO_TITULOS = {
+    "contexto_objetivo": "Contexto e objetivo",
+    "metodos": "Como o estudo foi feito",
+    "resultados": "Resultados",
+    "conclusao": "Conclusão",
+}
+
+def estruturar_resumo_cientifico(texto: Any) -> List[Dict[str, str]]:
+    """Organiza o resumo científico traduzido em cards sem alterar seu conteúdo."""
+    paragrafos = _paragrafos_editoriais(texto)
+    if not paragrafos:
+        return []
+
+    # Primeiro preserva a estrutura explícita do próprio abstract quando ele traz
+    # rótulos como Contexto:, Objetivo:, Fontes de dados:, Resultados: e Conclusão:.
+    agrupados = {chave: [] for chave in _ROTULOS_RESUMO_TITULOS}
+    reconhecidos = 0
+    ultimo_grupo = None
+
+    for paragrafo in paragrafos:
+        match = re.match(r"^\s*([^:]{2,50})\s*:\s*(.*)$", paragrafo, flags=re.S)
+        if match:
+            rotulo_original = match.group(1).strip()
+            chave_rotulo = _sem_acentos_minusculo(rotulo_original)
+            grupo = _ROTULOS_RESUMO.get(chave_rotulo)
+            if grupo:
+                reconhecidos += 1
+                ultimo_grupo = grupo
+                conteudo = match.group(2).strip()
+                # Mantemos o rótulo no próprio texto para não apagar informação da
+                # tradução original; o título do card funciona apenas como navegação.
+                texto_preservado = f"{rotulo_original}: {conteudo}".strip()
+                agrupados[grupo].append(texto_preservado)
+                continue
+
+        if ultimo_grupo:
+            agrupados[ultimo_grupo].append(paragrafo)
+
+    if reconhecidos:
+        blocos = []
+        for chave in ("contexto_objetivo", "metodos", "resultados", "conclusao"):
+            partes = agrupados[chave]
+            if partes:
+                blocos.append({
+                    "chave": chave,
+                    "titulo": _ROTULOS_RESUMO_TITULOS[chave],
+                    "texto": "\n\n".join(partes).strip(),
+                })
+        if blocos:
+            return blocos
+
+    # Abstracts não estruturados: apenas agrupamos os parágrafos já existentes.
+    if len(paragrafos) >= 4:
+        grupos = [
+            ("contexto_objetivo", "Contexto e objetivo", paragrafos[:1]),
+            ("metodos", "Como o estudo foi feito", paragrafos[1:2]),
+            ("resultados", "Resultados", paragrafos[2:-1]),
+            ("conclusao", "Conclusão", paragrafos[-1:]),
+        ]
+    elif len(paragrafos) == 3:
+        grupos = [
+            ("contexto_metodo", "Contexto, objetivo e método", paragrafos[:1]),
+            ("resultados", "Resultados", paragrafos[1:2]),
+            ("conclusao", "Conclusão", paragrafos[2:]),
+        ]
+    elif len(paragrafos) == 2:
+        grupos = [
+            ("contexto_metodo", "Contexto e método", paragrafos[:1]),
+            ("resultados_conclusao", "Resultados e conclusão", paragrafos[1:]),
+        ]
+    else:
+        grupos = [("resumo", "Resumo científico", paragrafos)]
+
+    return [
+        {"chave": chave, "titulo": titulo, "texto": "\n\n".join(partes).strip()}
+        for chave, titulo, partes in grupos
+        if partes and "\n\n".join(partes).strip()
+    ]
+
+
 def normalizar_item_editorial(item: Dict[str, Any]) -> Tuple[Dict[str, Any], bool]:
     atualizado = dict(item)
     antes = json.dumps(atualizado, ensure_ascii=False, sort_keys=True, default=str)
 
-    divulgacao = limpar_texto_editorial(
+    # Metadados de abordagens antigas não fazem mais parte da metodologia atual.
+    for campo_antigo in (
+        "score_prioridade_editorial",
+        "score_qualidade",
+        "prioridade_editorial_legada",
+        "avaliacao_prioridade_cientifica",
+        "avaliacao_ocebm_jbi",
+    ):
+        atualizado.pop(campo_antigo, None)
+
+    tipos_item = atualizado.get("tipos") or []
+    if not atualizado.get("categoria_selecao"):
+        if set(tipos_item) & {"SystematicReview", "MetaAnalysis"}:
+            atualizado["categoria_selecao"] = "sintese_evidencia"
+            atualizado["categoria_selecao_rotulo"] = "Síntese de evidência priorizada"
+        else:
+            atualizado["categoria_selecao"] = "estudo_elegivel"
+            atualizado["categoria_selecao_rotulo"] = "Estudo científico elegível"
+
+    divulgacao_original = atualizado.get("divulgacao_cientifica_blocos") or atualizado.get("divulgacao_cientifica") or atualizado.get("leve") or ""
+    blocos_div = normalizar_blocos_divulgacao(divulgacao_original)
+    divulgacao = blocos_divulgacao_para_texto(blocos_div) or limpar_texto_editorial(
         atualizado.get("divulgacao_cientifica") or atualizado.get("leve") or ""
     )
     blocos = normalizar_blocos_leitura(
-        atualizado.get("leitura_facilitada_blocos")
-        or atualizado.get("leitura_facilitada")
-        or atualizado.get("forte")
-        or ""
+        atualizado.get("leitura_facilitada_blocos") or atualizado.get("leitura_facilitada") or atualizado.get("forte") or ""
     )
     facilitada = blocos_para_texto(blocos)
     resumo = limpar_texto_editorial(
-        atualizado.get("resumo_cientifico_traduzido")
-        or atualizado.get("texto_fonte_pt")
-        or atualizado.get("abstract_pt")
-        or ""
+        atualizado.get("resumo_cientifico_traduzido") or atualizado.get("texto_fonte_pt") or atualizado.get("abstract_pt") or ""
     )
 
     atualizado["divulgacao_cientifica"] = divulgacao
+    if any(blocos_div.values()):
+        atualizado["divulgacao_cientifica_blocos"] = blocos_divulgacao_para_lista(blocos_div)
+        atualizado["divulgacao_blocos_semanticos"] = divulgacao_tem_quatro_blocos(blocos_div)
     atualizado["leitura_facilitada_blocos"] = blocos
     atualizado["leitura_facilitada"] = facilitada
     atualizado["resumo_cientifico_traduzido"] = resumo
+    atualizado["resumo_cientifico_blocos"] = estruturar_resumo_cientifico(resumo)
     atualizado["leve"] = divulgacao
     atualizado["forte"] = facilitada
+
+    # O tema original continua intacto para filtro/rastreabilidade; o portal recebe
+    # também um rótulo pt-BR pronto para exibição. A migração abaixo atualiza inclusive
+    # publicações antigas já existentes em noticias.json.
+    tema_original = atualizado.get("tema_original") or atualizado.get("tema")
+    if tema_original:
+        atualizado["tema_original"] = tema_original
+        atualizado["tema_exibicao"] = traduzir_tema_exibicao(tema_original)
+
     if resumo:
         atualizado["abstract_pt"] = resumo
 
     depois = json.dumps(atualizado, ensure_ascii=False, sort_keys=True, default=str)
     return atualizado, antes != depois
-
 
 def migrar_arquivo_editorial(caminho: Path) -> None:
     lista = carregar_json(caminho, [])
@@ -938,24 +1813,704 @@ def calcular_idf_corpus(documentos: Iterable[str]) -> Dict[str, float]:
     return {lema: math.log((n + 1) / (df + 1)) + 1.0 for lema, df in frequencia.items()}
 
 
+
+def _percentil_valores(valores: List[float], q: float) -> float:
+    """Percentil simples sem depender de NumPy."""
+    limpos = sorted(float(v) for v in valores if isinstance(v, (int, float)))
+    if not limpos:
+        return 0.0
+    if len(limpos) == 1:
+        return limpos[0]
+    q = min(1.0, max(0.0, float(q)))
+    posicao = (len(limpos) - 1) * q
+    inferior = int(math.floor(posicao))
+    superior = int(math.ceil(posicao))
+    if inferior == superior:
+        return limpos[inferior]
+    fracao = posicao - inferior
+    return limpos[inferior] * (1.0 - fracao) + limpos[superior] * fracao
+
+
+def _idf_de_termo(termo: str, idf: Dict[str, float]) -> float:
+    """IDF médio dos lemas de conteúdo que formam o termo.
+
+    Um lema ausente usa a mediana do corpus como fallback, e não 1.0.
+    Isso evita classificar uma palavra difícil como comum apenas por diferença
+    de lematização/flexão.
+    """
+    termo = limpar_texto_editorial(termo)
+    if not termo:
+        return 0.0
+
+    valores_corpus = sorted(float(v) for v in idf.values()) if idf else []
+    if valores_corpus:
+        meio = len(valores_corpus) // 2
+        if len(valores_corpus) % 2:
+            fallback = valores_corpus[meio]
+        else:
+            fallback = (valores_corpus[meio - 1] + valores_corpus[meio]) / 2.0
+    else:
+        fallback = 1.0
+
+    nlp, _ = carregar_nlp()
+    try:
+        doc = nlp(termo.lower())
+        lemas = [
+            (t.lemma_ or t.text).lower()
+            for t in doc
+            if t.is_alpha and not t.is_stop and len(t.text) > 2
+        ]
+    except Exception:
+        lemas = [
+            p for p in re.findall(r"[A-Za-zÀ-ÖØ-öø-ÿ]{3,}", termo.lower())
+        ]
+
+    if not lemas:
+        return fallback
+
+    valores = [float(idf.get(lema, fallback)) for lema in lemas]
+    return sum(valores) / max(1, len(valores))
+
+def _termo_aparece(texto: str, termo: str) -> bool:
+    """Busca lexical tolerante a caixa/acentos."""
+    base = _sem_acentos_minusculo(limpar_texto_editorial(texto))
+    alvo = _sem_acentos_minusculo(limpar_texto_editorial(termo))
+    if not base or not alvo:
+        return False
+    return re.search(rf"(?<!\w){re.escape(alvo)}(?!\w)", base) is not None
+
+
+def _ocorrencias_termo(texto: str, termo: str) -> int:
+    base = _sem_acentos_minusculo(limpar_texto_editorial(texto))
+    alvo = _sem_acentos_minusculo(limpar_texto_editorial(termo))
+    if not base or not alvo:
+        return 0
+    return len(re.findall(rf"(?<!\w){re.escape(alvo)}(?!\w)", base))
+
+
+def construir_mapa_lexical_idf(
+    texto_fonte_pt: str,
+    titulo: str,
+    ficha: Dict[str, Any],
+    idf: Dict[str, float],
+    termos_complexos: Optional[List[str]] = None,
+) -> Dict[str, Any]:
+    """Constrói o NCL-IDF 0/1/2 sem confundir raridade com dificuldade.
+
+    PRINCÍPIO:
+    O IDF/frequência documental informa raridade NO ARTIGO, mas raridade sozinha
+    não significa dificuldade. A classificação combina:
+
+    1. frequência documental/IDF;
+    2. proteção de vocabulário cotidiano e termos centrais;
+    3. identificação de termos técnicos essenciais;
+    4. identificação de vocabulário acadêmico/formal;
+    5. complexidade lexical do termo.
+
+    NCL 0
+    - pode permanecer nos dois níveis;
+    - inclui termos centrais e palavras cotidianas.
+
+    NCL 1
+    - pode aparecer explicado na Divulgação;
+    - deve ser preferencialmente substituído no N2;
+    - inclui termos técnicos importantes/essenciais.
+
+    NCL 2
+    - deve ser preferencialmente substituído nos dois níveis;
+    - inclui jargão e formulações acadêmicas não essenciais.
+
+    IMPORTANTE:
+    O mapa final é BALANCEADO. Ele nunca corta todos os níveis 0/1 apenas porque
+    há muitos candidatos nível 2.
+    """
+    ficha_n = normalizar_ficha(ficha)
+
+    unidades_fonte = [
+        limpar_texto_editorial(u)
+        for u in segmentar_unidades_semanticas(texto_fonte_pt)
+        if limpar_texto_editorial(u)
+    ]
+    if not unidades_fonte:
+        unidades_fonte = [limpar_texto_editorial(texto_fonte_pt)]
+
+    total_unidades = max(1, len(unidades_fonte))
+
+    # ------------------------------------------------------------------
+    # Vocabulário cotidiano / temático que não deve virar "difícil"
+    # apenas por aparecer poucas vezes.
+    # Tudo é normalizado antes da comparação.
+    # ------------------------------------------------------------------
+    cotidianos_superficie = {
+        "cabeça", "alimentação", "alimento", "alimentos", "comida", "comidas",
+        "bebida", "bebidas", "pessoas", "pessoa", "pacientes", "paciente",
+        "adultos", "adulto", "pesquisa", "pesquisas", "estudo", "estudos",
+        "resultado", "resultados", "qualidade", "gordura", "tratar", "tratamento",
+        "prevenir", "prevenção", "aumentar", "diminuir", "reduzir", "redução",
+        "crises", "crise", "álcool", "cafeína", "enxaqueca", "dieta", "dietas",
+        "ano", "anos", "grupo", "grupos", "dor", "dores", "saúde",
+    }
+    cotidianos_norm = {
+        _sem_acentos_minusculo(x)
+        for x in cotidianos_superficie
+    } | {
+        _sem_acentos_minusculo(x)
+        for x in PALAVRAS_COMUNS_LONGAS
+    }
+
+    # Termos de calendário/organização não são alvo lexical do estudo.
+    neutros_norm = {
+        "janeiro", "fevereiro", "marco", "abril", "maio", "junho",
+        "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+        "medline", "embase", "nice",
+    }
+
+    # Expressões acadêmicas úteis para detectar jargão real.
+    # O nível final ainda considera se o termo é essencial ou não.
+    pistas_academicas = {
+        "revisao sistematica",
+        "pesquisa bibliografica",
+        "literatura publicada",
+        "fontes primarias",
+        "intervencoes dieteticas",
+        "ensaio clinico randomizado",
+        "ensaios clinicos randomizados",
+        "estudo observacional",
+        "estudos observacionais",
+        "estudo transversal",
+        "estudos transversais",
+        "protocolo a priori",
+        "evidencia",
+        "evidencias",
+        "eficacia",
+        "qualitativamente",
+        "inquerito",
+        "inqueritos",
+        "incapacitante",
+        "desencadeantes",
+        "bibliografica",
+        "observacionais",
+        "transversais",
+        "sistematica",
+        "intervencoes",
+        "dieteticas",
+        "randomizados",
+        "randomizado",
+        "protocolo",
+    }
+
+    # Alguns conceitos são formais, mas úteis para o leitor compreender a força
+    # da evidência. Eles devem preferencialmente ficar em NCL 1, não 2.
+    formais_explica_norm = {
+        "frequencia",
+        "associacao",
+        "associado",
+        "associados",
+        "evidencia",
+        "evidencias",
+        "limitacao",
+        "limitacoes",
+        "observacional",
+        "observacionais",
+        "transversal",
+        "transversais",
+    }
+
+    tecnicos_essenciais = _lista_simplificacao(
+        ficha_n.get("termos_tecnicos_essenciais")
+    )
+    tipo_estudo = limpar_texto_editorial(ficha_n.get("tipo_estudo"))
+
+    termos_essenciais = list(tecnicos_essenciais)
+    if tipo_estudo:
+        termos_essenciais.append(tipo_estudo)
+
+    essenciais_norm = {
+        _sem_acentos_minusculo(t)
+        for t in termos_essenciais
+        if limpar_texto_editorial(t)
+    }
+
+    # ------------------------------------------------------------------
+    # Helpers
+    # ------------------------------------------------------------------
+    def df_local(termo: str) -> int:
+        return sum(
+            1
+            for unidade in unidades_fonte
+            if _termo_aparece(unidade, termo)
+        )
+
+    def termo_na_fonte(termo: str) -> bool:
+        return _termo_aparece(texto_fonte_pt, termo)
+
+    def palavras_norm(termo: str) -> List[str]:
+        return re.findall(
+            r"[a-z0-9]+",
+            _sem_acentos_minusculo(termo),
+        )
+
+    def eh_academico(termo: str) -> bool:
+        tn = _sem_acentos_minusculo(termo)
+        if tn in pistas_academicas:
+            return True
+        palavras = palavras_norm(termo)
+        return any(p in pistas_academicas for p in palavras)
+
+    def eh_cotidiano(termo: str) -> bool:
+        tn = _sem_acentos_minusculo(termo)
+        if tn in cotidianos_norm:
+            return True
+        ps = palavras_norm(termo)
+        return (
+            len(ps) == 1
+            and ps[0] in cotidianos_norm
+        )
+
+    def eh_neutro(termo: str) -> bool:
+        tn = _sem_acentos_minusculo(termo)
+        return tn in neutros_norm
+
+    def contem_conceito_essencial(termo: str) -> bool:
+        tn = _sem_acentos_minusculo(termo)
+        if tn in essenciais_norm:
+            return True
+
+        # Frase essencial pode aparecer com pequenas diferenças de flexão.
+        palavras_t = set(palavras_norm(termo))
+        if not palavras_t:
+            return False
+
+        for essencial in essenciais_norm:
+            palavras_e = set(re.findall(r"[a-z0-9]+", essencial))
+            if not palavras_e:
+                continue
+            inter = len(palavras_t & palavras_e)
+            if inter >= max(1, min(2, len(palavras_e))):
+                if inter / max(1, len(palavras_t | palavras_e)) >= 0.45:
+                    return True
+        return False
+
+    # ------------------------------------------------------------------
+    # Candidatos
+    # ------------------------------------------------------------------
+    candidatos: Dict[str, Dict[str, Any]] = {}
+
+    def adicionar(termo: Any, origem: str, prioridade: int = 0) -> None:
+        termo = limpar_texto_editorial(termo)
+        if not termo:
+            return
+        tn = _sem_acentos_minusculo(termo)
+        if not tn or eh_neutro(termo):
+            return
+        if not termo_na_fonte(termo):
+            return
+
+        atual = candidatos.get(tn)
+        registro = {
+            "termo": termo,
+            "origens": {origem},
+            "prioridade": prioridade,
+        }
+        if atual:
+            atual["origens"].add(origem)
+            atual["prioridade"] = max(
+                int(atual.get("prioridade", 0)),
+                prioridade,
+            )
+        else:
+            candidatos[tn] = registro
+
+    # A) conceitos técnicos essenciais -> garantem NCL 1 quando não são centrais/cotidianos
+    for termo in termos_essenciais:
+        adicionar(termo, "termo_essencial", prioridade=100)
+
+    # B) termos realmente complexos calculados pelo diagnóstico lexical
+    for termo in termos_complexos or []:
+        adicionar(termo, "complexidade_lexical", prioridade=80)
+
+    # C) expressões acadêmicas conhecidas que aparecem literalmente na fonte
+    #    (não adiciona palavras raras aleatórias).
+    expressoes_academicas_superficie = [
+        "revisão sistemática",
+        "pesquisa bibliográfica",
+        "literatura publicada",
+        "fontes primárias",
+        "intervenções dietéticas",
+        "ensaios clínicos randomizados",
+        "estudos observacionais",
+        "estudos transversais",
+        "protocolo a priori",
+        "evidências",
+        "evidência",
+        "eficácia",
+        "qualitativamente",
+        "inquéritos",
+        "incapacitante",
+        "fatores desencadeantes",
+    ]
+    for termo in expressoes_academicas_superficie:
+        adicionar(termo, "pista_academica", prioridade=90)
+
+    # D) termos cotidianos/centrais importantes: entram no mapa como NCL 0 para
+    #    que a escala 0 também fique visível e metodologicamente rastreável.
+    for termo in sorted(
+        cotidianos_superficie,
+        key=lambda x: (-df_local(x), x),
+    ):
+        if termo_na_fonte(termo):
+            adicionar(termo, "cotidiano_central", prioridade=40)
+
+    # E) palavras recorrentes da fonte (df >= 3), desde que não acadêmicas.
+    #    São bons representantes naturais de NCL 0.
+    nlp, _ = carregar_nlp()
+    try:
+        doc_fonte = nlp(texto_fonte_pt.lower())
+        vistos_recorrentes = set()
+        for token in doc_fonte:
+            if not token.is_alpha or token.is_stop:
+                continue
+            palavra = token.text.strip().lower()
+            pn = _sem_acentos_minusculo(palavra)
+            if (
+                len(palavra) < 5
+                or pn in vistos_recorrentes
+                or pn in neutros_norm
+                or eh_academico(palavra)
+            ):
+                continue
+            vistos_recorrentes.add(pn)
+            if df_local(palavra) >= 3:
+                adicionar(palavra, "recorrente", prioridade=30)
+    except Exception:
+        pass
+
+    # ------------------------------------------------------------------
+    # Classificação
+    # ------------------------------------------------------------------
+    itens: List[Dict[str, Any]] = []
+
+    for registro in candidatos.values():
+        termo = registro["termo"]
+        termo_norm = _sem_acentos_minusculo(termo)
+
+        df = max(1, df_local(termo))
+        idf_local = math.log(
+            (total_unidades + 1) / (df + 1)
+        ) + 1.0
+        idf_medio = _idf_de_termo(termo, idf)
+
+        cotidiano = eh_cotidiano(termo)
+        academico = eh_academico(termo)
+        essencial = contem_conceito_essencial(termo)
+        formal_explica = any(
+            p in formais_explica_norm
+            for p in palavras_norm(termo)
+        )
+
+        # Base IDF/df.
+        if df >= 3:
+            nivel_base = 0
+        elif df == 2:
+            nivel_base = 1
+        else:
+            nivel_base = 2
+
+        criterio_partes = [f"df={df}/{total_unidades}"]
+
+        # 1. Cotidiano/central prevalece: NCL 0.
+        if cotidiano and not academico:
+            nivel = 0
+            criterio_partes.append("cotidiano/central")
+
+        # 2. Termo técnico essencial: NCL 1,
+        #    exceto se for também claramente cotidiano/central.
+        elif essencial:
+            nivel = 1
+            criterio_partes.append("tecnico_essencial")
+
+        # 3. Conceito formal que convém explicar, não simplesmente apagar.
+        elif formal_explica:
+            nivel = 1
+            criterio_partes.append("formal_explicavel")
+
+        # 4. Jargão acadêmico não essencial.
+        elif academico:
+            nivel = max(1, nivel_base)
+            criterio_partes.append("academico")
+
+        # 5. Termo complexo não acadêmico:
+        #    df=1 -> 2; df=2 -> 1; recorrente -> 0.
+        else:
+            nivel = nivel_base
+            criterio_partes.append("idf/complexidade")
+
+        if nivel == 0:
+            acao_n1 = "manter"
+            acao_n2 = "manter"
+        elif nivel == 1:
+            acao_n1 = (
+                "pode manter, mas explicar em linguagem comum quando necessário"
+            )
+            acao_n2 = (
+                "substituir por forma cotidiana fiel; manter apenas se não houver substituição segura"
+            )
+        else:
+            acao_n1 = "substituir por forma cotidiana fiel"
+            acao_n2 = "substituir por forma cotidiana fiel"
+
+        itens.append({
+            "termo": termo,
+            "nivel": nivel,
+            "idf_medio": round(float(idf_medio), 4),
+            "idf_local": round(float(idf_local), 4),
+            "frequencia_documental": df,
+            "total_documentos_locais": total_unidades,
+            "acao_divulgacao": acao_n1,
+            "acao_leitura_facilitada": acao_n2,
+            "criterio": " + ".join(criterio_partes),
+            "origens": sorted(registro["origens"]),
+            "_prioridade": int(registro.get("prioridade", 0)),
+        })
+
+    # ------------------------------------------------------------------
+    # Deduplicação semântica simples:
+    # se uma expressão maior já está no mapa, evita ocupar espaço com um
+    # subtermo isolado equivalente, EXCETO quando o subtermo é NCL 0.
+    # ------------------------------------------------------------------
+    itens_ordenados = sorted(
+        itens,
+        key=lambda x: (
+            len(_sem_acentos_minusculo(x["termo"]).split()),
+            x["_prioridade"],
+            x["idf_local"],
+        ),
+        reverse=True,
+    )
+
+    filtrados: List[Dict[str, Any]] = []
+    termos_maiores = []
+
+    for item in itens_ordenados:
+        tn = _sem_acentos_minusculo(item["termo"])
+        palavras = tn.split()
+
+        redundante = False
+        if len(palavras) == 1 and int(item["nivel"]) != 0:
+            for maior in termos_maiores:
+                if re.search(
+                    rf"(?<!\w){re.escape(tn)}(?!\w)",
+                    maior,
+                ):
+                    redundante = True
+                    break
+
+        if redundante:
+            continue
+
+        filtrados.append(item)
+        if len(palavras) >= 2:
+            termos_maiores.append(tn)
+
+    # ------------------------------------------------------------------
+    # Seleção BALANCEADA.
+    # Nunca mais fazemos "sort nível 2 + [:32]", que apagava NCL 0/1.
+    # ------------------------------------------------------------------
+    por_nivel = {0: [], 1: [], 2: []}
+    for item in filtrados:
+        por_nivel[int(item["nivel"])].append(item)
+
+    for nivel in (0, 1, 2):
+        if nivel == 0:
+            por_nivel[nivel].sort(
+                key=lambda x: (
+                    x["_prioridade"],
+                    x["frequencia_documental"],
+                    -x["idf_local"],
+                ),
+                reverse=True,
+            )
+        else:
+            por_nivel[nivel].sort(
+                key=lambda x: (
+                    x["_prioridade"],
+                    x["idf_local"],
+                    -x["frequencia_documental"],
+                ),
+                reverse=True,
+            )
+
+    # Limites pensados para manter o prompt compacto e ainda representar os 3 níveis.
+    selecionados = (
+        por_nivel[2][:10]
+        + por_nivel[1][:10]
+        + por_nivel[0][:10]
+    )
+
+    # Se algum nível existente ficou de fora por qualquer motivo, garante 1 representante.
+    niveis_presentes_total = {
+        nivel for nivel in (0, 1, 2)
+        if por_nivel[nivel]
+    }
+    niveis_selecionados = {
+        int(i["nivel"])
+        for i in selecionados
+    }
+    for nivel in sorted(niveis_presentes_total - niveis_selecionados):
+        selecionados.append(por_nivel[nivel][0])
+
+    # Remove campo interno.
+    for item in selecionados:
+        item.pop("_prioridade", None)
+
+    contagem_total = {
+        str(nivel): len(por_nivel[nivel])
+        for nivel in (0, 1, 2)
+    }
+    contagem_mapa = {
+        str(nivel): sum(
+            1 for item in selecionados
+            if int(item["nivel"]) == nivel
+        )
+        for nivel in (0, 1, 2)
+    }
+
+    return {
+        "versao": "NCL_IDF_v4_definitivo_balanceado",
+        "descricao": (
+            "Nível de Complexidade Lexical baseado em IDF/frequência documental "
+            "com proteção de vocabulário cotidiano, termos centrais e termos técnicos essenciais. "
+            "0=manter; 1=explicar no N1 e simplificar no N2; 2=simplificar nos dois níveis."
+        ),
+        "criterios_classificacao": {
+            "nivel_0": (
+                "vocabulário cotidiano/central ou termo recorrente não acadêmico"
+            ),
+            "nivel_1": (
+                "termo técnico essencial, conceito formal que deve ser explicado, "
+                "ou termo de raridade intermediária"
+            ),
+            "nivel_2": (
+                "jargão/forma acadêmica não essencial ou termo lexicalmente complexo "
+                "e raro, desde que não seja cotidiano"
+            ),
+            "observacao": (
+                "Raridade (IDF) não é tratada como sinônimo de dificuldade. "
+                "A seleção final é balanceada entre os três níveis e não inclui "
+                "todas as palavras raras do artigo."
+            ),
+        },
+        "documentos_locais": total_unidades,
+        "contagem_candidatos_por_nivel": contagem_total,
+        "contagem_mapa_por_nivel": contagem_mapa,
+        "itens": selecionados,
+    }
+
+def metricas_mapa_lexical(texto: str, mapa_lexical: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    """Conta presença dos termos NCL-IDF em um texto."""
+    mapa = mapa_lexical or {}
+    itens = [i for i in mapa.get("itens", []) if isinstance(i, dict)]
+    resultado = {
+        "nivel_0": 0,
+        "nivel_1": 0,
+        "nivel_2": 0,
+        "termos_nivel_0": [],
+        "termos_nivel_1": [],
+        "termos_nivel_2": [],
+    }
+    for item in itens:
+        termo = limpar_texto_editorial(item.get("termo"))
+        nivel = int(item.get("nivel", 0) or 0)
+        ocorrencias = _ocorrencias_termo(texto, termo)
+        if ocorrencias <= 0:
+            continue
+        chave = f"nivel_{nivel}"
+        resultado[chave] = resultado.get(chave, 0) + ocorrencias
+        lista = resultado.get(f"termos_nivel_{nivel}")
+        if isinstance(lista, list) and termo not in lista:
+            lista.append(termo)
+    return resultado
+
 def extrair_termos_complexos(texto: str, idf: Optional[Dict[str, float]] = None) -> List[str]:
+    """Seleciona candidatos lexicalmente complexos sem confundir raridade com dificuldade.
+
+    Um termo só entra como candidato quando:
+    - é formalmente longo/complexo; OU
+    - apresenta morfologia típica de linguagem acadêmica/científica.
+
+    Isso evita marcar como "difíceis" palavras cotidianas que aparecem apenas
+    uma vez no artigo, como janeiro, pequenos, existem, cabeça, álcool etc.
+    """
     if not texto:
         return []
+
     nlp, _ = carregar_nlp()
     doc = nlp(texto)
+
+    protegidas_norm = {
+        _sem_acentos_minusculo(p)
+        for p in PALAVRAS_COMUNS_LONGAS
+    } | {
+        "janeiro", "fevereiro", "marco", "abril", "maio", "junho",
+        "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
+        "ano", "anos", "pequeno", "pequenos", "grande", "grandes",
+        "existe", "existem", "fonte", "fontes", "busca", "buscas",
+        "pessoa", "pessoas", "adulto", "adultos", "comida", "comidas",
+        "bebida", "bebidas", "cabeca", "alcool", "cafeina",
+    }
+
+    # Sufixos muito frequentes em vocabulário acadêmico/abstrato.
+    sufixos_academicos = (
+        "cao", "coes", "sao", "soes", "mente", "idade", "idades",
+        "encia", "encias", "amento", "amentos", "imento", "imentos",
+        "ico", "ica", "icos", "icas", "al", "ais", "ivo", "iva",
+        "ivos", "ivas", "oria", "orias",
+    )
+
     candidatos: Dict[str, float] = {}
+
     for token in doc:
         palavra = token.text.strip().lower()
-        if not token.is_alpha or token.is_stop or palavra in PALAVRAS_COMUNS_LONGAS:
+        if not token.is_alpha or token.is_stop:
             continue
+
+        palavra_norm = _sem_acentos_minusculo(palavra)
+        if palavra_norm in protegidas_norm:
+            continue
+
         lema = (token.lemma_ or palavra).lower()
         silabas = contar_silabas(palavra)
-        raridade = (idf or {}).get(lema, 1.0)
-        pos_ok = not token.pos_ or token.pos_ in {"NOUN", "PROPN", "ADJ"}
-        if pos_ok and ((silabas >= 4 and len(palavra) >= 8) or (silabas >= 3 and raridade >= 1.45)):
-            candidatos[palavra] = silabas + raridade
-    return [p for p, _ in sorted(candidatos.items(), key=lambda x: x[1], reverse=True)[:12]]
+        raridade = float((idf or {}).get(lema, 1.0))
 
+        # Complexidade formal forte.
+        longo_complexo = len(palavra) >= 9 and silabas >= 4
+
+        # Forma acadêmica: exige pelo menos 3 sílabas + sufixo abstrato/formal.
+        morfologia_academica = (
+            len(palavra) >= 8
+            and silabas >= 3
+            and palavra_norm.endswith(sufixos_academicos)
+        )
+
+        # POS ajuda quando o modelo spaCy completo está disponível, mas não é obrigatório.
+        pos = getattr(token, "pos_", "") or ""
+        pos_aceitavel = not pos or pos in {"NOUN", "PROPN", "ADJ", "ADV"}
+
+        if pos_aceitavel and (longo_complexo or morfologia_academica):
+            candidatos[palavra] = (
+                silabas
+                + 0.35 * max(0.0, raridade - 1.0)
+                + (0.75 if morfologia_academica else 0.0)
+            )
+
+    return [
+        termo
+        for termo, _ in sorted(
+            candidatos.items(),
+            key=lambda x: x[1],
+            reverse=True,
+        )[:18]
+    ]
 
 def metricas_textuais(texto: str, idf: Optional[Dict[str, float]] = None) -> Dict[str, float]:
     nlp, _ = carregar_nlp()
@@ -977,8 +2532,20 @@ def metricas_textuais(texto: str, idf: Optional[Dict[str, float]] = None) -> Dic
     }
 
 
-def indice_simplificacao_experimental(origem: str, saida: str, idf: Dict[str, float]) -> Dict:
-    """Sinal estrutural complementar; não mede qualidade nem factualidade."""
+def indice_simplificacao_experimental(
+    origem: str,
+    saida: str,
+    idf: Dict[str, float],
+    mapa_lexical: Optional[Dict[str, Any]] = None,
+    nivel_saida: str = "n2",
+) -> Dict:
+    """Índice experimental com prioridade lexical.
+
+    Quando há mapa NCL-IDF:
+    - 85% do índice mede redução dos termos-alvo do mapa lexical;
+    - 15% mede redução do tamanho médio das frases.
+    A extensão da frase é, portanto, auxiliar e não o objetivo principal.
+    """
     mo = metricas_textuais(origem, idf)
     ms = metricas_textuais(saida, idf)
 
@@ -997,14 +2564,52 @@ def indice_simplificacao_experimental(origem: str, saida: str, idf: Dict[str, fl
         100 * (mo["termos_complexos"] - ms["termos_complexos"])
         / max(mo["termos_complexos"], 1.0),
     )
-    indice = min(100.0, 0.5 * reducao_frase + 0.3 * reducao_longas + 0.2 * reducao_termos)
+
+    lex_origem = metricas_mapa_lexical(origem, mapa_lexical)
+    lex_saida = metricas_mapa_lexical(saida, mapa_lexical)
+
+    if mapa_lexical and mapa_lexical.get("itens"):
+        if str(nivel_saida).lower() == "n1":
+            # Divulgação: nível 2 deve sair; nível 1 pode permanecer explicado.
+            alvo_origem = int(lex_origem.get("nivel_2", 0))
+            alvo_saida = int(lex_saida.get("nivel_2", 0))
+        else:
+            # Leitura facilitada: níveis 1 e 2 são alvo de substituição.
+            alvo_origem = int(lex_origem.get("nivel_1", 0)) + int(lex_origem.get("nivel_2", 0))
+            alvo_saida = int(lex_saida.get("nivel_1", 0)) + int(lex_saida.get("nivel_2", 0))
+
+        if alvo_origem > 0:
+            reducao_lexical = max(0.0, 100 * (alvo_origem - alvo_saida) / alvo_origem)
+            indice = min(100.0, 0.90 * reducao_lexical + 0.10 * reducao_frase)
+            metodo = "NCL-IDF lexical 90% + tamanho médio das frases 10%"
+        else:
+            # Não existe denominador lexical. Marcar como N/D é metodologicamente
+            # mais correto do que afirmar artificialmente 100% de redução.
+            reducao_lexical = None
+            indice = None
+            metodo = "NCL-IDF sem termos-alvo neste nível; índice lexical não calculado"
+    else:
+        reducao_lexical = reducao_termos
+        indice = min(100.0, 0.70 * reducao_termos + 0.20 * reducao_longas + 0.10 * reducao_frase)
+        metodo = "fallback lexical sem mapa NCL-IDF"
+
     return {
-        "indice_experimental": round(indice, 2),
+        "indice_experimental": round(indice, 2) if indice is not None else None,
+        "reducao_lexical_ncl_idf": round(reducao_lexical, 2) if reducao_lexical is not None else None,
+        "reducao_media_frase": round(reducao_frase, 2),
+        "reducao_palavras_longas": round(reducao_longas, 2),
+        "reducao_termos_complexos": round(reducao_termos, 2),
+        "metricas_ncl_idf_origem": lex_origem,
+        "metricas_ncl_idf_saida": lex_saida,
+        "metodo_indice": metodo,
         "origem": mo,
         "saida": ms,
-        "aviso": "Métrica estrutural experimental; não mede cobertura, correção ou compreensão humana.",
+        "aviso": (
+            "Métrica experimental de simplificação lexical. "
+            "O foco é reduzir termos difíceis sem alterar o conteúdo científico; "
+            "não mede compreensão humana nem fidelidade factual."
+        ),
     }
-
 
 def _quebrar_unidade_longa(texto: str, max_palavras: int = 55) -> List[str]:
     """Divide uma sentença muito longa em trechos menores.
@@ -1370,9 +2975,46 @@ TÍTULO: {titulo}
 {texto_fonte_pt}
 </FONTE>
 """.strip()
-    resposta, modelo, erro = chamar_llm(prompt, json_mode=True)
-    ficha = extrair_json(resposta)
-    return normalizar_ficha(ficha), modelo, erro if ficha is None else None
+    schema_ficha = {
+        "type": "object",
+        "properties": {
+            "tipo_estudo": {"type": "string"},
+            "estrutura_evidencia": {"type": "string"},
+            "pico_aplicavel": {"type": "boolean"},
+            "objetivo": {"type": "string"},
+            "contexto": {"type": "string"},
+            "populacao": {"type": "string"},
+            "intervencao_ou_exposicao": {"type": "string"},
+            "comparador": {"type": "string"},
+            "desfechos": {"type": "array", "items": {"type": "string"}},
+            "resultados_principais": {"type": "array", "items": {"type": "string"}},
+            "relacoes_resultado": {"type": "array", "items": {"type": "string"}},
+            "numeros_importantes": {"type": "array", "items": {"type": "string"}},
+            "limitacoes": {"type": "array", "items": {"type": "string"}},
+            "incertezas": {"type": "array", "items": {"type": "string"}},
+            "termos_tecnicos_essenciais": {"type": "array", "items": {"type": "string"}},
+            "o_que_nao_pode_ser_concluido": {"type": "array", "items": {"type": "string"}},
+            "informacoes_ausentes": {"type": "array", "items": {"type": "string"}},
+        },
+        "required": [
+            "tipo_estudo", "estrutura_evidencia", "pico_aplicavel", "objetivo",
+            "contexto", "populacao", "intervencao_ou_exposicao", "comparador",
+            "desfechos", "resultados_principais", "relacoes_resultado",
+            "numeros_importantes", "limitacoes", "incertezas",
+            "termos_tecnicos_essenciais", "o_que_nao_pode_ser_concluido",
+            "informacoes_ausentes"
+        ],
+        "additionalProperties": False,
+    }
+
+    ficha, modelo, erro = chamar_llm_auditoria_estruturada(
+        prompt,
+        schema_ficha,
+        "ficha_evidencia",
+    )
+    if not ficha:
+        return normalizar_ficha({}), modelo, erro or "Ficha factual vazia."
+    return normalizar_ficha(ficha), modelo, None
 
 
 def _texto_informado_simplificacao(valor: Any) -> str:
@@ -1397,6 +3039,101 @@ def _lista_simplificacao(valor: Any) -> List[str]:
     texto = _texto_informado_simplificacao(valor)
     return [texto] if texto else []
 
+
+
+def _fonte_autoritativa_compacta(fonte_original: str, fonte_pt: str) -> str:
+    """Usa uma única fonte no prompt para evitar duplicação de tokens."""
+    original = limpar_texto_editorial(fonte_original)
+    traducao = limpar_texto_editorial(fonte_pt)
+    return original or traducao
+
+
+def _plano_compacto_para_checagem(plano: Dict[str, Any]) -> Dict[str, Any]:
+    """Mantém apenas o que a checagem precisa para validar o núcleo obrigatório."""
+    metas = plano.get("metas_linguisticas") or {}
+    return {
+        "mensagem_central": limpar_texto_editorial(plano.get("mensagem_central")),
+        "fatos_obrigatorios": [
+            {
+                "id": item.get("id"),
+                "campo": item.get("campo"),
+                "conteudo": limpar_texto_editorial(item.get("conteudo")),
+                "bloco_preferencial": item.get("bloco_preferencial"),
+            }
+            for item in (plano.get("fatos_obrigatorios") or [])
+            if isinstance(item, dict)
+        ],
+        "metas_linguisticas": {
+            "palavras_por_frase_preferencial": metas.get("palavras_por_frase_preferencial"),
+            "limite_suave_palavras": metas.get("limite_suave_palavras"),
+            "limite_alerta_palavras": metas.get("limite_alerta_palavras"),
+        },
+    }
+
+
+def _diagnostico_compacto_para_checagem(diagnostico: Dict[str, Any]) -> Dict[str, Any]:
+    """Mantém apenas alertas acionáveis e elimina o diagnóstico detalhado do prompt."""
+    return {
+        "frases_acima_18": [
+            {
+                "bloco": item.get("bloco"),
+                "frase": item.get("frase"),
+                "palavras": item.get("palavras"),
+            }
+            for item in (diagnostico.get("frases_acima_18") or [])[:8]
+            if isinstance(item, dict)
+        ],
+        "termos_complexos_detectados": list(diagnostico.get("termos_complexos_detectados") or [])[:12],
+    }
+
+
+def _ficha_compacta_para_auditoria(ficha: Dict[str, Any]) -> Dict[str, Any]:
+    """Resumo factual mínimo suficiente para orientar a auditoria."""
+    f = normalizar_ficha(ficha)
+    return {
+        "tipo_estudo": f.get("tipo_estudo"),
+        "estrutura_evidencia": f.get("estrutura_evidencia"),
+        "objetivo": f.get("objetivo"),
+        "populacao": f.get("populacao"),
+        "intervencao_ou_exposicao": f.get("intervencao_ou_exposicao"),
+        "comparador": f.get("comparador"),
+        "desfechos": _lista_simplificacao(f.get("desfechos"))[:4],
+        "relacoes_resultado": _lista_simplificacao(f.get("relacoes_resultado"))[:5],
+        "numeros_importantes": _lista_simplificacao(f.get("numeros_importantes"))[:6],
+        "limitacoes": _lista_simplificacao(f.get("limitacoes"))[:4],
+        "incertezas": _lista_simplificacao(f.get("incertezas"))[:4],
+        "o_que_nao_pode_ser_concluido": _lista_simplificacao(f.get("o_que_nao_pode_ser_concluido"))[:4],
+    }
+
+
+def _alinhamento_compacto_para_auditoria(alinhamento: Dict[str, Any], max_pares: int = 8) -> Dict[str, Any]:
+    """Envia no máximo três candidatos MiniLM por frase, sem métricas redundantes."""
+    if not alinhamento.get("ativo"):
+        return {"ativo": False, "motivo": alinhamento.get("motivo")}
+    pares = []
+    for item in (alinhamento.get("pares") or [])[:max_pares]:
+        candidatos = []
+        for cand in (item.get("candidatos_suporte") or [])[:3]:
+            candidatos.append({
+                "tipo_fonte": cand.get("tipo_fonte"),
+                "trecho_fonte": cand.get("trecho_fonte"),
+                "similaridade": cand.get("similaridade"),
+            })
+        pares.append({
+            "frase_gerada": item.get("frase_gerada"),
+            "candidatos_suporte": candidatos,
+        })
+    return {"ativo": True, "pares": pares}
+
+
+def _erro_413_tokens(erro: Any) -> bool:
+    bruto = str(erro or "").lower()
+    return (
+        "413" in bruto
+        or "request too large" in bruto
+        or "tokens per minute" in bruto
+        or ("requested" in bruto and "limit" in bruto and "tokens" in bruto)
+    )
 
 def _numero_e_detalhe_util_n2(texto: str) -> bool:
     """Identifica números metodológicos úteis, mas não obrigatórios na Leitura Facilitada.
@@ -1428,7 +3165,11 @@ def _numero_e_detalhe_util_n2(texto: str) -> bool:
     return False
 
 
-def construir_plano_simplificacao(ficha: Dict, termos_complexos: Optional[List[str]] = None) -> Dict[str, Any]:
+def construir_plano_simplificacao(
+    ficha: Dict,
+    termos_complexos: Optional[List[str]] = None,
+    mapa_lexical: Optional[Dict[str, Any]] = None,
+) -> Dict[str, Any]:
     """Constrói o núcleo informacional da Leitura Facilitada de forma determinística.
 
     A ficha factual já foi extraída da fonte. Esta função não inventa novos fatos:
@@ -1533,7 +3274,7 @@ def construir_plano_simplificacao(ficha: Dict, termos_complexos: Optional[List[s
         mensagem_central = _texto_informado_simplificacao(ficha.get("objetivo"))
 
     return {
-        "versao": "nucleo_simplificacao_v3",
+        "versao": "nucleo_simplificacao_v5_ncl_idf_sentencial",
         "regra_central": (
             "Simplificar primeiro a forma linguística. Um fato obrigatório só pode ser condensado, "
             "nunca apagado ou transformado em uma afirmação mais forte que a fonte. A versão facilitada "
@@ -1546,10 +3287,16 @@ def construir_plano_simplificacao(ficha: Dict, termos_complexos: Optional[List[s
         "termos_tecnicos_essenciais": termos_ficha[:12],
         "termos_para_atencao": termos[:16],
         "termos_evitar_quando_possivel": [t for t in termos[:16] if t.lower() not in {x.lower() for x in termos_ficha}],
+        "mapa_lexical_ncl_idf": mapa_lexical or {"versao": "NCL_IDF_v1", "itens": []},
+        "regra_lexical": (
+            "NCL-IDF 0: pode manter; NCL-IDF 1: pode explicar na Divulgação e deve ser "
+            "preferencialmente substituído na Leitura Facilitada; NCL-IDF 2: deve ser "
+            "preferencialmente substituído nos dois níveis, sempre preservando o sentido científico."
+        ),
         "metas_linguisticas": {
-            "palavras_por_frase_preferencial": "7 a 14",
-            "limite_suave_palavras": 16,
-            "limite_alerta_palavras": 18,
+            "palavras_por_frase_preferencial": "clareza natural; não encurtar apenas por encurtar",
+            "limite_suave_palavras": 20,
+            "limite_alerta_palavras": 24,
             "uma_ideia_principal_por_frase": True,
             "ordem_direta": True,
             "voz_ativa_preferencial": True,
@@ -1565,91 +3312,194 @@ def construir_plano_simplificacao(ficha: Dict, termos_complexos: Optional[List[s
 
 
 def gerar_textos_acessiveis(
-    titulo: str, texto_original: str, texto_fonte_pt: str, ficha: Dict
+    titulo: str,
+    texto_original: str,
+    texto_fonte_pt: str,
+    ficha: Dict,
+    plano: Optional[Dict[str, Any]] = None,
 ) -> Tuple[Dict, str, Optional[str]]:
-    """Gera divulgação científica e resumo técnico.
+    """Gemini gera Divulgação Científica e Leitura Facilitada em UMA única chamada."""
+    plano = plano or construir_plano_simplificacao(ficha, [])
 
-    A Leitura Facilitada deixou de ser gerada neste mesmo prompt. Ela é produzida
-    independentemente a partir da fonte, ficha e núcleo obrigatório para evitar que
-    omissões da divulgação científica sejam herdadas pelo nível facilitado.
-    """
+    mapa_lexical = (plano or {}).get("mapa_lexical_ncl_idf") or {"itens": []}
+
     prompt = f"""
-Você é jornalista científico do Jornal Cienc.IA.
-Produza DUAS versões do mesmo resumo científico em português brasileiro:
-1. divulgação científica;
-2. resumo científico técnico traduzido.
+Você é editor científico do Jornal Cienc.IA.
+Gere DUAS versões do mesmo estudo na MESMA resposta:
 
-PRIORIDADES, nesta ordem:
-1. Fidelidade às informações da fonte.
-2. Cobertura das informações essenciais.
-3. Preservação do grau de certeza, das limitações e das incertezas.
-4. Clareza para o público-alvo.
-5. Concisão e estilo.
-Quando simplicidade e correção entrarem em conflito, a correção vence.
+1. DIVULGAÇÃO CIENTÍFICA
+2. LEITURA FACILITADA
 
-REGRAS GERAIS — SOURCE-ONLY:
-- Use SOMENTE informações explicitamente presentes na FONTE_ORIGINAL ou uma reformulação fiel delas.
-- A TRADUCAO_BASE e a FICHA FACTUAL são auxiliares de organização; não são autorização para acrescentar fatos que não estejam sustentados pela fonte original.
-- Não acrescente conhecimento médico externo, mesmo que seja verdadeiro ou amplamente conhecido.
-- NÃO acrescente prevalência, causas gerais da doença, mecanismos biológicos, recomendações clínicas, orientação para procurar profissionais, tratamentos, prognóstico, qualidade de vida ou benefícios que não apareçam explicitamente na fonte.
-- Manchete e subtítulo obedecem à mesma regra source-only: também não podem introduzir informação nova.
-- Uma explicação didática só pode ser usada quando puder ser construída com informação já contida na fonte. Se isso não for possível, mantenha o termo técnico sem inventar definição.
-- Não transforme associação em causalidade.
-- Não transforme hipótese, possibilidade, potencial ou evidência emergente em certeza.
-- Não transforme aprovação regulatória em prova de benefício clínico.
-- Não generalize resultados para outra população.
-- Preserve números, unidades, comparadores, período de busca e condições clínicas importantes.
-- Descreva corretamente o desenho do estudo.
-- Não forneça aconselhamento médico individual.
-- Não infantilize o leitor.
+A PRIORIDADE NÃO É deixar todas as frases muito curtas.
+A PRIORIDADE É reduzir PALAVRAS DIFÍCEIS e formulações acadêmicas sem fugir do tema
+e sem alterar a força da evidência científica.
 
-DIVULGAÇÃO CIENTÍFICA:
-- escreva uma notícia curta para adultos sem formação na área;
-- apresente a mensagem principal no primeiro parágrafo;
-- explique o problema, o que o artigo fez, o que encontrou e as limitações;
-- mantenha termos técnicos indispensáveis e explique-os na primeira ocorrência quando a fonte permitir;
-- use de 4 a 7 parágrafos curtos, sem subtítulos dentro do texto;
-- evite sensacionalismo e chamadas que prometam cura, prevenção ou eficácia sem apoio direto.
+PRIORIDADES, NESTA ORDEM:
+1. Fidelidade à fonte original.
+2. Preservação da incerteza científica.
+3. Preservação dos fatos obrigatórios.
+4. Substituição dos termos NCL-IDF nível 2.
+5. Na Leitura Facilitada, substituição dos termos NCL-IDF nível 1.
+6. Na Divulgação, explicação em linguagem comum dos termos nível 1 quando necessário.
+7. Vocabulário cotidiano, verbos concretos e baixa necessidade de conhecimento prévio.
+8. Clareza sintática.
+9. Tamanho das frases, apenas como critério auxiliar.
 
-MANCHETE PARA O PÚBLICO GERAL:
-- a manchete deve ser mais simples, concreta e atraente que o título científico original;
-- prefira de 6 a 12 palavras e, quando possível, não ultrapasse 14 palavras;
-- use palavras comuns e coloque em primeiro plano o achado, a relação ou o tema que interessa ao leitor;
-- evite começar com fórmulas acadêmicas genéricas como “Revisão científica explora”, “Estudo analisa”, “Pesquisa investiga” ou “Artigo avalia”, salvo quando o desenho do estudo for indispensável para não induzir o leitor ao erro;
-- o tipo de estudo pode ser explicado no subtítulo e no corpo da notícia;
-- seja chamativa sem ser sensacionalista: não use “comprova”, “cura”, “previne”, “garante”, “segredo”, “descubra”, “você precisa saber” ou equivalentes sem sustentação explícita;
-- preserve palavras de incerteza quando forem necessárias, como “pode”, “associado”, “relacionado” e “sugere”;
-- não transforme associação em causalidade só para tornar o título mais forte;
-- não acrescente fatos que não estejam na fonte;
-- gere também 3 alternativas de manchete, todas obedecendo às mesmas regras.
+USE SOMENTE A FONTE ORIGINAL.
+A tradução-base e a ficha servem apenas como apoio.
+Não use conhecimento médico externo.
+
+FIDELIDADE — REGRA ABSOLUTA:
+- não transforme associação em causalidade;
+- não transforme possibilidade em certeza;
+- não transforme “foi relacionado” em “causou” ou “reduziu”;
+- não generalize resultados para outra população;
+- preserve números, comparadores, resultados, limitações e qualificadores importantes;
+- não invente definições ou explicações médicas;
+- não dê aconselhamento clínico;
+- se uma substituição simples mudar o significado, MANTENHA o termo original.
+
+EXEMPLO CRÍTICO DE PRESERVAÇÃO DA FORÇA DA EVIDÊNCIA:
+Fonte: “were related to a decrease”
+Forma fiel: “foram relacionadas a menos crises”
+Forma PROIBIDA: “reduziram as crises”
+
+Outros exemplos:
+- “may help” deve continuar como “pode ajudar”, não “ajuda”.
+- “was associated with” deve continuar como “foi associado a” ou “apareceu ligado a”,
+  nunca como “causou”.
+- “evidence is limited” não pode virar “não funciona”.
+
+MAPA LEXICAL NCL-IDF — OBRIGATÓRIO:
+Cada termo recebeu nível 0, 1 ou 2.
+
+NÍVEL 0 — PODE MANTER
+- pode permanecer na Divulgação e na Leitura Facilitada;
+- termos centrais do tema podem estar aqui mesmo quando são científicos;
+- não troque uma palavra central apenas para parecer mais simples.
+
+NÍVEL 1 — EXPLICAR NO N1, SUBSTITUIR NO N2
+Na Divulgação Científica:
+- o termo pode permanecer;
+- quando for importante, explique a ideia em palavras comuns.
+
+Na Leitura Facilitada:
+- prefira uma forma cotidiana que preserve exatamente o significado;
+- o termo técnico pode desaparecer se a informação continuar representada.
+
+NÍVEL 2 — SUBSTITUIR NOS DOIS
+- evite o termo tanto na Divulgação quanto na Leitura Facilitada;
+- substitua por palavra ou expressão cotidiana equivalente;
+- NÃO retire o fato científico associado ao termo.
+
+SE NÃO HOUVER SUBSTITUIÇÃO SEGURA:
+- mantenha o termo;
+- registre-o em termos_para_revisao_humana;
+- nunca invente um sinônimo que altere o conceito.
+
+MAPA NCL-IDF DESTE ARTIGO:
+{json.dumps(mapa_lexical, ensure_ascii=False)}
+
+EXEMPLOS DE SIMPLIFICAÇÃO DE LINGUAGEM — NÃO SÃO FATOS DA FONTE:
+Antes: “O trabalho foi uma revisão sistemática de estudos anteriores.”
+Forma desejada: “Os pesquisadores reuniram e analisaram vários estudos já publicados.”
+
+Antes: “Ainda há pouca prova sobre a eficácia de dietas específicas.”
+Forma desejada: “Ainda não sabemos bem se dietas específicas realmente ajudam.”
+
+Outras trocas de FORMA quando forem fiéis ao conteúdo:
+- “resumir as evidências” → “entender o que os estudos mostram”
+- “intervenções dietéticas” → “mudanças na alimentação”
+- “literatura publicada” → “estudos já publicados”
+- “eficácia” → “se funciona” ou “se realmente ajuda”
+- “diminuição na frequência das crises” → “menos crises”
+- “aumento na frequência das crises” → “mais crises”
+
+Esses exemplos mostram COMO simplificar.
+Eles não autorizam acrescentar fatos que não estejam na fonte.
+
+DIVULGAÇÃO CIENTÍFICA — QUATRO BLOCOS:
+- o_principal: mensagem central e contexto necessário;
+- o_que_o_artigo_fez: objetivo, desenho, população/corpus e método essencial;
+- o_que_foi_encontrado: resultados, relações e números;
+- o_que_isso_significa: interpretação permitida, limitações, incertezas e o que não pode ser concluído.
+
+ESTILO DA DIVULGAÇÃO:
+- adultos sem formação na área;
+- linguagem jornalística, clara e natural;
+- nível 2 deve ser substituído sempre que houver forma fiel;
+- nível 1 pode aparecer, mas deve ser explicado quando necessário;
+- não transforme o texto em aula técnica;
+- não preserve jargão apenas porque ele aparece no resumo científico.
+
+LEITURA FACILITADA — QUATRO BLOCOS:
+- o_principal;
+- o_que_o_artigo_fez;
+- o_que_foi_encontrado;
+- o_que_ainda_nao_sabemos.
+
+ESTILO DA LEITURA FACILITADA:
+- escreva para um adulto com baixa escolaridade e pouca familiaridade com textos científicos;
+- NÃO infantilize;
+- a principal diferença para a Divulgação deve ser o VOCABULÁRIO, não apenas frases menores;
+- nível 1 e nível 2 devem ser substituídos sempre que houver alternativa fiel;
+- prefira palavras cotidianas;
+- prefira verbos concretos a substantivos abstratos;
+- uma informação difícil pode ser explicada em duas frases se isso ajudar;
+- frases podem ter tamanho natural; só divida quando estiverem realmente densas;
+- não elimine números, limitações ou incertezas para simplificar.
+
+ANTES DE RESPONDER, REVISE A LEITURA FACILITADA:
+1. Há palavra acadêmica que pode virar palavra cotidiana?
+2. Há termo NCL-IDF 2 ainda presente sem necessidade? Se sim, substitua.
+3. Há termo NCL-IDF 1 ainda presente na Leitura Facilitada? Se houver substituição fiel, substitua.
+4. Há substantivo abstrato que pode virar verbo?
+5. O leitor precisa conhecer esse nome técnico para entender o resultado?
+6. Todos os fatos obrigatórios continuam presentes?
+7. Os números importantes continuam corretos?
+8. As palavras de incerteza continuam preservadas?
+9. Alguma simplificação deixou a frase mais forte que a fonte? Se sim, corrija.
+10. Compare as duas versões. Se o N2 só tiver frases menores, mas quase o mesmo
+    vocabulário da Divulgação, REESCREVA: ainda não está simplificado o suficiente.
+
+MANCHETE:
+- simples, concreta e fiel;
+- preserve “pode”, “associado”, “sugere” etc. quando necessários;
+- gere também 3 alternativas.
 
 SUBTÍTULO:
-- complemente a manchete em uma frase curta e clara;
-- use o subtítulo para informar desenho do estudo, população, principal limitação ou grau de certeza quando isso ajudar a evitar interpretação exagerada;
-- não repita a manchete com outras palavras.
+- uma frase curta;
+- complemente a manchete sem exagerar a evidência.
 
-RESUMO CIENTÍFICO EM PORTUGUÊS:
-- faça uma tradução técnica fiel e natural do resumo original;
-- não simplifique nem resuma além do texto-fonte;
-- preserve todos os números, métodos, resultados, qualificadores e limitações;
-- use português brasileiro, corrija construções literais e organize em parágrafos legíveis;
-- não acrescente explicações externas.
+PLANO DE SIMPLIFICAÇÃO:
+{json.dumps(plano, ensure_ascii=False)}
 
 Retorne APENAS JSON válido:
 {{
   "manchete": "string",
   "alternativas_manchete": ["string", "string", "string"],
   "subtitulo": "string",
-  "divulgacao_cientifica": "string com parágrafos",
-  "resumo_cientifico_traduzido": "string com parágrafos",
+  "divulgacao_cientifica": {{
+    "o_principal": "string",
+    "o_que_o_artigo_fez": "string",
+    "o_que_foi_encontrado": "string",
+    "o_que_isso_significa": "string"
+  }},
+  "leitura_facilitada": {{
+    "o_principal": "string",
+    "o_que_o_artigo_fez": "string",
+    "o_que_foi_encontrado": "string",
+    "o_que_ainda_nao_sabemos": "string"
+  }},
+  "termos_para_revisao_humana": ["string"],
   "nota_ao_revisor": ["string"]
 }}
 
-TÍTULO ORIGINAL:
+TÍTULO:
 {titulo}
 
 FICHA FACTUAL:
-{json.dumps(ficha, ensure_ascii=False, indent=2)}
+{json.dumps(ficha, ensure_ascii=False)}
 
 <FONTE_ORIGINAL>
 {texto_original}
@@ -1659,12 +3509,23 @@ FICHA FACTUAL:
 {texto_fonte_pt}
 </TRADUCAO_BASE>
 """.strip()
+
     resposta, modelo, erro = chamar_llm(prompt, json_mode=True)
     dados = extrair_json(resposta)
-    if not dados:
+    if not isinstance(dados, dict):
         return {}, modelo, erro or "A resposta não pôde ser interpretada como JSON."
-    return dados, modelo, None
 
+    blocos_n1 = normalizar_blocos_divulgacao(dados.get("divulgacao_cientifica"))
+    blocos_n2 = normalizar_blocos_leitura(dados.get("leitura_facilitada"))
+
+    if not divulgacao_tem_quatro_blocos(blocos_n1):
+        return {}, modelo, "A Divulgação Científica não retornou os quatro blocos completos."
+    if not all(limpar_texto_editorial(blocos_n2.get(chave)) for chave, _ in BLOCOS_LEITURA):
+        return {}, modelo, "A Leitura Facilitada não retornou os quatro blocos completos."
+
+    dados["divulgacao_cientifica"] = blocos_n1
+    dados["leitura_facilitada"] = blocos_n2
+    return dados, modelo, None
 
 def gerar_leitura_facilitada_independente(
     titulo: str,
@@ -1845,6 +3706,55 @@ def diagnosticar_complexidade_leitura(blocos: Dict[str, str], idf: Optional[Dict
     }
 
 
+def _numeros_no_texto(texto: str) -> set:
+    """Extrai números relevantes preservando percentuais e decimais."""
+    bruto = limpar_texto_editorial(texto)
+    return {
+        n.replace(" ", "")
+        for n in re.findall(r"\b\d+(?:[.,]\d+)?%?\b", bruto)
+    }
+
+
+def _palavras_conteudo(texto: str) -> set:
+    """Palavras de conteúdo para fallback lexical da checagem local."""
+    bruto = _sem_acentos_minusculo(limpar_texto_editorial(texto))
+    palavras = re.findall(r"\b[a-z0-9]{3,}\b", bruto)
+    stop = {
+        "para", "como", "com", "dos", "das", "uma", "uns", "umas", "que",
+        "por", "nos", "nas", "sem", "sobre", "entre", "mais", "menos",
+        "este", "esta", "esse", "essa", "isso", "sao", "foi", "foram",
+        "ser", "estar", "tem", "tinha", "tambem", "quando", "onde",
+    }
+    return {p for p in palavras if p not in stop}
+
+
+def _similaridade_fato_texto_local(fato: str, texto: str) -> float:
+    """Similaridade local: MiniLM quando disponível; fallback lexical caso contrário."""
+    fato = limpar_texto_editorial(fato)
+    texto = limpar_texto_editorial(texto)
+    if not fato or not texto:
+        return 0.0
+
+    modelo, _ = carregar_embedding()
+    if modelo is not None:
+        try:
+            from sentence_transformers import util
+            # Compara o fato contra sentenças/trechos do bloco e usa o melhor suporte.
+            unidades = segmentar_unidades_semanticas(texto) or [texto]
+            emb_fato = modelo.encode([fato], convert_to_tensor=True, normalize_embeddings=True)
+            emb_unidades = modelo.encode(unidades, convert_to_tensor=True, normalize_embeddings=True)
+            matriz = util.cos_sim(emb_fato, emb_unidades)
+            return float(matriz.max().item())
+        except Exception:
+            pass
+
+    a = _palavras_conteudo(fato)
+    b = _palavras_conteudo(texto)
+    if not a or not b:
+        return 0.0
+    return len(a & b) / max(1, len(a))
+
+
 def checar_nucleo_leitura_facilitada(
     texto_original: str,
     texto_fonte_pt: str,
@@ -1852,114 +3762,147 @@ def checar_nucleo_leitura_facilitada(
     blocos: Dict[str, str],
     diagnostico: Dict[str, Any],
 ) -> Tuple[Dict[str, Any], str, Optional[str]]:
-    """Verifica se o núcleo obrigatório sobreviveu à simplificação antes da auditoria final."""
-    esquema = {
-        "itens_obrigatorios": [{
-            "id": "M01",
-            "presente": True,
-            "fiel_ao_fato": True,
-            "bloco_encontrado": "o_que_foi_encontrado",
-            "observacao": "string",
-        }],
-        "problemas_linguisticos": [{
-            "bloco": "o_principal|o_que_o_artigo_fez|o_que_foi_encontrado|o_que_ainda_nao_sabemos",
-            "tipo": "ambiguidade|jargao_nao_explicado|nominalizacao_densa|frase_com_muitas_ideias|frase_telegráfica|complexidade_desnecessaria|outro",
-            "trecho": "string",
-            "observacao": "string",
-        }],
-        "blocos_para_reparar": ["string"],
-        "aprovado_para_auditoria": True,
-        "observacao": "string",
-    }
-    prompt = f"""
-Você é verificador prévio de LEITURA FACILITADA em saúde.
-Sua tarefa NÃO é dar nota de fidelidade final. Verifique apenas duas coisas:
-1. todos os fatos obrigatórios do plano continuam presentes e fiéis;
-2. existem problemas linguísticos claros que podem ser reparados sem perder conteúdo.
+    """Triagem local do N2 com Python + MiniLM.
 
-Use a FONTE ORIGINAL como autoridade. A tradução é auxiliar. Não use conhecimento externo.
-Para cada item obrigatório, use exatamente o id recebido no plano.
-- presente=true somente se a informação estiver realmente representada na leitura;
-- fiel_ao_fato=false se houver mudança de causalidade, certeza, população, número ou sentido;
-- se um item obrigatório estiver ausente ou infiel, inclua o bloco preferencial desse item em blocos_para_reparar.
+    IMPORTANTE:
+    O NCL-IDF muda deliberadamente o vocabulário. Por isso, baixa similaridade
+    MiniLM NÃO pode bloquear a auditoria nem obrigar um novo reparo.
 
-Considere o diagnóstico de superfície como ALERTA, não como regra absoluta.
-A Leitura Facilitada deve ser perceptivelmente mais simples que uma notícia comum.
-- Frases acima de 18 palavras devem ser divididas quando isso puder ser feito sem perda de conteúdo.
-- Marque jargão não explicado quando um termo complexo permanece sem necessidade ou sem explicação possível pela fonte.
-- Marque frase_com_muitas_ideias quando a frase exige acompanhar mais de uma relação científica principal ao mesmo tempo.
-- Marque nominalizacao_densa quando uma construção abstrata puder ser expressa por verbo ou forma concreta sem mudar o sentido.
-- Não mande apagar número, limitação, população ou qualificador apenas para encurtar uma frase.
-- Não exija definição externa de um termo; a explicação deve ser sustentada pela fonte/ficha.
+    Esta etapa bloqueia apenas problemas objetivos:
+    - algum dos 4 blocos está vazio;
+    - um número explicitamente obrigatório desapareceu;
+    - há frase extremamente longa (>24 palavras) que merece reparo.
 
-Retorne APENAS JSON seguindo este esquema:
-{json.dumps(esquema, ensure_ascii=False, indent=2)}
+    A presença semântica dos demais fatos é registrada como ALERTA.
+    A decisão factual final é da auditoria de Fidelidade Intelectual.
+    """
+    blocos_n = normalizar_blocos_leitura(blocos)
+    mapa_rotulos = dict(BLOCOS_LEITURA)
+    texto_completo = blocos_para_texto(blocos_n)
 
-PLANO:
-{json.dumps(plano, ensure_ascii=False, indent=2)}
-
-DIAGNÓSTICO DE SUPERFÍCIE:
-{json.dumps(diagnostico, ensure_ascii=False, indent=2)}
-
-LEITURA FACILITADA:
-{json.dumps(normalizar_blocos_leitura(blocos), ensure_ascii=False, indent=2)}
-
-<FONTE_ORIGINAL>
-{texto_original}
-</FONTE_ORIGINAL>
-
-<TRADUCAO_BASE>
-{texto_fonte_pt}
-</TRADUCAO_BASE>
-""".strip()
-    resposta, modelo, erro = chamar_llm(prompt, json_mode=True)
-    dados = extrair_json(resposta)
-    if not isinstance(dados, dict):
+    # Estrutura é requisito duro.
+    blocos_vazios = [
+        chave for chave, _ in BLOCOS_LEITURA
+        if not limpar_texto_editorial(blocos_n.get(chave))
+    ]
+    if blocos_vazios:
         return {
             "valida": False,
             "aprovado_para_auditoria": False,
+            "triagem_local_sem_alertas": False,
             "itens_obrigatorios": [],
             "problemas_linguisticos": [],
-            "blocos_para_reparar": [],
-            "observacao": "Checagem automática inconclusiva; revisão humana necessária.",
-        }, modelo, erro or "Resposta de checagem inválida."
+            "blocos_para_reparar": blocos_vazios,
+            "itens_faltantes_ou_infieis": [],
+            "alertas_semanticos": [],
+            "observacao": "A Leitura Facilitada não possui os quatro blocos completos.",
+        }, "Python local", None
 
-    esperados = {item.get("id") for item in plano.get("fatos_obrigatorios", []) if item.get("id")}
-    recebidos = {}
-    for item in dados.get("itens_obrigatorios", []) if isinstance(dados.get("itens_obrigatorios"), list) else []:
-        if isinstance(item, dict) and item.get("id"):
-            recebidos[str(item.get("id"))] = item
-    faltaram_no_json = sorted(esperados - set(recebidos))
-    if faltaram_no_json:
-        for ident in faltaram_no_json:
-            recebidos[ident] = {
-                "id": ident,
-                "presente": False,
-                "fiel_ao_fato": False,
-                "bloco_encontrado": "",
-                "observacao": "Item não retornado pela checagem automática.",
-            }
+    itens_resultado = []
+    alertas_semanticos = []
+    problemas_duros = []
+    blocos_reparar = []
 
-    itens = [recebidos[k] for k in sorted(recebidos)]
-    faltantes = [i for i in itens if not bool(i.get("presente")) or not bool(i.get("fiel_ao_fato"))]
-    blocos_reparar = [str(x) for x in dados.get("blocos_para_reparar", []) if str(x) in dict(BLOCOS_LEITURA)] if isinstance(dados.get("blocos_para_reparar"), list) else []
-    mapa_plano = {item.get("id"): item for item in plano.get("fatos_obrigatorios", [])}
-    for item in faltantes:
-        alvo = (mapa_plano.get(item.get("id")) or {}).get("bloco_preferencial")
-        if alvo in dict(BLOCOS_LEITURA) and alvo not in blocos_reparar:
-            blocos_reparar.append(alvo)
-    for alerta in diagnostico.get("frases_acima_18", []):
+    fatos = [
+        item for item in (plano.get("fatos_obrigatorios") or [])
+        if isinstance(item, dict) and item.get("id")
+    ]
+
+    numeros_texto = _numeros_no_texto(texto_completo)
+
+    for item in fatos:
+        ident = str(item.get("id"))
+        fato = limpar_texto_editorial(item.get("conteudo"))
+        alvo = str(item.get("bloco_preferencial") or "")
+        texto_alvo = limpar_texto_editorial(blocos_n.get(alvo)) or texto_completo
+
+        similaridade = _similaridade_fato_texto_local(fato, texto_alvo)
+        numeros_fato = _numeros_no_texto(fato)
+        numeros_ok = numeros_fato.issubset(numeros_texto)
+
+        # Fatos sem números: MiniLM é só triagem, nunca trava.
+        # Fatos com números: desaparecimento numérico é problema objetivo.
+        if numeros_fato and not numeros_ok:
+            status = "numero_obrigatorio_ausente"
+            presente = False
+            fiel = False
+            problemas_duros.append(ident)
+            if alvo in mapa_rotulos and alvo not in blocos_reparar:
+                blocos_reparar.append(alvo)
+        else:
+            presente = similaridade >= 0.28
+            fiel = True if numeros_ok else False
+            status = "ok" if presente else "alerta_semantico"
+
+            if not presente:
+                alertas_semanticos.append({
+                    "id": ident,
+                    "bloco_preferencial": alvo,
+                    "similaridade": round(similaridade, 3),
+                    "fato": fato,
+                })
+
+        observacao = (
+            f"Triagem MiniLM/lexical: {similaridade:.2f}. "
+            + ("Números obrigatórios preservados." if numeros_ok else "Número obrigatório ausente.")
+        )
+        if status == "alerta_semantico":
+            observacao += (
+                " Baixa correspondência é apenas alerta, pois a simplificação lexical "
+                "pode alterar bastante as palavras usadas."
+            )
+
+        itens_resultado.append({
+            "id": ident,
+            "presente": presente,
+            "fiel_ao_fato": fiel,
+            "bloco_encontrado": alvo if presente else "",
+            "status_triagem": status,
+            "observacao": observacao,
+        })
+
+    # Só frases realmente excessivas acionam reparo. O foco do TCC é lexical.
+    problemas_linguisticos = []
+    for alerta in diagnostico.get("frases_acima_22", []) or []:
+        if not isinstance(alerta, dict):
+            continue
+        palavras = int(alerta.get("palavras", 0) or 0)
+        if palavras <= 24:
+            continue
         bloco = alerta.get("bloco")
-        if bloco in dict(BLOCOS_LEITURA) and bloco not in blocos_reparar:
-            blocos_reparar.append(bloco)
+        problemas_linguisticos.append({
+            "bloco": bloco,
+            "tipo": "frase_muito_longa",
+            "trecho": alerta.get("frase", ""),
+            "observacao": (
+                f"Frase com {palavras} palavras. É um alerta auxiliar; "
+                "dividir sem remover informação científica."
+            ),
+        })
+        # Comprimento de frase é apenas indicador auxiliar.
+        # NÃO aciona reparo automático.
+        pass
 
-    dados["valida"] = True
-    dados["itens_obrigatorios"] = itens
-    dados["itens_faltantes_ou_infieis"] = [i.get("id") for i in faltantes]
-    dados["blocos_para_reparar"] = blocos_reparar
-    dados["aprovado_para_auditoria"] = bool(not faltantes and not blocos_reparar)
-    return dados, modelo, erro
+    # A triagem pode seguir para auditoria mesmo com alertas semânticos.
+    # Só estrutura inválida impediria a auditoria; números/frases geram reparo antes.
+    aprovado_para_auditoria = True
+    triagem_sem_alertas = not problemas_duros and not problemas_linguisticos and not alertas_semanticos
 
+    return {
+        "valida": True,
+        "itens_obrigatorios": itens_resultado,
+        "itens_faltantes_ou_infieis": problemas_duros,
+        "problemas_linguisticos": problemas_linguisticos,
+        "blocos_para_reparar": blocos_reparar,
+        "alertas_semanticos": alertas_semanticos,
+        "aprovado_para_auditoria": aprovado_para_auditoria,
+        "triagem_local_sem_alertas": triagem_sem_alertas,
+        "observacao": (
+            "Triagem local executada com Python + MiniLM. Baixa similaridade semântica "
+            "não bloqueia a auditoria porque o NCL-IDF substitui deliberadamente palavras difíceis. "
+            "A auditoria Llama é a etapa responsável por julgar cobertura e fidelidade factual."
+        ),
+    }, "Python + MiniLM local", None
 
 def reparar_leitura_facilitada_uma_vez(
     texto_original: str,
@@ -1976,49 +3919,51 @@ def reparar_leitura_facilitada_uma_vez(
     mapa_fatos = {item.get("id"): item for item in plano.get("fatos_obrigatorios", [])}
     faltantes = [mapa_fatos.get(x) for x in checagem.get("itens_faltantes_ou_infieis", []) if mapa_fatos.get(x)]
     esquema = {"blocos_corrigidos": {chave: "string" for chave in alvos}, "nota": ["string"]}
+    mapa_lexical = plano.get("mapa_lexical_ncl_idf") or {"itens": []}
     prompt = f"""
 Você fará UMA ÚNICA RODADA DE REPARO da Leitura Facilitada.
-Reescreva SOMENTE os blocos listados em BLOCOS_A_REPARAR. Os demais blocos não podem ser alterados.
+Reescreva SOMENTE os blocos listados em BLOCOS_A_REPARAR.
 
-OBJETIVOS, nesta ordem:
-1. recolocar ou corrigir todos os fatos obrigatórios faltantes/infieis;
-2. preservar números e qualificadores de incerteza;
-3. reduzir de forma perceptível a complexidade sintática e lexical;
-4. descompactar frases densas em várias frases simples;
-5. retirar ou substituir rótulos técnicos não essenciais quando o conteúdo puder ser preservado em linguagem comum.
+PRIORIDADES:
+1. recolocar/corrigir fatos obrigatórios;
+2. preservar números e incerteza;
+3. substituir palavras difíceis conforme o mapa NCL-IDF;
+4. usar palavras cotidianas e verbos concretos;
+5. melhorar a sintaxe apenas quando necessário.
 
-REGRAS:
-- Use somente a fonte e a tradução-base. Não use conhecimento externo.
-- Não apague um fato obrigatório para obter frase menor.
-- Prefira 7 a 14 palavras por frase; 16 é limite suave; acima de 18, tente dividir.
-- Uma ideia principal por frase, ordem direta e referente explícito.
-- Prefira verbos concretos e palavras cotidianas.
-- Troque formas abstratas por concretas quando isso não alterar a evidência, por exemplo "redução da frequência" por "menos crises".
-- Evite várias vírgulas e várias relações científicas na mesma frase.
-- Se um termo técnico não for essencial, prefira a descrição simples do fato.
-- Se um termo técnico essencial puder ser explicado usando apenas a fonte, apresente a ideia simples antes do nome técnico.
-- Se não puder ser explicado com segurança pela fonte, mantenha-o e deixe-o para revisão humana.
-- Percentuais importantes podem aparecer como frequência natural junto do valor original, por exemplo "68 em cada 100 (68%)".
-- Não transforme associação em causalidade nem possibilidade em certeza.
-- Preserve todo fato obrigatório que já estava correto no bloco.
+REGRA LEXICAL:
+- NCL-IDF 0: pode manter.
+- NCL-IDF 1: na Leitura Facilitada, substituir quando houver forma cotidiana fiel.
+- NCL-IDF 2: substituir obrigatoriamente quando houver forma fiel.
+- se não existir substituição segura, mantenha o termo em vez de alterar o significado.
+
+NUNCA MUDE A FORÇA DA EVIDÊNCIA:
+- “foram relacionadas a menos crises” NÃO pode virar “reduziram as crises”;
+- “pode ajudar” NÃO pode virar “ajuda”;
+- associação NÃO pode virar causa;
+- resultado fraco NÃO pode virar ausência de efeito.
+
+EXEMPLOS DE FORMA:
+- “revisão sistemática de estudos anteriores” pode virar
+  “os pesquisadores reuniram e analisaram vários estudos já publicados”;
+- “eficácia de dietas específicas” pode virar
+  “se dietas específicas realmente ajudam”;
+- “intervenções dietéticas” pode virar “mudanças na alimentação”.
+
+MAPA NCL-IDF:
+{json.dumps(mapa_lexical, ensure_ascii=False)}
 
 Retorne APENAS JSON:
-{json.dumps(esquema, ensure_ascii=False, indent=2)}
+{json.dumps(esquema, ensure_ascii=False)}
 
 BLOCOS_A_REPARAR:
 {json.dumps(alvos, ensure_ascii=False)}
 
 FATOS QUE PRECISAM DE ATENÇÃO:
-{json.dumps(faltantes, ensure_ascii=False, indent=2)}
-
-PLANO COMPLETO:
-{json.dumps(plano, ensure_ascii=False, indent=2)}
+{json.dumps(faltantes, ensure_ascii=False)}
 
 VERSÃO ATUAL:
-{json.dumps(normalizar_blocos_leitura(blocos), ensure_ascii=False, indent=2)}
-
-PROBLEMAS IDENTIFICADOS:
-{json.dumps(checagem.get("problemas_linguisticos", []), ensure_ascii=False, indent=2)}
+{json.dumps(normalizar_blocos_leitura(blocos), ensure_ascii=False)}
 
 <FONTE_ORIGINAL>
 {texto_original}
@@ -2033,11 +3978,34 @@ PROBLEMAS IDENTIFICADOS:
     if not isinstance(dados, dict) or not isinstance(dados.get("blocos_corrigidos"), dict):
         return normalizar_blocos_leitura(blocos), modelo, erro or "Reparo automático inválido."
 
-    corrigidos = normalizar_blocos_leitura(blocos)
+    originais = normalizar_blocos_leitura(blocos)
+    corrigidos = dict(originais)
+
+    def carga_lexical_n2(valor: str) -> int:
+        metricas = metricas_mapa_lexical(valor, mapa_lexical)
+        # nível 2 pesa mais porque deveria sair dos dois níveis.
+        return int(metricas.get("nivel_1", 0)) + 2 * int(metricas.get("nivel_2", 0))
+
     for chave in alvos:
         novo = limpar_texto_editorial(dados["blocos_corrigidos"].get(chave, ""))
-        if novo:
-            corrigidos[chave] = novo
+        if not novo:
+            continue
+
+        carga_antiga = carga_lexical_n2(originais.get(chave, ""))
+        carga_nova = carga_lexical_n2(novo)
+
+        if carga_nova > carga_antiga:
+            return (
+                originais,
+                modelo,
+                (
+                    f"O reparo do bloco '{chave}' reintroduziu termos NCL-IDF nível 1/2 "
+                    f"({carga_antiga} → {carga_nova}). Tentar novamente sem aumentar a carga lexical."
+                ),
+            )
+
+        corrigidos[chave] = novo
+
     return corrigidos, modelo, erro
 
 def _normalizar_classificacao(texto: str) -> str:
@@ -2450,6 +4418,100 @@ def _resumir_alinhamento_para_prompt(alinhamento: Dict[str, Any], max_pares: int
     }
 
 
+def _schema_auditoria_estrita() -> Dict[str, Any]:
+    """Schema compatível com Structured Outputs strict da Groq."""
+    afirmacao = {
+        "type": "object",
+        "properties": {
+            "texto": {"type": "string"},
+            "classificacao": {
+                "type": "string",
+                "enum": ["sustentada", "parcial", "nao_sustentada"],
+            },
+            "evidencia_na_fonte": {"type": "string"},
+            "indice_sentenca_fonte": {"type": ["integer", "null"]},
+            "informacao_adicional": {"type": "boolean"},
+            "observacao": {"type": "string"},
+        },
+        "required": [
+            "texto", "classificacao", "evidencia_na_fonte",
+            "indice_sentenca_fonte", "informacao_adicional", "observacao"
+        ],
+        "additionalProperties": False,
+    }
+
+    essencial = {
+        "type": "object",
+        "properties": {
+            "item": {"type": "string"},
+            "presente": {"type": "boolean"},
+            "correto": {"type": "boolean"},
+            "observacao": {"type": "string"},
+        },
+        "required": ["item", "presente", "correto", "observacao"],
+        "additionalProperties": False,
+    }
+
+    qualificador = {
+        "type": "object",
+        "properties": {
+            "item": {"type": "string"},
+            "preservado": {"type": "boolean"},
+            "observacao": {"type": "string"},
+        },
+        "required": ["item", "preservado", "observacao"],
+        "additionalProperties": False,
+    }
+
+    omissao = {
+        "type": "object",
+        "properties": {
+            "informacao_omitida": {"type": "string"},
+            "trecho_fonte": {"type": "string"},
+            "justificativa": {"type": "string"},
+        },
+        "required": ["informacao_omitida", "trecho_fonte", "justificativa"],
+        "additionalProperties": False,
+    }
+
+    distorcao = {
+        "type": "object",
+        "properties": {
+            "descricao": {"type": "string"},
+            "gravidade": {"type": "string", "enum": ["moderada", "grave"]},
+            "dimensao": {
+                "type": "string",
+                "enum": ["incerteza", "sustentacao", "ambas"],
+            },
+            "trecho_texto_gerado": {"type": "string"},
+            "trecho_fonte": {"type": "string"},
+            "explicacao": {"type": "string"},
+        },
+        "required": [
+            "descricao", "gravidade", "dimensao", "trecho_texto_gerado",
+            "trecho_fonte", "explicacao"
+        ],
+        "additionalProperties": False,
+    }
+
+    return {
+        "type": "object",
+        "properties": {
+            "afirmacoes": {"type": "array", "items": afirmacao, "minItems": 3, "maxItems": 6},
+            "itens_essenciais": {"type": "array", "items": essencial, "minItems": 4, "maxItems": 7},
+            "qualificadores": {"type": "array", "items": qualificador, "maxItems": 6},
+            "omissoes_essenciais": {"type": "array", "items": omissao, "maxItems": 4},
+            "distorcoes_epistemicas": {"type": "array", "items": distorcao, "maxItems": 4},
+            "observacao": {"type": "string"},
+        },
+        "required": [
+            "afirmacoes", "itens_essenciais", "qualificadores",
+            "omissoes_essenciais", "distorcoes_epistemicas", "observacao"
+        ],
+        "additionalProperties": False,
+    }
+
+
 def _auditar_um_nivel(
     nome_nivel: str,
     fonte_pt: str,
@@ -2458,12 +4520,10 @@ def _auditar_um_nivel(
     texto_avaliado: str,
     requisitos_cobertura: str,
 ) -> Tuple[Dict, str, Optional[str]]:
-    """Auditoria inspirada em FactPICO e FaReBio.
+    """Auditoria robusta de UM nível.
 
-    - FactPICO: exige conferência de elementos estruturados da evidência e também
-      de explicações/informações adicionais introduzidas pelo resumo leigo.
-    - FaReBio: exige uma sentença/trecho de suporte para cada afirmação avaliada.
-    - MiniLM: apenas recupera candidatos top-k; não decide a factualidade.
+    Cada nível é tentado isoladamente. Assim, se apenas a Leitura Facilitada vier
+    incompleta, não gastamos chamadas refazendo Divulgação e Resumo Científico.
     """
     alinhamento = alinhamento_semantico_sentencial(
         fonte_original=fonte_original,
@@ -2471,145 +4531,103 @@ def _auditar_um_nivel(
         saida=texto_avaliado,
         top_k=MINILM_TOP_K,
     )
-    candidatos = _resumir_alinhamento_para_prompt(alinhamento)
+    candidatos = _alinhamento_compacto_para_auditoria(
+        alinhamento,
+        max_pares=5,
+    )
+    ficha_compacta = _ficha_compacta_para_auditoria(ficha)
+    fonte_unica = _fonte_autoritativa_compacta(
+        fonte_original,
+        fonte_pt,
+    )
 
-    esquema = {
-        "afirmacoes": [{
-            "texto": "string",
-            "classificacao": "sustentada|parcial|nao_sustentada",
-            "evidencia_na_fonte": "string",
-            "indice_sentenca_fonte": 0,
-            "informacao_adicional": False,
-            "observacao": "string",
-        }],
-        "itens_essenciais": [{
-            "item": "string",
-            "presente": True,
-            "correto": True,
-            "observacao": "string",
-        }],
-        "qualificadores": [{
-            "item": "string",
-            "preservado": True,
-            "observacao": "string",
-        }],
-        "omissoes_essenciais": [{
-            "informacao_omitida": "string",
-            "trecho_fonte": "trecho literal da fonte que contém a informação",
-            "justificativa": "por que a omissão muda a interpretação neste nível",
-        }],
-        "distorcoes_epistemicas": [{
-            "descricao": "string",
-            "gravidade": "moderada|grave",
-            "dimensao": "incerteza|sustentacao|ambas",
-            "trecho_texto_gerado": "trecho literal copiado do TEXTO_AVALIADO",
-            "trecho_fonte": "trecho literal copiado da fonte original; tradução-base apenas se necessário",
-            "explicacao": "diferença concreta entre os dois trechos",
-        }],
-        "observacao": "string",
-    }
     prompt = f"""
-Você é auditor de fidelidade intelectual em comunicação científica de saúde.
-Audite apenas o texto <TEXTO_AVALIADO> em relação às fontes. Não use conhecimento externo.
-A fonte original é a referência principal; a tradução-base auxilia a leitura.
+Audite a fidelidade intelectual do TEXTO_AVALIADO em relação à FONTE.
 
-NÍVEL AVALIADO: {nome_nivel}
-CRITÉRIO DE COBERTURA PARA ESTE NÍVEL:
+NÍVEL: {nome_nivel}
+
+COBERTURA ESPERADA:
 {requisitos_cobertura}
 
-PRINCÍPIOS DA AUDITORIA:
-- Inspiração FactPICO: confira elementos estruturados de evidência (População,
-  Intervenção/Exposição, Comparador, Desfechos e relações de resultado) quando aplicáveis.
-- Toda explicação nova acrescentada para facilitar a leitura também é uma afirmação verificável.
-  Se não estiver sustentada pela fonte, marque informacao_adicional=true e classifique como
-  parcial ou nao_sustentada conforme o caso.
-- Inspiração FaReBio: para CADA afirmação, indique uma sentença/trecho específico da fonte que
-  a sustenta. Se não houver suporte suficiente, não invente evidência.
-- A recuperação MiniLM é bilíngue: busca candidatos tanto na fonte original quanto na tradução-base.
-  A fonte original continua sendo autoritativa; a tradução-base serve apenas para ampliar a recuperação.
-- Os candidatos MiniLM abaixo servem SOMENTE para localizar possíveis trechos; eles não provam
-  factualidade e podem ser ignorados se a fonte completa indicar outra coisa. Quando houver fonte
-  original disponível, prefira citar evidencia_na_fonte a partir dela.
+REGRAS:
+1. Use SOMENTE a FONTE.
+2. Produza de 3 a 6 afirmações verificáveis do TEXTO_AVALIADO.
+3. Para cada afirmação:
+   - copie o texto avaliado;
+   - classifique como sustentada, parcial ou nao_sustentada;
+   - aponte um trecho específico da FONTE;
+   - marque informacao_adicional quando houver explicação acrescentada.
+4. Produza de 4 a 7 itens essenciais da fonte adequados a este nível.
+5. Preserve diferença entre associação e causalidade.
+6. Preserve possibilidade, incerteza, limitações e força da evidência.
+7. Omissão só pode ser registrada com trecho literal da FONTE.
+8. Distorção só pode ser registrada com:
+   - trecho literal do TEXTO_AVALIADO;
+   - trecho literal da FONTE.
+9. Se não houver omissão/distorção comprovável, use lista vazia.
+10. NÃO calcule notas. Python calculará Sustentação, Cobertura, Incerteza e FI.
+11. Seja conciso nas observações para evitar respostas truncadas.
 
-TAREFAS OBRIGATÓRIAS:
-1. Separe de 3 a 12 afirmações verificáveis do texto e classifique cada uma.
-2. Para cada afirmação, registre evidencia_na_fonte com um trecho específico e, quando possível,
-   indice_sentenca_fonte correspondente ao candidato recuperado.
-3. Marque informacao_adicional=true se a frase contiver explicação/interpretação não expressa
-   diretamente na fonte.
-4. Crie de 4 a 12 itens essenciais da fonte adequados ao nível e marque presença e correção.
-5. Liste todos os qualificadores relevantes da fonte (pode, sugere, associado, baixa qualidade,
-   limitações, ausência de causalidade etc.) e diga se foram preservados.
-6. Registre omissões que mudem a interpretação SOMENTE quando puder provar que a informação existe na fonte.
-   Para CADA omissão, copie em trecho_fonte um trecho LITERAL da FONTE_ORIGINAL (preferencialmente) ou da TRADUCAO_BASE.
-   Não invente "duração dos estudos", "idade média", comparador ou qualquer outro detalhe se esse dado não estiver explícito na fonte.
-7. Registre distorções epistemológicas SOMENTE quando puder mostrar os DOIS lados da comparação:
-   - trecho_texto_gerado: copie LITERALMENTE a frase/trecho problemático do TEXTO_AVALIADO;
-   - trecho_fonte: copie LITERALMENTE o trecho da fonte que mostra o sentido correto;
-   - explicacao: diga exatamente o que mudou entre os trechos.
-   Exemplos: associação→causalidade, possibilidade→certeza, subgrupo→generalização, aprovação→eficácia,
-   mecanismo→benefício clínico, baixa evidência→conclusão forte. Uma limitação da própria fonte NÃO é distorção
-   se o texto a preservou corretamente. Dado ausente ou não aplicável na fonte também não é distorção.
-   Para cada distorção, informe gravidade e dimensão afetada. Use "grave" apenas quando a mudança puder alterar
-   materialmente a interpretação científica.
-8. Se você não conseguir apontar um trecho literal do texto E um trecho literal da fonte, NÃO registre a distorção.
-   Se você não conseguir apontar um trecho literal da fonte, NÃO registre a omissão. O Python validará essas provas.
-9. Se mencionar uma distorção ou omissão na observacao, ela DEVE aparecer também na lista estruturada correspondente.
-   Se não houver prova suficiente, retorne lista vazia e não a descreva como falha confirmada.
-10. Não use percentuais. O sistema calculará a pontuação de modo determinístico.
-11. Retorne somente JSON válido e exatamente no esquema abaixo.
+FICHA:
+{json.dumps(ficha_compacta, ensure_ascii=False)}
 
-ESQUEMA:
-{json.dumps(esquema, ensure_ascii=False, indent=2)}
+CANDIDATOS MINILM:
+{json.dumps(candidatos, ensure_ascii=False)}
 
-FICHA ESTRUTURADA DE EVIDÊNCIA:
-{json.dumps(ficha, ensure_ascii=False, indent=2)}
-
-CANDIDATOS DE SUPORTE RECUPERADOS POR MINILM:
-{json.dumps(candidatos, ensure_ascii=False, indent=2)}
-
-<FONTE_ORIGINAL>
-{fonte_original or fonte_pt}
-</FONTE_ORIGINAL>
-
-<TRADUCAO_BASE>
-{fonte_pt}
-</TRADUCAO_BASE>
+<FONTE>
+{fonte_unica}
+</FONTE>
 
 <TEXTO_AVALIADO>
 {texto_avaliado}
 </TEXTO_AVALIADO>
 """.strip()
 
-    resposta, modelo, erro = chamar_llm(prompt, json_mode=True)
-    dados = extrair_json(resposta)
-    pontuado = _pontuar_nivel(
-        dados, texto_avaliado=texto_avaliado, fonte_original=fonte_original, fonte_pt=fonte_pt
-    )
-    pontuado["alinhamento_semantico"] = alinhamento
-    if pontuado.get("valida"):
-        return pontuado, modelo, erro
+    ultimo_erro = ""
+    ultimo_pontuado: Dict[str, Any] = {}
+    modelo_usado = GROQ_MODEL
 
-    reparo = f"""
-Reescreva a resposta abaixo como JSON válido no esquema solicitado. Não invente novas
-conclusões nem trechos de prova; apenas organize a auditoria já produzida. Se uma omissão
-ou distorção não tiver os trechos literais exigidos pelo esquema, descarte esse item em vez
-de fabricar evidência. Garanta listas não vazias para 'afirmacoes' e 'itens_essenciais'.
+    # Retry é DESTE nível, não da auditoria inteira.
+    for tentativa in range(1, 4):
+        dados, modelo, erro = chamar_llm_auditoria_estruturada(
+            prompt,
+            _schema_auditoria_estrita(),
+            f"auditoria_{re.sub(r'[^a-z0-9]+', '_', _sem_acentos_minusculo(nome_nivel)).strip('_')}",
+        )
+        modelo_usado = modelo or modelo_usado
 
-ESQUEMA:
-{json.dumps(esquema, ensure_ascii=False, indent=2)}
+        pontuado = _pontuar_nivel(
+            dados,
+            texto_avaliado=texto_avaliado,
+            fonte_original=fonte_original,
+            fonte_pt=fonte_pt,
+        )
+        pontuado["alinhamento_semantico"] = alinhamento
+        ultimo_pontuado = pontuado
 
-RESPOSTA A REPARAR:
-{resposta}
-""".strip()
-    resposta2, modelo2, erro2 = chamar_llm(reparo, json_mode=True)
-    dados2 = extrair_json(resposta2)
-    pontuado2 = _pontuar_nivel(
-        dados2, texto_avaliado=texto_avaliado, fonte_original=fonte_original, fonte_pt=fonte_pt
-    )
-    pontuado2["alinhamento_semantico"] = alinhamento
-    return pontuado2, modelo2 or modelo, erro2 or erro
+        if pontuado.get("valida"):
+            return pontuado, modelo_usado, erro
 
+        motivo = pontuado.get("erro_formato") or erro or "resposta incompleta"
+        ultimo_erro = f"{nome_nivel}: {motivo}"
+
+        if tentativa < 3:
+            _esperar_retry_provedor(tentativa, ultimo_erro)
+
+    if not ultimo_pontuado:
+        ultimo_pontuado = {
+            "valida": False,
+            "pontuacao": None,
+            "erro_formato": ultimo_erro or "Auditoria não retornou dados.",
+            "afirmacoes": [],
+            "itens_essenciais": [],
+            "qualificadores": [],
+            "omissoes": [],
+            "distorcoes": [],
+            "alinhamento_semantico": alinhamento,
+        }
+
+    return ultimo_pontuado, modelo_usado, ultimo_erro or "Auditoria incompleta."
 
 def avaliar_fidelidade_intelectual(
     fonte: str,
@@ -2678,7 +4696,16 @@ def avaliar_fidelidade_intelectual(
     }
 
     if invalidos:
-        detalhes = [n.get("erro_formato") for n in invalidos if n.get("erro_formato")]
+        nomes_niveis = (
+            ("Divulgação científica", n1, erro1),
+            ("Leitura facilitada", n2, erro2),
+            ("Resumo científico", resumo_avaliado, erro3),
+        )
+        detalhes = []
+        for nome, nivel, erro_nivel in nomes_niveis:
+            if not nivel.get("valida"):
+                motivo = nivel.get("erro_formato") or erro_nivel or "resposta incompleta"
+                detalhes.append(f"{nome}: {motivo}")
         return {
             **base_retorno,
             "status": "Auditoria automática inconclusiva",
@@ -2756,33 +4783,54 @@ def avaliar_fidelidade_intelectual(
 
 
 def construir_corpus_portugues(texto_atual: str) -> List[str]:
-    """Monta o corpus em português usado apenas no cálculo de IDF.
+    """Monta o corpus em português usado no cálculo de IDF.
 
-    Inclui o texto atual e textos já existentes no fluxo editorial. Entradas antigas
-    ou corrompidas são ignoradas para que o diagnóstico textual não interrompa a
-    geração de novos rascunhos.
+    Cada sentença/trecho funciona como um documento do corpus. Isso é importante:
+    quando havia apenas um artigo disponível, o corpus anterior tinha um único
+    documento e o IDF ficava vazio; todos os termos acabavam recebendo 1.0.
+
+    Com unidades sentenciais:
+    - palavras centrais, repetidas ao longo do texto, recebem IDF menor;
+    - termos raros ou técnicos recebem IDF maior;
+    - o NCL-IDF consegue realmente separar níveis 0, 1 e 2.
+
+    Textos publicados e rascunhos anteriores também entram no corpus quando existem.
     """
     docs: List[str] = []
+    vistos = set()
 
-    atual = limpar_texto_editorial(texto_atual)
-    if atual:
-        docs.append(atual)
+    def adicionar_texto(texto: Any) -> None:
+        limpo = limpar_texto_editorial(texto)
+        if not limpo:
+            return
+
+        unidades = segmentar_unidades_semanticas(limpo)
+        if not unidades:
+            unidades = [p for p in _paragrafos_editoriais(limpo) if p]
+        if not unidades:
+            unidades = [limpo]
+
+        for unidade in unidades:
+            unidade = limpar_texto_editorial(unidade)
+            chave = _sem_acentos_minusculo(unidade)
+            if unidade and chave and chave not in vistos:
+                vistos.add(chave)
+                docs.append(unidade)
+
+    adicionar_texto(texto_atual)
 
     publicados = somente_dicionarios(carregar_json(PUBLICADAS, []))
     rascunhos_salvos = somente_dicionarios(carregar_json(RASCUNHOS, []))
 
     for item in publicados + rascunhos_salvos:
-        texto = limpar_texto_editorial(
+        adicionar_texto(
             item.get("resumo_cientifico_traduzido")
             or item.get("abstract_pt")
             or item.get("texto_fonte_pt")
             or ""
         )
-        if texto and texto not in docs:
-            docs.append(texto)
 
     return docs
-
 
 def fonte_cientifica_valida(texto: str) -> bool:
     """Evita gerar conteúdo quando a suposta fonte é, na verdade, uma página de erro."""
@@ -2792,111 +4840,218 @@ def fonte_cientifica_valida(texto: str) -> bool:
     return not _texto_parece_erro_servidor(texto)
 
 
+def _ficha_pipeline_valida(ficha: Any) -> bool:
+    return isinstance(ficha, dict) and bool(
+        limpar_texto_editorial(ficha.get("tipo_estudo"))
+        and limpar_texto_editorial(ficha.get("objetivo"))
+    )
+
+
+def _n1_pipeline_valido(blocos: Any) -> bool:
+    normalizados = normalizar_blocos_divulgacao(blocos)
+    return divulgacao_tem_quatro_blocos(normalizados)
+
+
+def _n2_pipeline_valido(blocos: Any) -> bool:
+    normalizados = normalizar_blocos_leitura(blocos)
+    return all(limpar_texto_editorial(normalizados.get(chave)) for chave, _ in BLOCOS_LEITURA)
+
+
+def _auditoria_pipeline_valida(avaliacao: Any) -> bool:
+    if not isinstance(avaliacao, dict) or avaliacao.get("pontuacao_geral") is None:
+        return False
+    if avaliacao.get("status") == "Auditoria automática inconclusiva":
+        return False
+    for chave in ("nivel_1", "nivel_2", "resumo_cientifico"):
+        nivel = avaliacao.get(chave) or {}
+        if not nivel.get("valida") or nivel.get("pontuacao") is None:
+            return False
+        if not nivel.get("afirmacoes") or not nivel.get("itens_essenciais"):
+            return False
+    return True
+
+
+def _tentar_etapa(nome: str, funcao, validacao=None):
+    """Repete uma etapa; nunca transforma falha em conteúdo editorial parcial."""
+    ultimo_erro = ""
+    for tentativa in range(1, PIPELINE_TENTATIVAS_ETAPA + 1):
+        try:
+            valor = funcao()
+            if validacao is None or validacao(valor):
+                return valor
+            ultimo_erro = f"{nome}: resposta incompleta."
+        except Exception as exc:
+            ultimo_erro = f"{nome}: {exc}"
+        if tentativa < PIPELINE_TENTATIVAS_ETAPA:
+            _esperar_retry_provedor(tentativa, ultimo_erro)
+    raise RuntimeError(
+        f"{nome} não foi concluída após {PIPELINE_TENTATIVAS_ETAPA} tentativas. "
+        f"Nenhum rascunho parcial foi salvo. Último erro: {ultimo_erro[:500]}"
+    )
+
+
 def processar_artigo(artigo: Dict, titulo_pt: str) -> Dict:
+    """Pipeline transacional: só retorna um rascunho quando TUDO estiver completo."""
     texto_original = limpar_texto_editorial(artigo.get("abstract", ""))
     if not fonte_cientifica_valida(texto_original):
-        raise ValueError(
-            "O resumo científico original está vazio ou a fonte retornou uma página de erro. "
-            "Atualize a coleta do artigo antes de gerar o rascunho."
-        )
+        raise ValueError("Resumo científico original vazio ou inválido.")
 
-    texto_fonte_pt, modelo_traducao, erro_traducao, traducao_cache = traduzir_com_google(
-        texto_original, artigo
-    )
+    texto_fonte_pt, modelo_traducao, erro_traducao, traducao_cache = traduzir_com_google(texto_original, artigo)
     texto_fonte_pt = limpar_texto_editorial(texto_fonte_pt)
     if erro_traducao or not fonte_cientifica_valida(texto_fonte_pt):
-        raise RuntimeError(
-            erro_traducao
-            or "A tradução-base do Google Translate não pôde ser validada. Tente novamente mais tarde."
-        )
+        raise RuntimeError(erro_traducao or "Tradução-base inválida.")
 
-    ficha, modelo_ficha, erro_ficha = gerar_ficha_factual(titulo_pt, texto_fonte_pt)
+    # LLAMA: ficha factual
+    def etapa_ficha():
+        ficha, modelo, erro = gerar_ficha_factual(titulo_pt, texto_fonte_pt)
+        if erro:
+            raise RuntimeError(erro)
+        return ficha, modelo
+    ficha, modelo_ficha = _tentar_etapa(
+        "Ficha factual (Llama)", etapa_ficha,
+        lambda x: isinstance(x, tuple) and _ficha_pipeline_valida(x[0])
+    )
 
-    # O diagnóstico lexical é calculado antes da geração da Leitura Facilitada para que
-    # os termos potencialmente complexos sejam conhecidos pelo plano, e não apenas depois.
     corpus_previo = construir_corpus_portugues(texto_fonte_pt)
     idf = calcular_idf_corpus(corpus_previo)
     termos_fonte = extrair_termos_complexos(texto_fonte_pt, idf)
-    plano_simplificacao = construir_plano_simplificacao(ficha, termos_fonte)
-
-    gerado, modelo_texto, erro_texto = gerar_textos_acessiveis(
-        titulo_pt, texto_original, texto_fonte_pt, ficha
+    mapa_lexical = construir_mapa_lexical_idf(
+        texto_fonte_pt,
+        titulo_pt,
+        ficha,
+        idf,
+        termos_fonte,
+    )
+    plano_simplificacao = construir_plano_simplificacao(
+        ficha,
+        termos_fonte,
+        mapa_lexical,
     )
 
-    # Divulgação e resumo técnico têm fallback editável. A Leitura Facilitada é gerada
-    # separadamente para não herdar omissões ou formulações do N1.
-    if not gerado:
-        gerado = {
-            "manchete": titulo_pt,
-            "alternativas_manchete": [],
-            "subtitulo": "Rascunho automático indisponível; revise manualmente.",
-            "divulgacao_cientifica": texto_fonte_pt,
-            "resumo_cientifico_traduzido": texto_fonte_pt,
-            "nota_ao_revisor": [erro_texto or "Não foi possível gerar divulgação/resumo com LLM."],
-        }
+    # GEMINI: UMA única chamada gera Divulgação + Leitura Facilitada.
+    def etapa_simplificacao_unica():
+        gerado, modelo, erro = gerar_textos_acessiveis(
+            titulo_pt,
+            texto_original,
+            texto_fonte_pt,
+            ficha,
+            plano_simplificacao,
+        )
+        if erro or not gerado:
+            raise RuntimeError(erro or "Resposta vazia.")
 
-    divulgacao = limpar_texto_editorial(gerado.get("divulgacao_cientifica"))
-    resumo_traduzido = limpar_texto_editorial(
-        gerado.get("resumo_cientifico_traduzido") or texto_fonte_pt
+        blocos_n1 = normalizar_blocos_divulgacao(
+            gerado.get("divulgacao_cientifica")
+        )
+        blocos_n2 = normalizar_blocos_leitura(
+            gerado.get("leitura_facilitada")
+        )
+
+        if not _n1_pipeline_valido(blocos_n1):
+            raise RuntimeError("A divulgação não trouxe os quatro blocos semânticos.")
+        if not _n2_pipeline_valido(blocos_n2):
+            raise RuntimeError("A leitura facilitada não trouxe os quatro blocos.")
+
+        return gerado, modelo, blocos_n1, blocos_n2
+
+    gerado, modelo_texto, blocos_divulgacao, blocos_facilitados = _tentar_etapa(
+        "Simplificação completa N1 + N2 (Gemini)",
+        etapa_simplificacao_unica,
     )
 
-    blocos_facilitados, modelo_n2, erro_n2, notas_n2 = gerar_leitura_facilitada_independente(
-        titulo_pt, texto_original, texto_fonte_pt, ficha, plano_simplificacao
+    divulgacao = blocos_divulgacao_para_texto(blocos_divulgacao)
+    modelo_n2 = modelo_texto
+
+    # O resumo científico em PT é a tradução-base. Não gasta Gemini nem Llama.
+    resumo_traduzido = texto_fonte_pt
+
+    termos_revisao = _lista_simplificacao(
+        gerado.get("termos_para_revisao_humana")
     )
-    if not any(blocos_facilitados.values()):
-        # Fallback deixa o conteúdo disponível para edição, mas a checagem irá sinalizar
-        # que a simplificação não foi concluída adequadamente.
-        blocos_facilitados = normalizar_blocos_leitura({"o_principal": texto_fonte_pt})
+    notas_n2 = [
+        f"Termo para revisão humana: {termo}"
+        for termo in termos_revisao
+    ]
 
     diagnostico_inicial = diagnosticar_complexidade_leitura(blocos_facilitados, idf)
-    checagem_inicial, modelo_checagem, erro_checagem = checar_nucleo_leitura_facilitada(
-        texto_original, texto_fonte_pt, plano_simplificacao, blocos_facilitados, diagnostico_inicial
-    )
 
+    # LOCAL: triagem do núcleo com Python + MiniLM. É determinística e roda uma vez.
+    checagem_inicial, modelo_checagem, erro_checagem_inicial = checar_nucleo_leitura_facilitada(
+        texto_original,
+        texto_fonte_pt,
+        plano_simplificacao,
+        blocos_facilitados,
+        diagnostico_inicial,
+    )
+    if erro_checagem_inicial or not checagem_inicial.get("valida"):
+        raise RuntimeError(
+            erro_checagem_inicial
+            or "A estrutura da Leitura Facilitada ficou inválida."
+        )
+
+    blocos_finais = blocos_facilitados
     reparo_aplicado = False
     modelo_reparo = "nenhum"
-    erro_reparo: Optional[str] = None
-    blocos_finais = blocos_facilitados
-    if checagem_inicial.get("valida") and checagem_inicial.get("blocos_para_reparar"):
-        blocos_finais, modelo_reparo, erro_reparo = reparar_leitura_facilitada_uma_vez(
-            texto_original, texto_fonte_pt, plano_simplificacao, blocos_facilitados, checagem_inicial
-        )
+    modelo_rechecagem = "nenhum"
+
+    # GEMINI repara somente se a triagem local encontrar problema objetivo.
+    if checagem_inicial.get("blocos_para_reparar"):
+        def etapa_reparo():
+            blocos, modelo, erro = reparar_leitura_facilitada_uma_vez(
+                texto_original, texto_fonte_pt, plano_simplificacao, blocos_facilitados, checagem_inicial
+            )
+            if erro or not _n2_pipeline_valido(blocos):
+                raise RuntimeError(erro or "Reparo incompleto.")
+            return blocos, modelo
+        blocos_finais, modelo_reparo = _tentar_etapa("Reparo da leitura facilitada (Gemini)", etapa_reparo)
         reparo_aplicado = blocos_finais != blocos_facilitados
 
     diagnostico_final = diagnosticar_complexidade_leitura(blocos_finais, idf)
-    # Só repetimos a checagem quando houve reparo. Se a primeira versão já passou,
-    # repetir a mesma chamada aumentaria custo e latência sem acrescentar informação.
-    if reparo_aplicado:
-        checagem_final, modelo_rechecagem, erro_rechecagem = checar_nucleo_leitura_facilitada(
-            texto_original, texto_fonte_pt, plano_simplificacao, blocos_finais, diagnostico_final
+
+    # LOCAL: checagem final determinística. Não usa retry.
+    checagem_final, modelo_rechecagem, erro_checagem_final = checar_nucleo_leitura_facilitada(
+        texto_original,
+        texto_fonte_pt,
+        plano_simplificacao,
+        blocos_finais,
+        diagnostico_final,
+    )
+    if erro_checagem_final or not checagem_final.get("valida"):
+        raise RuntimeError(
+            erro_checagem_final
+            or "A estrutura final da Leitura Facilitada ficou inválida."
         )
-    else:
-        checagem_final = checagem_inicial
-        modelo_rechecagem = "nenhum"
-        erro_rechecagem = None
 
     facilitada = blocos_para_texto(blocos_finais)
-    fonte_auditoria = texto_fonte_pt or resumo_traduzido
+
+    # LLAMA: auditoria dos três níveis.
+    # Cada nível possui retry próprio; não repetimos os três do zero se apenas um falhar.
     avaliacao = avaliar_fidelidade_intelectual(
-        fonte_auditoria, ficha, divulgacao, facilitada, resumo_traduzido,
+        texto_fonte_pt,
+        ficha,
+        divulgacao,
+        facilitada,
+        resumo_traduzido,
         fonte_original=texto_original,
     )
-    metricas_n1 = indice_simplificacao_experimental(fonte_auditoria, divulgacao, idf)
-    metricas_n2 = indice_simplificacao_experimental(fonte_auditoria, facilitada, idf)
-    termos = extrair_termos_complexos(fonte_auditoria, idf)
-
-    notas = _lista_simplificacao(gerado.get("nota_ao_revisor")) + notas_n2
-    if not checagem_final.get("aprovado_para_auditoria", False):
-        notas.append(
-            "A checagem do núcleo obrigatório ainda encontrou itens ou problemas de linguagem; "
-            "revise a Leitura Facilitada manualmente antes de publicar."
+    if not _auditoria_pipeline_valida(avaliacao):
+        detalhe_auditoria = limpar_texto_editorial(
+            avaliacao.get("erro_avaliacao")
+            or avaliacao.get("observacao_geral")
+            or "A auditoria não retornou todos os níveis válidos."
+        )
+        raise RuntimeError(
+            "Auditoria de fidelidade intelectual não foi concluída. "
+            "Nenhum rascunho parcial foi salvo. "
+            + detalhe_auditoria[:700]
         )
 
-    erros_pipeline = [e for e in [
-        erro_traducao, erro_ficha, erro_texto, erro_n2, erro_checagem, erro_reparo, erro_rechecagem
-    ] if e]
+    metricas_n1 = indice_simplificacao_experimental(texto_fonte_pt, divulgacao, idf, mapa_lexical, "n1")
+    metricas_n2 = indice_simplificacao_experimental(texto_fonte_pt, facilitada, idf, mapa_lexical, "n2")
+    termos = extrair_termos_complexos(texto_fonte_pt, idf)
+    notas = _lista_simplificacao(gerado.get("nota_ao_revisor")) + notas_n2
 
-    return {
+    resultado = {
         "abstract_pt": resumo_traduzido,
         "texto_fonte_pt": texto_fonte_pt,
         "texto_fonte_original": texto_original,
@@ -2904,6 +5059,7 @@ def processar_artigo(artigo: Dict, titulo_pt: str) -> Dict:
         "ficha_factual": ficha,
         "ficha_estruturada_evidencia": ficha,
         "plano_simplificacao": plano_simplificacao,
+        "mapa_lexical_ncl_idf": mapa_lexical,
         "checagem_simplificacao_inicial": checagem_inicial,
         "checagem_simplificacao_final": checagem_final,
         "diagnostico_simplificacao_inicial": diagnostico_inicial,
@@ -2911,16 +5067,15 @@ def processar_artigo(artigo: Dict, titulo_pt: str) -> Dict:
         "reparo_simplificacao_aplicado": reparo_aplicado,
         "reparo_simplificacao_blocos": checagem_inicial.get("blocos_para_reparar", []),
         "manchete": limpar_texto_editorial(gerado.get("manchete") or titulo_pt),
-        "alternativas_manchete": [
-            limpar_texto_editorial(x)
-            for x in _lista_simplificacao(gerado.get("alternativas_manchete"))
-            if limpar_texto_editorial(x)
-        ][:3],
+        "alternativas_manchete": _lista_simplificacao(gerado.get("alternativas_manchete"))[:3],
         "subtitulo": limpar_texto_editorial(gerado.get("subtitulo")),
         "divulgacao_cientifica": divulgacao,
+        "divulgacao_cientifica_blocos": blocos_divulgacao_para_lista(blocos_divulgacao),
+        "divulgacao_blocos_semanticos": True,
+        "divulgacao_precisa_reestruturar": False,
         "leitura_facilitada_blocos": blocos_finais,
         "leitura_facilitada": facilitada,
-        # Compatibilidade com versões anteriores do portal
+        "resumo_cientifico_blocos": estruturar_resumo_cientifico(resumo_traduzido),
         "leve": divulgacao,
         "forte": facilitada,
         "nota_ao_revisor": notas,
@@ -2947,10 +5102,17 @@ def processar_artigo(artigo: Dict, titulo_pt: str) -> Dict:
         "modelo_checagem_simplificacao": modelo_checagem,
         "modelo_reparo_simplificacao": modelo_reparo,
         "modelo_rechecagem_simplificacao": modelo_rechecagem,
-        "erros_pipeline": erros_pipeline,
+        "erros_pipeline": [],
+        "pipeline_completo": True,
         "versao_prompt": VERSAO_PROMPT,
         "gerado_em": agora_iso(),
     }
+
+    if not _auditoria_pipeline_valida(resultado["avaliacao_fidelidade_intelectual"]):
+        raise RuntimeError("Trava final: auditoria incompleta; rascunho não pode ser salvo.")
+    if resultado.get("fidelidade_intelectual") is None:
+        raise RuntimeError("Trava final: Fidelidade Intelectual não calculada; rascunho não pode ser salvo.")
+    return resultado
 
 def reavaliar_rascunho(rascunho: Dict) -> Dict:
     fonte = limpar_texto_editorial(
@@ -2975,10 +5137,22 @@ def reavaliar_rascunho(rascunho: Dict) -> Dict:
     )
     n2 = blocos_para_texto(blocos)
     idf = calcular_idf_corpus(construir_corpus_portugues(fonte))
-    # Reconstroi o plano com as regras da versão atual. Isso garante que rascunhos
-    # antigos recebam a nova separação entre fatos obrigatórios e úteis ao reavaliar.
+    termos_fonte = extrair_termos_complexos(fonte, idf)
+    titulo_mapa = limpar_texto_editorial(
+        rascunho.get("titulo_pt") or rascunho.get("titulo_original") or rascunho.get("manchete") or ""
+    )
+    mapa_lexical = construir_mapa_lexical_idf(
+        fonte,
+        titulo_mapa,
+        ficha,
+        idf,
+        termos_fonte,
+    )
+    # Reconstrói o plano com as regras lexicais NCL-IDF da versão atual.
     plano_simplificacao = construir_plano_simplificacao(
-        ficha, extrair_termos_complexos(fonte, idf)
+        ficha,
+        termos_fonte,
+        mapa_lexical,
     )
     diagnostico_simplificacao = diagnosticar_complexidade_leitura(blocos, idf)
     checagem_simplificacao, modelo_checar_simplificacao, erro_checar_simplificacao = checar_nucleo_leitura_facilitada(
@@ -2998,6 +5172,7 @@ def reavaliar_rascunho(rascunho: Dict) -> Dict:
     rascunho["leve"] = n1
     rascunho["forte"] = n2
     rascunho["plano_simplificacao"] = plano_simplificacao
+    rascunho["mapa_lexical_ncl_idf"] = mapa_lexical
     rascunho["diagnostico_simplificacao_final"] = diagnostico_simplificacao
     rascunho["checagem_simplificacao_final"] = checagem_simplificacao
     rascunho["modelo_checagem_simplificacao"] = modelo_checar_simplificacao
@@ -3008,8 +5183,8 @@ def reavaliar_rascunho(rascunho: Dict) -> Dict:
     rascunho["avaliacao_fidelidade_intelectual"] = avaliacao
     rascunho["status_fidelidade_intelectual"] = avaliacao.get("status")
     rascunho["fidelidade_intelectual"] = avaliacao.get("pontuacao_geral")
-    rascunho["metricas_estruturais_n1"] = indice_simplificacao_experimental(fonte, n1, idf)
-    rascunho["metricas_estruturais_n2"] = indice_simplificacao_experimental(fonte, n2, idf)
+    rascunho["metricas_estruturais_n1"] = indice_simplificacao_experimental(fonte, n1, idf, mapa_lexical, "n1")
+    rascunho["metricas_estruturais_n2"] = indice_simplificacao_experimental(fonte, n2, idf, mapa_lexical, "n2")
     rascunho["isr_leve"] = rascunho["metricas_estruturais_n1"]["indice_experimental"]
     rascunho["isr_forte"] = rascunho["metricas_estruturais_n2"]["indice_experimental"]
     rascunho["sim_origem_leve"] = avaliacao.get("similaridade_tematica_n1")
@@ -3069,8 +5244,9 @@ def renderizar_rastreabilidade_simplificacao(rascunho: Dict[str, Any]) -> None:
 
         st.markdown("**Metas linguísticas do N2**")
         st.write(
-            "Frases preferencialmente entre 7 e 14 palavras; 16 é limite suave; acima de 18 gera alerta para divisão. "
-            "O objetivo é descompactar a informação, usar palavras mais cotidianas e manter uma ideia principal por frase."
+            "A prioridade é reduzir palavras difíceis e formulações acadêmicas sem perder o conteúdo científico. "
+            "NCL-IDF 1 deve ser preferencialmente substituído no N2 e NCL-IDF 2 deve ser substituído nos dois níveis "
+            "quando houver alternativa fiel. O tamanho das frases é apenas um indicador auxiliar."
         )
         alertas = diagnostico.get("frases_acima_18", [])
         if alertas:
@@ -3096,9 +5272,16 @@ def renderizar_rastreabilidade_simplificacao(rascunho: Dict[str, Any]) -> None:
             st.caption("Nenhum reparo automático foi necessário ou pôde ser aplicado.")
 
         if checagem.get("aprovado_para_auditoria"):
-            st.success("O núcleo obrigatório foi preservado na checagem prévia.")
+            st.success("A Leitura Facilitada está pronta para a auditoria de fidelidade.")
+            alertas_sem = checagem.get("alertas_semanticos") or []
+            if alertas_sem:
+                st.caption(
+                    f"A triagem MiniLM deixou {len(alertas_sem)} alerta(s) semântico(s). "
+                    "Eles não bloqueiam o texto porque a substituição lexical pode reduzir a similaridade; "
+                    "a auditoria final verifica a cobertura factual."
+                )
         else:
-            st.warning("A checagem ainda encontrou itens que merecem revisão humana.")
+            st.warning("A estrutura da Leitura Facilitada ainda não permite auditoria.")
 
 def renderizar_rastreabilidade_fidelidade(rascunho: Dict[str, Any]) -> None:
     """Painel opcional para explicar de onde vem a auditoria."""
@@ -3245,8 +5428,38 @@ def carregar_artigos() -> List[Dict]:
     return artigos
 
 
-def prioridade_editorial(artigo: Dict) -> float:
-    return float(artigo.get("score_prioridade_editorial", artigo.get("score_qualidade", 0)) or 0)
+def categoria_fonte(artigo: Dict) -> str:
+    categoria = str(artigo.get("categoria_selecao") or "").strip()
+    if categoria:
+        return categoria
+    tipos = set(artigo.get("tipos") or [])
+    return "sintese_evidencia" if tipos & {"SystematicReview", "MetaAnalysis"} else "estudo_elegivel"
+
+
+def rotulo_fonte_selecionada(artigo: Dict) -> str:
+    rotulo = str(artigo.get("categoria_selecao_rotulo") or "").strip()
+    if rotulo:
+        return rotulo
+    return (
+        "Síntese de evidência priorizada"
+        if categoria_fonte(artigo) == "sintese_evidencia"
+        else "Estudo científico elegível"
+    )
+
+
+def ordem_fonte_selecionada(artigo: Dict) -> Tuple[int, int, int, str]:
+    """Ordena apenas conforme a seleção feita pelo coletor; não calcula qualidade."""
+    grupo = 0 if categoria_fonte(artigo) == "sintese_evidencia" else 1
+    try:
+        ordem = int(artigo.get("ordem_selecao") or 10**9)
+    except (TypeError, ValueError):
+        ordem = 10**9
+    try:
+        rank = int(artigo.get("rank_fonte") or 10**9)
+    except (TypeError, ValueError):
+        rank = 10**9
+    titulo = str(artigo.get("titulo") or artigo.get("titulo_original") or "").lower()
+    return grupo, ordem, rank, titulo
 
 
 def publicar_rascunho(rascunho: Dict, justificativa_override: str = "") -> None:
@@ -3308,6 +5521,8 @@ def salvar_estado(paper_id: str, estado: str) -> None:
 
 def criar_rascunho(artigo: Dict, titulo_pt: str) -> None:
     resultado = processar_artigo(artigo, titulo_pt)
+    if not resultado.get("pipeline_completo") or resultado.get("fidelidade_intelectual") is None:
+        raise RuntimeError("Pipeline incompleto: nenhum rascunho foi salvo.")
     resultado.update({
         "paper_id": artigo.get("paper_id"),
         "doi": artigo.get("doi", ""),
@@ -3316,10 +5531,18 @@ def criar_rascunho(artigo: Dict, titulo_pt: str) -> None:
         "ano": artigo.get("ano"),
         "autores": artigo.get("autores", ""),
         "tema": artigo.get("_tema", artigo.get("tema", "geral")),
+        "tema_original": artigo.get("_tema", artigo.get("tema", "geral")),
+        "tema_exibicao": traduzir_tema_exibicao(
+            artigo.get("_tema", artigo.get("tema", "geral"))
+        ),
         "tipos": artigo.get("tipos", []),
         "citacoes_totais": artigo.get("citacoes_totais", artigo.get("citacoes", 0)),
-        "score_prioridade_editorial": prioridade_editorial(artigo),
-        "score_qualidade": prioridade_editorial(artigo),
+        "categoria_selecao": categoria_fonte(artigo),
+        "categoria_selecao_rotulo": rotulo_fonte_selecionada(artigo),
+        "ordem_selecao": artigo.get("ordem_selecao"),
+        "rank_fonte": artigo.get("rank_fonte"),
+        "criterio_selecao": artigo.get("criterio_selecao", ""),
+        "triagem_elegibilidade": artigo.get("triagem_elegibilidade", {}),
         "open_access": artigo.get("open_access", False),
         "url_artigo": artigo.get("url_artigo", ""),
         "url_pdf": artigo.get("url_pdf", ""),
@@ -3343,9 +5566,15 @@ def salvar_campos_rascunho(
     atualizado["manchete"] = limpar_texto_editorial(manchete)
     atualizado["subtitulo"] = limpar_texto_editorial(subtitulo)
     atualizado["divulgacao_cientifica"] = limpar_texto_editorial(n1)
+    atualizado["divulgacao_cientifica_blocos"] = estruturar_divulgacao_cientifica(
+        atualizado["divulgacao_cientifica"]
+    )
     atualizado["leitura_facilitada_blocos"] = blocos
     atualizado["leitura_facilitada"] = blocos_para_texto(blocos)
     atualizado["resumo_cientifico_traduzido"] = limpar_texto_editorial(resumo_traduzido)
+    atualizado["resumo_cientifico_blocos"] = estruturar_resumo_cientifico(
+        atualizado["resumo_cientifico_traduzido"]
+    )
     atualizado["abstract_pt"] = atualizado["resumo_cientifico_traduzido"]
     atualizado["leve"] = atualizado["divulgacao_cientifica"]
     atualizado["forte"] = atualizado["leitura_facilitada"]
@@ -3380,13 +5609,13 @@ def renderizar_modelos_usados(rascunho: Dict[str, Any]) -> None:
     avaliacao = rascunho.get("avaliacao_fidelidade_intelectual") or {}
     tradutor_registrado = str(rascunho.get("modelo_traducao") or "")
     if tradutor_registrado and not (
-        tradutor_registrado.startswith("Google Translate")
+        "Google Translate" in tradutor_registrado
+        or (tradutor_registrado.startswith("OPUS-MT local") and "fallback" in tradutor_registrado.lower())
         or tradutor_registrado == "Fonte original em português"
     ):
         st.warning(
-            "Este rascunho foi criado com uma tradução-base de uma versão anterior. "
-            "Para manter a padronização do experimento, exclua este rascunho e gere-o novamente; "
-            "a versão 7.1 usa exclusivamente Google Translate na tradução-base e reforça a acessibilidade do N2."
+            "Este rascunho foi criado com uma estratégia de tradução diferente da versão atual. "
+            "A metodologia corrente usa Google Translate como método principal e OPUS-MT somente como fallback técnico."
         )
     alinhamentos = [
         (avaliacao.get(chave) or {}).get("alinhamento_semantico") or {}
@@ -3471,29 +5700,41 @@ def renderizar_metricas_editoriais(registro: Dict[str, Any], titulo: str = "Mét
                 )
 
         st.divider()
-        st.markdown("**Simplificação estrutural**")
+        st.markdown("**Simplificação lexical — NCL-IDF**")
         st.caption(
-            "Indicador experimental de mudança estrutural; não representa porcentagem de compreensão humana nem de fidelidade factual."
+            "Indicador experimental com foco em redução de termos difíceis. O tamanho das frases é apenas auxiliar; não representa compreensão humana nem fidelidade factual."
         )
         s1, s2 = st.columns(2)
         with s1:
-            st.metric("Índice estrutural — Divulgação", _fmt_percentual(m_n1.get("indice_experimental", registro.get("isr_leve"))))
+            st.metric("Índice lexical — Divulgação", _fmt_percentual(m_n1.get("indice_experimental", registro.get("isr_leve"))))
             origem = m_n1.get("origem") or {}
             saida = m_n1.get("saida") or {}
             if origem or saida:
                 st.caption(
-                    f"Palavras/frase: {origem.get('media_palavras_sentenca', 'N/D')} → {saida.get('media_palavras_sentenca', 'N/D')} · "
-                    f"termos complexos: {origem.get('termos_complexos', 'N/D')} → {saida.get('termos_complexos', 'N/D')}"
+                    f"Redução lexical NCL-IDF: {_fmt_percentual(m_n1.get('reducao_lexical_ncl_idf'))} · "
+                    f"palavras/frase (auxiliar): {origem.get('media_palavras_sentenca', 'N/D')} → {saida.get('media_palavras_sentenca', 'N/D')}"
                 )
         with s2:
-            st.metric("Índice estrutural — Leitura facilitada", _fmt_percentual(m_n2.get("indice_experimental", registro.get("isr_forte"))))
+            st.metric("Índice lexical — Leitura facilitada", _fmt_percentual(m_n2.get("indice_experimental", registro.get("isr_forte"))))
             origem = m_n2.get("origem") or {}
             saida = m_n2.get("saida") or {}
             if origem or saida:
                 st.caption(
-                    f"Palavras/frase: {origem.get('media_palavras_sentenca', 'N/D')} → {saida.get('media_palavras_sentenca', 'N/D')} · "
-                    f"termos complexos: {origem.get('termos_complexos', 'N/D')} → {saida.get('termos_complexos', 'N/D')}"
+                    f"Redução lexical NCL-IDF: {_fmt_percentual(m_n2.get('reducao_lexical_ncl_idf'))} · "
+                    f"palavras/frase (auxiliar): {origem.get('media_palavras_sentenca', 'N/D')} → {saida.get('media_palavras_sentenca', 'N/D')}"
                 )
+
+        mapa_lexical = registro.get("mapa_lexical_ncl_idf") or (registro.get("plano_simplificacao") or {}).get("mapa_lexical_ncl_idf") or {}
+        itens_mapa = [i for i in mapa_lexical.get("itens", []) if isinstance(i, dict)]
+        if itens_mapa:
+            with st.expander("Mapa lexical NCL-IDF — ver termos 0, 1 e 2", expanded=False):
+                st.caption(
+                    "0 = pode manter · 1 = pode explicar na Divulgação e substituir na Leitura Facilitada · "
+                    "2 = substituir nos dois níveis quando houver forma fiel."
+                )
+                for nivel in (0, 1, 2):
+                    termos_nivel = [str(i.get("termo")) for i in itens_mapa if int(i.get("nivel", 0) or 0) == nivel]
+                    st.write(f"**Nível {nivel}:** " + (", ".join(termos_nivel) if termos_nivel else "nenhum termo"))
 
         st.divider()
         st.markdown("**Indicadores semânticos auxiliares**")
@@ -3515,7 +5756,7 @@ def renderizar_metricas_editoriais(registro: Dict[str, Any], titulo: str = "Mét
         st.markdown("**Ferramentas e modelos efetivamente usados**")
         renderizar_modelos_usados(registro)
         st.caption(f"Modelo de recuperação semântica configurado: {MINILM_MODEL}")
-        st.caption("Tradução-base padronizada: Google Translate, quando a fonte não está em português.")
+        st.caption(f"Tradução-base: Google Translate; fallback técnico: OPUS-MT local ({OPUS_MT_MODEL}).")
 
 
 def bloco_contador(numero: int, rotulo: str) -> None:
@@ -3550,7 +5791,11 @@ for noticia in publicados_lista:
             "_tema": noticia.get("tema", "geral"),
             "tipos": noticia.get("tipos", []),
             "citacoes_totais": noticia.get("citacoes_totais", 0),
-            "score_prioridade_editorial": noticia.get("score_prioridade_editorial", noticia.get("score_qualidade", 0)),
+            "categoria_selecao": noticia.get("categoria_selecao", ""),
+            "categoria_selecao_rotulo": noticia.get("categoria_selecao_rotulo", ""),
+            "ordem_selecao": noticia.get("ordem_selecao"),
+            "rank_fonte": noticia.get("rank_fonte"),
+            "criterio_selecao": noticia.get("criterio_selecao", ""),
             "url_artigo": noticia.get("url_artigo", ""),
             "url_pdf": noticia.get("url_pdf", ""),
             "_orfao": True,
@@ -3571,18 +5816,18 @@ contagens = {
 # Sidebar simples, próxima da primeira versão.
 with st.sidebar:
     st.markdown("## 📰 Jornal Cienc.IA")
-    st.caption("Painel editorial simples · versão 7.1")
+    st.caption("Painel editorial simples · versão 7.3")
     st.divider()
     st.markdown(f"**🟢 Publicados:** {contagens['publicado']}")
     st.markdown(f"**🔵 Para aprovar:** {contagens['rascunho']}")
     st.markdown(f"**🟡 Pendentes:** {contagens['pendente']}")
     st.markdown(f"**🔴 Rejeitados:** {contagens['rejeitado']}")
     st.divider()
-    st.caption("Tradução-base: Google Translate (fixo)")
+    st.caption(f"Tradução-base: Google Translate → fallback OPUS-MT · {OPUS_MT_MODEL}")
     st.caption(f"LLM principal: {GEMINI_MODEL}")
     st.caption(f"Fallback Gemini: {GEMINI_FALLBACK_MODEL}")
     if os.getenv("GROQ_API_KEY"):
-        st.caption(f"Fallback Groq: {GROQ_MODEL}")
+        st.caption(f"Llama / Groq: {GROQ_MODEL}")
     st.divider()
     filtro = st.selectbox(
         "Mostrar",
@@ -3636,7 +5881,7 @@ for artigo in artigos:
 lista_visivel.sort(
     key=lambda par: (
         {"rascunho": 0, "pendente": 1, "publicado": 2, "rejeitado": 3}.get(par[1], 4),
-        -prioridade_editorial(par[0]),
+        *ordem_fonte_selecionada(par[0]),
     )
 )
 
@@ -3650,10 +5895,13 @@ for artigo, estado in lista_visivel:
 
     with st.expander(label, expanded=(estado == "rascunho")):
         tipos = ", ".join(artigo.get("tipos", [])) or "Tipo não informado"
+        ordem_txt = artigo.get("ordem_selecao")
+        selecao_txt = rotulo_fonte_selecionada(artigo)
+        complemento_ordem = f" · Fila: #{ordem_txt}" if ordem_txt not in (None, "") else ""
         st.markdown(
             f'<div class="meta-linha"><b>{tipos}</b> · {artigo.get("autores", "—")} · '
             f'{artigo.get("ano", "—")} · Tema: {traduzir_tema_exibicao(artigo.get("_tema", "geral"))} · '
-            f'Prioridade: {prioridade_editorial(artigo):.1f}</div>',
+            f'Seleção: {selecao_txt}{complemento_ordem}</div>',
             unsafe_allow_html=True,
         )
 
@@ -3672,7 +5920,7 @@ for artigo, estado in lista_visivel:
             with b1:
                 if st.button("✨ Gerar rascunho", key=f"gerar_{pid}", type="primary", width="stretch"):
                     try:
-                        with st.spinner("Traduzindo com Google Translate e gerando a ficha factual e as três versões de leitura..."):
+                        with st.spinner("Traduzindo com Google Translate (OPUS-MT como fallback) e gerando a ficha factual e as três versões de leitura..."):
                             criar_rascunho(artigo, titulo_pt)
                     except Exception as exc:
                         st.error(
