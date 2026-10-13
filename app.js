@@ -1,5 +1,7 @@
+
 let todasNoticias = [];
-let temaAtivo = '';
+let modoExploracao = 'temas';
+let filtroAtivo = '';
 let buscaAtiva = '';
 
 function texto(valor) {
@@ -35,14 +37,6 @@ function formatarTema(valor) {
     return 'Geral';
   }
 
-  /*
-   * Compatibilidade com notícias antigas.
-   *
-   * A tradução normal dos temas agora deve vir pronta do backend
-   * no campo "tema_exibicao".
-   *
-   * STI é uma exceção porque a sigla em português é IST.
-   */
   if (chave === 'sti') {
     return 'IST';
   }
@@ -51,21 +45,55 @@ function formatarTema(valor) {
 }
 
 function temaExibicao(noticia) {
-  /*
-   * Prioridade:
-   * 1. tema_exibicao traduzido automaticamente pelo backend;
-   * 2. tema original como fallback para arquivos antigos.
-   */
   return (
     texto(noticia && noticia.tema_exibicao) ||
     formatarTema(noticia && noticia.tema)
   );
 }
 
+function origemBusca(noticia) {
+  const origem =
+    noticia && noticia.origem_busca && typeof noticia.origem_busca === 'object'
+      ? noticia.origem_busca
+      : {};
+
+  const tipo = texto(
+    origem.tipo ||
+    noticia?.tipo_origem_busca ||
+    noticia?.origem_tipo
+  ).toLowerCase();
+
+  const entradaOriginal = texto(
+    origem.entrada_original ||
+    noticia?.pergunta_original ||
+    noticia?.pergunta_origem ||
+    noticia?.pergunta
+  );
+
+  const perguntaFormal = texto(
+    origem.pergunta_formal ||
+    noticia?.pergunta_formal
+  );
+
+  return {
+    tipo,
+    entradaOriginal,
+    perguntaFormal
+  };
+}
+
+function perguntaExibicao(noticia) {
+  const origem = origemBusca(noticia);
+  return origem.entradaOriginal || origem.perguntaFormal;
+}
+
+function ehNoticiaDePergunta(noticia) {
+  const origem = origemBusca(noticia);
+  return origem.tipo === 'pergunta' || Boolean(origem.entradaOriginal);
+}
+
 function tipoPrincipal(noticia) {
-  const tipos = Array.isArray(noticia.tipos)
-    ? noticia.tipos
-    : [];
+  const tipos = Array.isArray(noticia.tipos) ? noticia.tipos : [];
 
   return (
     tipos[0] ||
@@ -110,9 +138,7 @@ function resumoCurto(noticia) {
 }
 
 function linkArtigo(noticia) {
-  return `artigo.html?id=${encodeURIComponent(
-    texto(noticia.paper_id)
-  )}`;
+  return `artigo.html?id=${encodeURIComponent(texto(noticia.paper_id))}`;
 }
 
 function metaHtml(noticia, destaque = false) {
@@ -148,141 +174,160 @@ function metaHtml(noticia, destaque = false) {
   return itens.join('');
 }
 
-function construirMenuTemas() {
-  const nav = document.getElementById('lista-temas');
-
-  if (!nav) {
-    return;
+function contextoPerguntaHtml(noticia) {
+  if (modoExploracao !== 'perguntas') {
+    return '';
   }
 
-  /*
-   * O valor original continua sendo utilizado como chave do filtro.
-   * O rótulo traduzido é apresentado ao usuário.
-   * A contagem ajuda a navegação quando a lista de temas cresce.
-   */
-  const temasPorOriginal = new Map();
+  const pergunta = perguntaExibicao(noticia);
+  if (!pergunta) {
+    return '';
+  }
+
+  return `
+    <div class="question-origin">
+      <i class="fa-regular fa-circle-question" aria-hidden="true"></i>
+      <span>${escaparHtml(pergunta)}</span>
+    </div>
+  `;
+}
+
+function opcoesExploracao(modo) {
+  const mapa = new Map();
 
   todasNoticias.forEach(noticia => {
-    const original = texto(noticia.tema);
-
-    if (!original) {
+    if (modo === 'perguntas' && !ehNoticiaDePergunta(noticia)) {
       return;
     }
 
-    const atual = temasPorOriginal.get(original);
+    const chave = modo === 'perguntas'
+      ? perguntaExibicao(noticia)
+      : texto(noticia.tema);
 
-    if (atual) {
-      atual.quantidade += 1;
+    if (!chave) {
       return;
     }
 
-    temasPorOriginal.set(original, {
-      rotulo: temaExibicao(noticia),
-      quantidade: 1
+    const existente = mapa.get(chave);
+
+    mapa.set(chave, {
+      chave,
+      rotulo: modo === 'perguntas' ? chave : temaExibicao(noticia),
+      quantidade: (existente?.quantidade || 0) + 1
     });
   });
 
-  const temas = [...temasPorOriginal.entries()]
-    .sort((a, b) =>
-      a[1].rotulo.localeCompare(
-        b[1].rotulo,
-        'pt-BR',
-        { sensitivity: 'base' }
-      )
-    );
+  return [...mapa.values()].sort((a, b) =>
+    a.rotulo.localeCompare(b.rotulo, 'pt-BR', { sensitivity: 'base' })
+  );
+}
 
-  nav.innerHTML = '';
+function construirMenuExploracao() {
+  for (const modo of ['temas', 'perguntas']) {
+    const nav = document.getElementById(`lista-${modo}`);
 
-  const todos = document.createElement('button');
-
-  todos.type = 'button';
-  todos.className = 'topic-button is-active';
-  todos.dataset.topic = '';
-
-  todos.innerHTML = `
-    <span>Todos os temas</span>
-    <span
-      class="topic-count"
-      aria-label="${todasNoticias.length} notícias"
-    >
-      ${todasNoticias.length}
-    </span>
-  `;
-
-  nav.appendChild(todos);
-
-  temas.forEach(([temaOriginal, dados]) => {
-    const botao = document.createElement('button');
-
-    botao.type = 'button';
-    botao.className = 'topic-button';
-    botao.dataset.topic = temaOriginal;
-
-    botao.innerHTML = `
-      <span>${escaparHtml(dados.rotulo)}</span>
-      <span
-        class="topic-count"
-        aria-label="${dados.quantidade} notícias"
-      >
-        ${dados.quantidade}
-      </span>
-    `;
-
-    nav.appendChild(botao);
-  });
-
-  nav.addEventListener('click', event => {
-    const botao = event.target.closest('.topic-button');
-
-    if (!botao) {
-      return;
+    if (!nav) {
+      continue;
     }
 
-    temaAtivo = botao.dataset.topic || '';
+    nav.innerHTML = '';
 
-    nav
-      .querySelectorAll('.topic-button')
-      .forEach(item =>
-        item.classList.remove('is-active')
-      );
+    const opcoes = opcoesExploracao(modo);
 
-    botao.classList.add('is-active');
+    if (modo === 'perguntas' && !opcoes.length) {
+      const vazio = document.createElement('p');
+      vazio.className = 'sidebar-empty';
+      vazio.textContent = 'Ainda não há perguntas publicadas.';
+      nav.appendChild(vazio);
+      continue;
+    }
 
-    renderizar();
+    const total = modo === 'perguntas'
+      ? todasNoticias.filter(ehNoticiaDePergunta).length
+      : todasNoticias.length;
 
-    if (
-      window
-        .matchMedia('(max-width: 820px)')
-        .matches
-    ) {
-      const painel =
-        document.getElementById('painel-temas');
+    const todas = [{
+      chave: '',
+      rotulo: modo === 'perguntas'
+        ? 'Todas as perguntas'
+        : 'Todos os temas',
+      quantidade: total
+    }, ...opcoes];
 
-      const alternar =
-        document.getElementById('alternar-temas');
+    todas.forEach(opcao => {
+      const botao = document.createElement('button');
+      botao.type = 'button';
+      botao.className = 'topic-button';
 
-      painel?.classList.remove('is-open');
+      const ativo =
+        modoExploracao === modo && filtroAtivo === opcao.chave;
 
-      alternar?.setAttribute(
-        'aria-expanded',
-        'false'
-      );
+      botao.classList.toggle('is-active', ativo);
+      botao.dataset.topic = opcao.chave;
 
-      const rotulo =
-        alternar?.querySelector('span');
+      botao.innerHTML = `
+        <span>${escaparHtml(opcao.rotulo)}</span>
+        <span class="topic-count">${opcao.quantidade}</span>
+      `;
 
-      if (rotulo) {
-        rotulo.textContent = 'Ver temas';
+      nav.appendChild(botao);
+    });
+  }
+}
+
+function fecharMenuMobile() {
+  if (!window.matchMedia('(max-width: 820px)').matches) {
+    return;
+  }
+
+  document.getElementById('painel-temas')?.classList.remove('is-open');
+
+  document.getElementById('alternar-temas')
+    ?.setAttribute('aria-expanded', 'false');
+
+  const rotulo = document.getElementById('rotulo-alternar-exploracao');
+
+  if (rotulo) {
+    rotulo.textContent = 'Ver opções';
+  }
+}
+
+function configurarMenuExploracao() {
+  for (const modo of ['temas', 'perguntas']) {
+    const nav = document.getElementById(`lista-${modo}`);
+
+    nav?.addEventListener('click', event => {
+      const botao = event.target.closest('.topic-button');
+
+      if (!botao) {
+        return;
       }
-    }
-  });
+
+      modoExploracao = modo;
+      filtroAtivo = botao.dataset.topic || '';
+
+      construirMenuExploracao();
+      renderizar();
+      fecharMenuMobile();
+    });
+  }
 }
 
 function noticiasFiltradas() {
   return todasNoticias.filter(noticia => {
-    const bateTema =
-      !temaAtivo ||
-      texto(noticia.tema) === temaAtivo;
+    let bateModo = true;
+    let bateFiltro = true;
+
+    if (modoExploracao === 'perguntas') {
+      bateModo = ehNoticiaDePergunta(noticia);
+      bateFiltro =
+        !filtroAtivo || perguntaExibicao(noticia) === filtroAtivo;
+    } else {
+      bateFiltro =
+        !filtroAtivo || texto(noticia.tema) === filtroAtivo;
+    }
+
+    const origem = origemBusca(noticia);
 
     const indiceBusca = [
       noticia.manchete,
@@ -291,131 +336,88 @@ function noticiasFiltradas() {
       noticia.autores,
       noticia.tema,
       noticia.tema_exibicao,
+      origem.entradaOriginal,
+      origem.perguntaFormal,
     ]
       .map(texto)
       .join(' ')
       .toLowerCase();
 
     const bateBusca =
-      !buscaAtiva ||
-      indiceBusca.includes(buscaAtiva);
+      !buscaAtiva || indiceBusca.includes(buscaAtiva);
 
-    return bateTema && bateBusca;
+    return bateModo && bateFiltro && bateBusca;
   });
 }
 
 function renderizar() {
-  const destino =
-    document.getElementById(
-      'portal-noticias'
-    );
+  const destino = document.getElementById('portal-noticias');
 
   if (!destino) {
     return;
   }
 
-  const noticias =
-    noticiasFiltradas();
+  const noticias = noticiasFiltradas();
 
   if (!noticias.length) {
+    const mensagem = modoExploracao === 'perguntas'
+      ? 'Ainda não há matérias publicadas para esta pergunta.'
+      : 'Tente outro tema ou termo de busca.';
+
     destino.innerHTML = `
       <div class="empty-state">
-
-        <i
-          class="fa-regular fa-newspaper"
-          aria-hidden="true"
-        ></i>
-
-        <h2>
-          Nenhuma notícia encontrada
-        </h2>
-
-        <p>
-          Tente outro tema ou termo de busca.
-        </p>
-
+        <i class="fa-regular fa-newspaper" aria-hidden="true"></i>
+        <h2>Nenhuma notícia encontrada</h2>
+        <p>${mensagem}</p>
       </div>
     `;
 
     return;
   }
 
-  const [destaque, ...resto] =
-    noticias;
+  const [destaque, ...resto] = noticias;
 
   let html = `
     <a
       class="feature"
       href="${linkArtigo(destaque)}"
-      aria-label="Ler: ${escaparHtml(
-        tituloNoticia(destaque)
-      )}"
+      aria-label="Ler: ${escaparHtml(tituloNoticia(destaque))}"
     >
-
       <div class="feature-copy">
-
         <span class="feature-badge">
-
-          <i
-            class="fa-solid fa-star"
-            aria-hidden="true"
-          ></i>
-
+          <i class="fa-solid fa-star" aria-hidden="true"></i>
           Destaque
-
         </span>
 
+        ${contextoPerguntaHtml(destaque)}
+
         <h2 class="feature-title">
-          ${escaparHtml(
-            tituloNoticia(destaque)
-          )}
+          ${escaparHtml(tituloNoticia(destaque))}
         </h2>
 
         <p class="feature-summary">
-          ${escaparHtml(
-            resumoCurto(destaque)
-          )}
+          ${escaparHtml(resumoCurto(destaque))}
         </p>
 
         <div class="article-meta">
           ${metaHtml(destaque, true)}
         </div>
-
       </div>
-
-      </div>
-
     </a>
   `;
 
   if (resto.length) {
     html += `
-      <section
-        class="list-section"
-        aria-labelledby="titulo-lista"
-      >
-
+      <section class="list-section" aria-labelledby="titulo-lista">
         <div class="section-heading">
-
-          <h2
-            class="section-title"
-            id="titulo-lista"
-          >
+          <h2 class="section-title" id="titulo-lista">
             Mais notícias científicas
           </h2>
 
           <span class="section-count">
-
             ${resto.length}
-
-            ${
-              resto.length === 1
-                ? 'notícia'
-                : 'notícias'
-            }
-
+            ${resto.length === 1 ? 'notícia' : 'notícias'}
           </span>
-
         </div>
 
         <div class="news-grid">
@@ -426,37 +428,26 @@ function renderizar() {
         <a
           class="news-card"
           href="${linkArtigo(noticia)}"
-          aria-label="Ler: ${escaparHtml(
-            tituloNoticia(noticia)
-          )}"
+          aria-label="Ler: ${escaparHtml(tituloNoticia(noticia))}"
         >
+          ${contextoPerguntaHtml(noticia)}
 
           <div class="card-tags">
-
             <span class="tag tag-primary">
-              ${escaparHtml(
-                tipoPrincipal(noticia)
-              )}
+              ${escaparHtml(tipoPrincipal(noticia))}
             </span>
 
             <span class="tag">
-              ${escaparHtml(
-                temaExibicao(noticia)
-              )}
+              ${escaparHtml(temaExibicao(noticia))}
             </span>
-
           </div>
 
           <h3 class="card-title">
-            ${escaparHtml(
-              tituloNoticia(noticia)
-            )}
+            ${escaparHtml(tituloNoticia(noticia))}
           </h3>
 
           <p class="card-summary">
-            ${escaparHtml(
-              resumoCurto(noticia)
-            )}
+            ${escaparHtml(resumoCurto(noticia))}
           </p>
 
           <div class="card-meta">
@@ -464,16 +455,9 @@ function renderizar() {
           </div>
 
           <span class="card-cta">
-
             Ler matéria
-
-            <i
-              class="fa-solid fa-arrow-right"
-              aria-hidden="true"
-            ></i>
-
+            <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
           </span>
-
         </a>
       `;
     });
@@ -488,127 +472,70 @@ function renderizar() {
 }
 
 async function inicializar() {
-  const data =
-    document.getElementById(
-      'data-hoje'
-    );
+  const data = document.getElementById('data-hoje');
 
   if (data) {
-    data.textContent =
-      new Date().toLocaleDateString(
-        'pt-BR',
-        {
-          weekday: 'long',
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric'
-        }
-      );
+    data.textContent = new Date().toLocaleDateString('pt-BR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
   }
 
   try {
-    const resposta =
-      await fetch(
-        'noticias.json',
-        {
-          cache: 'no-store'
-        }
-      );
+    const resposta = await fetch('noticias.json', {
+      cache: 'no-store'
+    });
 
     if (!resposta.ok) {
-      throw new Error(
-        'Falha ao carregar notícias'
-      );
+      throw new Error('Falha ao carregar notícias');
     }
 
-    const dados =
-      await resposta.json();
+    const dados = await resposta.json();
 
-    todasNoticias =
-      Array.isArray(dados)
-        ? dados.filter(
-            item =>
-              item &&
-              typeof item === 'object'
-          )
-        : [];
-
+    todasNoticias = Array.isArray(dados)
+      ? dados.filter(item => item && typeof item === 'object')
+      : [];
   } catch (erro) {
-    console.error(
-      'Erro ao carregar noticias.json:',
-      erro
-    );
-
+    console.error('Erro ao carregar noticias.json:', erro);
     todasNoticias = [];
   }
 
-  construirMenuTemas();
+  configurarMenuExploracao();
+  construirMenuExploracao();
 
-  const painelTemas =
-    document.getElementById(
-      'painel-temas'
-    );
+  const painelTemas = document.getElementById('painel-temas');
+  const alternarTemas = document.getElementById('alternar-temas');
 
-  const alternarTemas =
-    document.getElementById(
-      'alternar-temas'
-    );
+  if (painelTemas && alternarTemas) {
+    alternarTemas.addEventListener('click', () => {
+      const aberto = painelTemas.classList.toggle('is-open');
 
-  if (
-    painelTemas &&
-    alternarTemas
-  ) {
-    alternarTemas.addEventListener(
-      'click',
-      () => {
-        const aberto =
-          painelTemas.classList.toggle(
-            'is-open'
-          );
+      alternarTemas.setAttribute('aria-expanded', String(aberto));
 
-        alternarTemas.setAttribute(
-          'aria-expanded',
-          String(aberto)
-        );
+      const rotulo = document.getElementById(
+        'rotulo-alternar-exploracao'
+      );
 
-        const rotulo =
-          alternarTemas.querySelector(
-            'span'
-          );
-
-        if (rotulo) {
-          rotulo.textContent =
-            aberto
-              ? 'Ocultar temas'
-              : 'Ver temas';
-        }
+      if (rotulo) {
+        rotulo.textContent = aberto
+          ? 'Ocultar opções'
+          : 'Ver opções';
       }
-    );
+    });
   }
 
-  const busca =
-    document.getElementById(
-      'campo-busca'
-    );
+  const busca = document.getElementById('campo-busca');
 
   if (busca) {
-    busca.addEventListener(
-      'input',
-      event => {
-        buscaAtiva =
-          event.target.value
-            .toLowerCase()
-            .trim();
-
-        renderizar();
-      }
-    );
+    busca.addEventListener('input', event => {
+      buscaAtiva = event.target.value.toLowerCase().trim();
+      renderizar();
+    });
   }
 
   renderizar();
 }
 
-document.addEventListener(
-  'DOMContentLoaded',
-  inicializar
-);
+document.addEventListener('DOMContentLoaded', inicializar);

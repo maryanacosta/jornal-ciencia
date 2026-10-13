@@ -215,6 +215,9 @@ function configurarAbas() {
   const lista = document.querySelector('[role="tablist"]');
   if (!lista) return;
   const botoes = [...lista.querySelectorAll('[role="tab"]')];
+  const aba = new URLSearchParams(window.location.search).get('aba');
+  const inicial = botoes.find(botao => botao.id === `tab-${aba}`);
+  if (inicial) ativar(inicial);
 
   function ativar(botao, focar = false) {
     botoes.forEach(item => {
@@ -350,6 +353,10 @@ function renderizarArtigo(noticia) {
 
   configurarAbas();
   configurarAudio();
+  if (new URLSearchParams(window.location.search).has('aba')) {
+    const painel = document.querySelector('.tab-panel:not([hidden])');
+    painel?.scrollIntoView({ block: 'start' });
+  }
 }
 
 function mostrarErro(mensagem) {

@@ -1,10 +1,18 @@
 {
-  "gerado_em": "2026-09-12T20:09:08.077860",
-  "versao_pipeline": "5.1",
+  "gerado_em": "2026-10-12T20:20:04.511361",
+  "versao_pipeline": "5.3",
   "parametros": {
     "limite_busca_por_fonte": 200,
+    "entradas": {
+      "temas": 0,
+      "perguntas": 1
+    },
+    "comportamento_busca": {
+      "temas": "Busca direta: o texto informado é enviado às bases sem LLM.",
+      "perguntas": "A pergunta/frase original é convertida pelo Gemini em formulação científica neutra e em consultas específicas para PubMed, OpenAlex e Embase."
+    },
     "criterio_selecao": "Após a triagem objetiva, revisões sistemáticas e meta-análises são priorizadas; os demais estudos elegíveis seguem pela relevância da busca.",
-    "limite_selecionados_por_tema": 20,
+    "limite_selecionados_por_entrada": 20,
     "fontes_descoberta": [
       "PubMed",
       "OpenAlex",
@@ -28,10 +36,26 @@
       "referencia_conceitual": "OCEBM Levels of Evidence Working Group (2011): busca da provável melhor evidência e preferência por sínteses sistemáticas quando apropriado."
     }
   },
-  "temas": {
-    "Semaglutide": {
-      "total_descobertos": 353,
-      "total_elegiveis": 247,
+  "temas": {},
+  "perguntas": {
+    "Comer açúcar alimenta o câncer?": {
+      "tipo_entrada": "pergunta",
+      "preparacao_busca": {
+        "tipo_entrada": "pergunta",
+        "entrada_original": "Comer açúcar alimenta o câncer?",
+        "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?",
+        "consultas": {
+          "PubMed": "(\"dietary sugars\" OR \"sugar intake\" OR \"sugar consumption\" OR sucrose OR glucose OR fructose) AND (neoplasms OR cancer OR \"tumor growth\" OR \"cancer progression\" OR carcinogenesis)",
+          "OpenAlex": "dietary sugar intake cancer tumor growth progression",
+          "Embase": "(\"dietary sugar\" OR \"sugar intake\" OR \"sugar consumption\" OR sucrose OR glucose OR fructose) AND (neoplasm OR cancer OR \"tumor growth\" OR \"cancer progression\" OR carcinogenesis)"
+        },
+        "observacoes": "A busca foi mantida neutra e abrangente, cobrindo açúcares alimentares gerais e neoplasias, sem restringir a tipos específicos de tumor ou desenhos de estudo.",
+        "modelo": "gemini-3.6-flash",
+        "versao_prompt": "1.1",
+        "preparado_em": "2026-10-12T20:19:58.927844"
+      },
+      "total_descobertos": 398,
+      "total_elegiveis": 308,
       "total_selecionados": 20,
       "por_fonte_descoberta": {
         "PubMed": 200,
@@ -40,19 +64,18 @@
       },
       "artigos": [
         {
-          "paper_id": "pmid_38958939",
-          "doi": "10.1001/jamaophthalmol.2024.2296",
-          "fonte_origem": "PubMed",
+          "paper_id": "oa_W4402438427",
+          "doi": "10.1007/s00018-024-05438-2",
+          "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
-            "OpenAlex",
-            "PubMed"
+            "OpenAlex"
           ],
-          "titulo": "Risk of Nonarteritic Anterior Ischemic Optic Neuropathy in Patients Prescribed Semaglutide.",
-          "abstract": "Importance: Anecdotal experience raised the possibility that semaglutide, a glucagon-like peptide 1 receptor agonist (GLP-1 RA) with rapidly increasing use, is associated with nonarteritic anterior ischemic optic neuropathy (NAION). Objective: To investigate whether there is an association between semaglutide and risk of NAION. Design, Setting, and Participants: In a retrospective matched cohort study using data from a centralized data registry of patients evaluated by neuro-ophthalmologists at 1 academic institution from December 1, 2017, through November 30, 2023, a search for International Statistical Classification of Diseases and Related Health Problems, Tenth Revision code H47.01 (ischemic optic neuropathy) and text search yielded 16 827 patients with no history of NAION. Propensity matching was used to assess whether prescribed semaglutide was associated with NAION in patients with type 2 diabetes (T2D) or overweight/obesity, in each case accounting for covarying factors (sex, age, systemic hypertension, T2D, obstructive sleep apnea, obesity, hyperlipidemia, and coronary artery disease) and contraindications for use of semaglutide. The cumulative incidence of NAION was determined with the Kaplan-Meier method and a Cox proportional hazards regression model adjusted for potential confounding comorbidities. Data were analyzed from December 1, 2017, through November 30, 2023. Exposures: Prescriptions for semaglutide vs non-GLP-1 RA medications to manage either T2D or weight. Main Outcomes and Measures: Cumulative incidence and hazard ratio of NAION. Results: Among 16 827 patients, 710 had T2D (194 prescribed semaglutide; 516 prescribed non-GLP-1 RA antidiabetic medications; median [IQR] age, 59 [49-68] years; 369 [52%] female) and 979 were overweight or obese (361 prescribed semaglutide; 618 prescribed non-GLP-1 RA weight-loss medications; median [IQR] age, 47 [32-59] years; 708 [72%] female). In the population with T2D, 17 NAION events occurred in patients prescribed semaglutide vs 6 in the non-GLP-1 RA antidiabetes cohort. The cumulative incidence of NAION for the semaglutide and non-GLP-1 RA cohorts over 36 months was 8.9% (95% CI, 4.5%-13.1%) and 1.8% (95% CI, 0%-3.5%), respectively. A Cox proportional hazards regression model showed higher risk of NAION for patients receiving semaglutide (hazard ratio [HR], 4.28; 95% CI, 1.62-11.29); P < .001). In the population of patients who were overweight or obese, 20 NAION events occurred in the prescribed semaglutide cohort vs 3 in the non-GLP-1 RA cohort. The cumulative incidence of NAION for the semaglutide vs non-GLP-1 RA cohorts over 36 months was 6.7% (95% CI, 3.6%-9.7%) and 0.8% (95% CI, 0%-1.8%), respectively. A Cox proportional hazards regression model showed a higher risk of NAION for patients prescribed semaglutide (HR, 7.64; 95% CI, 2.21-26.36; P < .001). Conclusions and Relevance: This study's findings suggest an association between semaglutide and NAION. As this was an observational study, future study is required to assess causality.",
+          "titulo": "High sugar diet promotes tumor progression paradoxically through aberrant upregulation of pepck1",
+          "abstract": "High dietary sugar (HDS), a contemporary dietary concern due to excessive intake of added sugars and carbohydrates, escalates the risk of metabolic disorders and concomitant cancers. However, the molecular mechanisms underlying HDS-induced cancer progression are not completely understood. We found that phosphoenolpyruvate carboxykinase 1 (PEPCK1), a pivotal enzyme in gluconeogenesis, is paradoxically upregulated in tumors by HDS, but not by normal dietary sugar (NDS), during tumor progression. Targeted knockdown of pepck1, but not pepck2, specifically in tumor tissue in Drosophila in vivo, not only attenuates HDS-induced tumor growth but also significantly improves the survival of Ras/Src tumor-bearing animals fed HDS. Interestingly, HP1a-mediated heterochromatin interacts directly with the pepck1 gene and downregulates pepck1 gene expression in wild-type Drosophila. Mechanistically, we demonstrated that, under HDS conditions, pepck1 knockdown reduces both wingless and TOR signaling, decreases evasion of apoptosis, reduces genome instability, and suppresses glucose uptake and trehalose levels in tumor cells in vivo. Moreover, rational pharmacological inhibition of PEPCK1, using hydrazinium sulfate, greatly improves the survival of tumor-bearing animals with pepck1 knockdown under HDS. This study is the first to show that elevated levels of dietary sugar induce aberrant upregulation of PEPCK1, which promotes tumor progression through altered cell signaling, evasion of apoptosis, genome instability, and reprogramming of carbohydrate metabolism. These findings contribute to our understanding of the complex relationship between diet and cancer at the molecular, cellular, and organismal levels and reveal PEPCK1 as a potential target for the prevention and treatment of cancers associated with metabolic disorders.",
           "ano": 2024,
-          "autores": "Jimena Tatiana Hathaway; Madhura P Shah; David B Hathaway; et al.",
-          "periodico": "JAMA ophthalmology",
-          "citacoes_totais": 290,
+          "autores": "Che‐Wei Chang; Yu-Hshun Chin; Meng-Syuan Liu; et al.",
+          "periodico": "Cellular and Molecular Life Sciences",
+          "citacoes_totais": 5,
           "citacoes_influentes": 0,
           "rank_fonte": 1,
           "tipos": [
@@ -61,9 +84,9 @@
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "https://pmc.ncbi.nlm.nih.gov/articles/instance/11223051/bin/jamaophthalmol-e242296-s001.pdf",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11223051/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38958939/",
+          "url_pdf": "https://link.springer.com/content/pdf/10.1007/s00018-024-05438-2.pdf",
+          "url_texto_completo": "https://doi.org/10.1007/s00018-024-05438-2",
+          "url_artigo": "https://doi.org/10.1007/s00018-024-05438-2",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -79,34 +102,38 @@
           "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 1,
           "fontes_descoberta": [
-            "OpenAlex",
-            "PubMed"
-          ]
+            "OpenAlex"
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W3127371223",
-          "doi": "10.1056/nejmoa2032183",
+          "paper_id": "oa_W2955165061",
+          "doi": "10.3390/healthcare7030088",
           "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
             "OpenAlex"
           ],
-          "titulo": "Once-Weekly Semaglutide in Adults with Overweight or Obesity",
-          "abstract": "BACKGROUND: Obesity is a global health challenge with few pharmacologic options. Whether adults with obesity can achieve weight loss with once-weekly semaglutide at a dose of 2.4 mg as an adjunct to lifestyle intervention has not been confirmed. METHODS: In this double-blind trial, we enrolled 1961 adults with a body-mass index (the weight in kilograms divided by the square of the height in meters) of 30 or greater (≥27 in persons with ≥1 weight-related coexisting condition), who did not have diabetes, and randomly assigned them, in a 2:1 ratio, to 68 weeks of treatment with once-weekly subcutaneous semaglutide (at a dose of 2.4 mg) or placebo, plus lifestyle intervention. The coprimary end points were the percentage change in body weight and weight reduction of at least 5%. The primary estimand (a precise description of the treatment effect reflecting the objective of the clinical trial) assessed effects regardless of treatment discontinuation or rescue interventions. RESULTS: The mean change in body weight from baseline to week 68 was -14.9% in the semaglutide group as compared with -2.4% with placebo, for an estimated treatment difference of -12.4 percentage points (95% confidence interval [CI], -13.4 to -11.5; P<0.001). More participants in the semaglutide group than in the placebo group achieved weight reductions of 5% or more (1047 participants [86.4%] vs. 182 [31.5%]), 10% or more (838 [69.1%] vs. 69 [12.0%]), and 15% or more (612 [50.5%] vs. 28 [4.9%]) at week 68 (P<0.001 for all three comparisons of odds). The change in body weight from baseline to week 68 was -15.3 kg in the semaglutide group as compared with -2.6 kg in the placebo group (estimated treatment difference, -12.7 kg; 95% CI, -13.7 to -11.7). Participants who received semaglutide had a greater improvement with respect to cardiometabolic risk factors and a greater increase in participant-reported physical functioning from baseline than those who received placebo. Nausea and diarrhea were the most common adverse events with semaglutide; they were typically transient and mild-to-moderate in severity and subsided with time. More participants in the semaglutide group than in the placebo group discontinued treatment owing to gastrointestinal events (59 [4.5%] vs. 5 [0.8%]). CONCLUSIONS: In participants with overweight or obesity, 2.4 mg of semaglutide once weekly plus lifestyle intervention was associated with sustained, clinically relevant reduction in body weight. (Funded by Novo Nordisk; STEP 1 ClinicalTrials.gov number, NCT03548935).",
-          "ano": 2021,
-          "autores": "John Wilding; Rachel L. Batterham; Salvatore Calanna; et al.",
-          "periodico": "New England Journal of Medicine",
-          "citacoes_totais": 4980,
+          "titulo": "The Effects of the Dietary and Nutrient Intake on Gynecologic Cancers",
+          "abstract": "The contribution of diet to cancer risk has been considered to be higher in advanced countries than in developing countries. In this paper, I review the current issues (a review of the relevant literature), and the effects of the dietary and nutrient intake on three types of gynecologic cancer (cervical, endometrial and ovarian cancers). In cervical cancer, the most important roles of diet/nutrition in relation to cancer are prophylaxis and countermeasures against human papillomavirus (HPV) infection. The main preventive and reductive factors of cervical cancer are antioxidants, such as vitamin A, C, D and E, carotenoids, vegetables and fruits. These antioxidants may have different abilities to intervene in the natural history of diseases associated with HPV infection. For endometrial cancer, the increase in peripheral estrogens as a result of the aromatization of androgens to estrogens in adipose tissue in obese women and insulin resistance are risk factors. Thus, we must mainly take care to avoid the continuous intake of fat energy and sugar. In ovarian cancer, the etiology has not been fully understood. To the best of our knowledge, the long-term consumption of pro-inflammatory foods, including saturated fat, carbohydrates and animal proteins is a risk factor. The intake of acrylamide is also a risk factor for both endometrial and ovarian cancer. Most papers have been epidemiological studies. Thus, further research using in vitro and in vivo approaches is needed to clarify the effects of the dietary and nutrient intake in detail.",
+          "ano": 2019,
+          "autores": "Masafumi Koshiyama",
+          "periodico": "Healthcare",
+          "citacoes_totais": 57,
           "citacoes_influentes": 0,
-          "rank_fonte": 1,
+          "rank_fonte": 2,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "https://discovery.ucl.ac.uk/10127569/1/nejmoa2032183.pdf",
-          "url_texto_completo": "https://discovery.ucl.ac.uk/id/eprint/10127569/",
-          "url_artigo": "https://doi.org/10.1056/nejmoa2032183",
+          "url_pdf": "https://www.mdpi.com/2227-9032/7/3/88/pdf?version=1562639896",
+          "url_texto_completo": "https://doi.org/10.3390/healthcare7030088",
+          "url_artigo": "https://doi.org/10.3390/healthcare7030088",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -123,32 +150,37 @@
           "ordem_selecao": 2,
           "fontes_descoberta": [
             "OpenAlex"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W4388592674",
-          "doi": "10.1056/nejmoa2307563",
-          "fonte_origem": "OpenAlex",
+          "paper_id": "pmid_34019293",
+          "doi": "10.1007/978-1-0716-1476-1_11",
+          "fonte_origem": "PubMed",
           "fontes_encontradas": [
-            "OpenAlex"
+            "PubMed"
           ],
-          "titulo": "Semaglutide and Cardiovascular Outcomes in Obesity without Diabetes",
-          "abstract": "BACKGROUND: Semaglutide, a glucagon-like peptide-1 receptor agonist, has been shown to reduce the risk of adverse cardiovascular events in patients with diabetes. Whether semaglutide can reduce cardiovascular risk associated with overweight and obesity in the absence of diabetes is unknown. METHODS: In a multicenter, double-blind, randomized, placebo-controlled, event-driven superiority trial, we enrolled patients 45 years of age or older who had preexisting cardiovascular disease and a body-mass index (the weight in kilograms divided by the square of the height in meters) of 27 or greater but no history of diabetes. Patients were randomly assigned in a 1:1 ratio to receive once-weekly subcutaneous semaglutide at a dose of 2.4 mg or placebo. The primary cardiovascular end point was a composite of death from cardiovascular causes, nonfatal myocardial infarction, or nonfatal stroke in a time-to-first-event analysis. Safety was also assessed. RESULTS: A total of 17,604 patients were enrolled; 8803 were assigned to receive semaglutide and 8801 to receive placebo. The mean (±SD) duration of exposure to semaglutide or placebo was 34.2±13.7 months, and the mean duration of follow-up was 39.8±9.4 months. A primary cardiovascular end-point event occurred in 569 of the 8803 patients (6.5%) in the semaglutide group and in 701 of the 8801 patients (8.0%) in the placebo group (hazard ratio, 0.80; 95% confidence interval, 0.72 to 0.90; P<0.001). Adverse events leading to permanent discontinuation of the trial product occurred in 1461 patients (16.6%) in the semaglutide group and 718 patients (8.2%) in the placebo group (P<0.001). CONCLUSIONS: In patients with preexisting cardiovascular disease and overweight or obesity but without diabetes, weekly subcutaneous semaglutide at a dose of 2.4 mg was superior to placebo in reducing the incidence of death from cardiovascular causes, nonfatal myocardial infarction, or nonfatal stroke at a mean follow-up of 39.8 months. (Funded by Novo Nordisk; SELECT ClinicalTrials.gov number, NCT03574597.).",
-          "ano": 2023,
-          "autores": "A. Michael Lincoff; Kirstine Brown‐Frandsen; Helen M. Colhoun; et al.",
-          "periodico": "New England Journal of Medicine",
-          "citacoes_totais": 2994,
+          "titulo": "Measuring MYC-Mediated Metabolism in Tumorigenesis.",
+          "abstract": "The MYC gene regulates normal cell growth and is deregulated in many human cancers, contributing to tumor growth and progression. The MYC transcription factor activates RNA polymerases I, II, and III target genes that are considered housekeeping genes. These target genes are largely involved in ribosome biogenesis, fatty acid, protein and nucleotide synthesis, nutrient influx or metabolic waste efflux, glycolysis, and glutamine metabolism. MYC's function as a driver of cell growth has been revealed through RNA sequencing, genome-wide chromatin immunoprecipitation, proteomics, and importantly metabolomics, which is highlighted in this chapter.",
+          "ano": 2021,
+          "autores": "Hsin-Yao Tang; Aaron R Goldman; Xue Zhang; et al.",
+          "periodico": "Methods in molecular biology (Clifton, N.J.)",
+          "citacoes_totais": 0,
           "citacoes_influentes": 0,
-          "rank_fonte": 2,
+          "rank_fonte": 3,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "https://discovery.ucl.ac.uk/10184940/1/nejmoa2307563.pdf",
-          "url_texto_completo": "https://discovery.ucl.ac.uk/id/eprint/10184940/",
-          "url_artigo": "https://doi.org/10.1056/nejmoa2307563",
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8417761/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/34019293/",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -164,35 +196,38 @@
           "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 3,
           "fontes_descoberta": [
-            "OpenAlex"
-          ]
-        },
-        {
-          "paper_id": "pmid_33667417",
-          "doi": "10.1016/s0140-6736(21)00213-0",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
-            "OpenAlex",
             "PubMed"
           ],
-          "titulo": "Semaglutide 2·4 mg once a week in adults with overweight or obesity, and type 2 diabetes (STEP 2): a randomised, double-blind, double-dummy, placebo-controlled, phase 3 trial.",
-          "abstract": "This trial assessed the efficacy and safety of the GLP-1 analogue once a week subcutaneous semaglutide 2·4 mg versus semaglutide 1·0 mg (the dose approved for diabetes treatment) and placebo for weight management in adults with overweight or obesity, and type 2 diabetes. This double-blind, double-dummy, phase 3, superiority study enrolled adults with a body-mass index of at least 27 kg/m2 and glycated haemoglobin 7-10% (53-86 mmol/mol) who had been diagnosed with type 2 diabetes at least 180 days before screening. Patients were recruited from 149 outpatient clinics in 12 countries across Europe, North America, South America, the Middle East, South Africa, and Asia. Patients were randomly allocated (1:1:1) via an interactive web-response system and stratified by background glucose-lowering medication and glycated haemoglobin, to subcutaneous injection of semaglutide 2·4 mg, or semaglutide 1·0 mg, or visually matching placebo, once a week for 68 weeks, plus a lifestyle intervention. Patients, investigators, and those assessing outcomes were masked to group assignment. Coprimary endpoints were percentage change in bodyweight and achievement of weight reduction of at least 5% at 68 weeks for semaglutide 2·4 mg versus placebo, assessed by intention to treat. Safety was assessed in all patients who received at least one dose of study drug. This study is registered with ClinicalTrials.gov, NCT03552757 and is closed to new participants. From June 4 to Nov 14, 2018, 1595 patients were screened, of whom 1210 were randomly assigned to semaglutide 2·4 mg (n=404), semaglutide 1·0 mg (n=403), or placebo (n=403) and included in the intention-to-treat analysis. Estimated change in mean bodyweight from baseline to week 68 was -9·6% (SE 0·4) with semaglutide 2·4 mg vs -3·4% (0·4) with placebo. Estimated treatment difference for semaglutide 2·4 mg versus placebo was -6·2 percentage points (95% CI -7·3 to -5·2; p<0·0001). At week 68, more patients on semaglutide 2·4 mg than on placebo achieved weight reductions of at least 5% (267 [68·8%] of 388 vs 107 [28·5%] of 376; odds ratio 4·88, 95% CI 3·58 to 6·64; p<0·0001). Adverse events were more frequent with semaglutide 2·4 mg (in 353 [87·6%] of 403 patients) and 1·0 mg (329 [81·8%] of 402) than with placebo (309 [76·9%] of 402). Gastrointestinal adverse events, which were mostly mild to moderate, were reported in 256 (63·5%) of 403 patients with semaglutide 2·4 mg, 231 (57·5%) of 402 with semaglutide 1·0 mg, and 138 (34·3%) of 402 with placebo. In adults with overweight or obesity, and type 2 diabetes, semaglutide 2·4 mg once a week achieved a superior and clinically meaningful decrease in bodyweight compared with placebo. Novo Nordisk.",
-          "ano": 2021,
-          "autores": "Melanie J. Davies; Louise Færch; Ole Kleist Jeppesen; et al.",
-          "periodico": "Lancet (London, England)",
-          "citacoes_totais": 1368,
-          "citacoes_influentes": 0,
-          "rank_fonte": 2,
-          "tipos": [
-            "JournalArticle",
-            "RCT"
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
+        },
+        {
+          "paper_id": "oa_W3128850064",
+          "doi": "10.3390/nu13020496",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
           ],
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "titulo": "Dietary Factors and Prostate Cancer Development, Progression, and Reduction",
+          "abstract": "Due to the constantly increasing number of cases, prostate cancer has become one of the most important health problems of modern societies. This review presents the current knowledge regarding the role of nutrients and foodstuff consumption in the etiology and development of prostate malignancies, including the potential mechanisms of action. The results of several in vivo and in vitro laboratory experiments as well as those reported by the clinical and epidemiological research studies carried out around the world were analyzed. The outcomes of these studies clearly show the influence of both nutrients and food products on the etiology and prevention of prostate cancer. Consumption of certain nutrients (saturated and trans fatty acids) and food products (e.g., processed meat products) leads to the disruption of prostate hormonal regulation, induction of oxidative stress and inflammation, and alteration of growth factor signaling and lipid metabolism, which all contribute to prostate carcinogenesis. On the other hand, a high consumption of vegetables, fruits, fish, and whole grain products exerts protective and/or therapeutic effects. Special bioactive functions are assigned to compounds such as flavonoids, stilbenes, and lycopene. Since the influence of nutrients and dietary pattern is a modifiable risk factor in the development and prevention of prostate cancer, awareness of the beneficial and harmful effects of individual food ingredients is of great importance in the global strategy against prostate cancer.",
+          "ano": 2021,
+          "autores": "Michał Oczkowski; Katarzyna Dziendzikowska; Anna Pasternak-Winiarska; et al.",
+          "periodico": "Nutrients",
+          "citacoes_totais": 138,
+          "citacoes_influentes": 0,
+          "rank_fonte": 4,
+          "tipos": [
+            "JournalArticle"
+          ],
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://figshare.com/articles/journal_contribution/Semaglutide_2_4_mg_once_a_week_in_adults_with_overweight_or_obesity_and_type_2_diabetes_STEP_2_a_randomised_doubleblind_double-dummy_placebo-controlled_phase_3_trial/14510538",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/33667417/",
+          "url_pdf": "https://www.mdpi.com/2072-6643/13/2/496/pdf?version=1612833381",
+          "url_texto_completo": "https://doi.org/10.3390/nu13020496",
+          "url_artigo": "https://doi.org/10.3390/nu13020496",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -208,35 +243,38 @@
           "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 4,
           "fontes_descoberta": [
-            "OpenAlex",
-            "PubMed"
-          ]
+            "OpenAlex"
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "pmid_32213703",
-          "doi": "10.1172/jci.insight.133429",
+          "paper_id": "pmid_27476975",
+          "doi": "10.1016/j.cmet.2016.07.001",
           "fonte_origem": "PubMed",
           "fontes_encontradas": [
-            "OpenAlex",
             "PubMed"
           ],
-          "titulo": "Semaglutide lowers body weight in rodents via distributed neural pathways.",
-          "abstract": "Semaglutide, a glucagon-like peptide 1 (GLP-1) analog, induces weight loss, lowers glucose levels, and reduces cardiovascular risk in patients with diabetes. Mechanistic preclinical studies suggest weight loss is mediated through GLP-1 receptors (GLP-1Rs) in the brain. The findings presented here show that semaglutide modulated food preference, reduced food intake, and caused weight loss without decreasing energy expenditure. Semaglutide directly accessed the brainstem, septal nucleus, and hypothalamus but did not cross the blood-brain barrier; it interacted with the brain through the circumventricular organs and several select sites adjacent to the ventricles. Semaglutide induced central c-Fos activation in 10 brain areas, including hindbrain areas directly targeted by semaglutide, and secondary areas without direct GLP-1R interaction, such as the lateral parabrachial nucleus. Automated analysis of semaglutide access, c-Fos activity, GLP-1R distribution, and brain connectivity revealed that activation may involve meal termination controlled by neurons in the lateral parabrachial nucleus. Transcriptomic analysis of microdissected brain areas from semaglutide-treated rats showed upregulation of prolactin-releasing hormone and tyrosine hydroxylase in the area postrema. We suggest semaglutide lowers body weight by direct interaction with diverse GLP-1R populations and by directly and indirectly affecting the activity of neural pathways involved in food intake, reward, and energy expenditure.",
-          "ano": 2020,
-          "autores": "Sanaz Gabery; Casper G. Salinas; Sarah Juel Paulsen; et al.",
-          "periodico": "JCI insight",
-          "citacoes_totais": 713,
+          "titulo": "Circadian Rhythm Disruption Promotes Lung Tumorigenesis.",
+          "abstract": "Circadian rhythms are 24-hr oscillations that control a variety of biological processes in living systems, including two hallmarks of cancer, cell division and metabolism. Circadian rhythm disruption by shift work is associated with greater risk for cancer development and poor prognosis, suggesting a putative tumor-suppressive role for circadian rhythm homeostasis. Using a genetically engineered mouse model of lung adenocarcinoma, we have characterized the effects of circadian rhythm disruption on lung tumorigenesis. We demonstrate that both physiologic perturbation (jet lag) and genetic mutation of the central circadian clock components decreased survival and promoted lung tumor growth and progression. The core circadian genes Per2 and Bmal1 were shown to have cell-autonomous tumor-suppressive roles in transformation and lung tumor progression. Loss of the central clock components led to increased c-Myc expression, enhanced proliferation, and metabolic dysregulation. Our findings demonstrate that both systemic and somatic disruption of circadian rhythms contribute to cancer progression.",
+          "ano": 2016,
+          "autores": "Thales Papagiannakopoulos; Matthew R Bauer; Shawn M Davidson; et al.",
+          "periodico": "Cell metabolism",
+          "citacoes_totais": 0,
           "citacoes_influentes": 0,
-          "rank_fonte": 3,
+          "rank_fonte": 4,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "http://insight.jci.org/articles/view/133429/files/pdf",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7213778/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/32213703/",
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5367626/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/27476975/",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -252,34 +290,38 @@
           "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 5,
           "fontes_descoberta": [
-            "OpenAlex",
             "PubMed"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W4206445899",
-          "doi": "10.1056/nejmoa1901118",
-          "fonte_origem": "OpenAlex",
+          "paper_id": "pmid_36646759",
+          "doi": "10.1038/s41422-022-00773-0",
+          "fonte_origem": "PubMed",
           "fontes_encontradas": [
-            "OpenAlex"
+            "PubMed"
           ],
-          "titulo": "Oral Semaglutide and Cardiovascular Outcomes in Patients with Type 2 Diabetes",
-          "abstract": "BACKGROUNDEstablishing cardiovascular safety of new therapies for type 2 diabetes is important.Safety data are available for the subcutaneous form of the glucagon-like peptide-1 receptor agonist semaglutide but are needed for oral semaglutide. METHODSWe assessed cardiovascular outcomes of once-daily oral semaglutide in an event-driven, randomized, double-blind, placebo-controlled trial involving patients at high cardiovascular risk (age of ≥50 years with established cardiovascular or chronic kidney disease, or age of ≥60 years with cardiovascular risk factors only).The primary outcome in a timeto-event analysis was the first occurrence of a major adverse cardiovascular event (death from cardiovascular causes, nonfatal myocardial infarction, or nonfatal stroke).The trial was designed to rule out 80% excess cardiovascular risk as compared with placebo (noninferiority margin of 1.8 for the upper boundary of the 95% confidence interval for the hazard ratio for the primary outcome). RESULTSA total of 3183 patients were randomly assigned to receive oral semaglutide or placebo.The mean age of the patients was 66 years; 2695 patients (84.7%) were 50 years of age or older and had cardiovascular or chronic kidney disease.The median time in the trial was 15.9 months.Major adverse cardiovascular events occurred in 61 of 1591 patients (3.8%) in the oral semaglutide group and 76 of 1592 (4.8%) in the placebo group (hazard ratio, 0.79; 95% confidence interval [CI], 0.57 to 1.11; P<0.001 for noninferiority).Results for components of the primary outcome were as follows: death from cardiovascular causes, 15 of 1591 patients (0.9%) in the oral semaglutide group and 30 of 1592 (1.9%) in the placebo group (hazard ratio, 0.49; 95% CI, 0.27 to 0.92); nonfatal myocardial infarction, 37 of 1591 patients (2.3%) and 31 of 1592 (1.9%), respectively (hazard ratio, 1.18; 95% CI, 0.73 to 1.90); and nonfatal stroke, 12 of 1591 patients (0.8%) and 16 of 1592 (1.0%), respectively (hazard ratio, 0.74; 95% CI, 0.35 to 1.57).Death from any cause occurred in 23 of 1591 patients (1.4%) in the oral semaglutide group and 45 of 1592 (2.8%) in the placebo group (hazard ratio, 0.51; 95% CI, 0.31 to 0.84).Gastrointestinal adverse events leading to discontinuation of oral semaglutide or placebo were more common with oral semaglutide. CONCLUSIONSIn this trial involving patients with type 2 diabetes, the cardiovascular risk profile of oral semaglutide was not inferior to that of placebo.(Funded by Novo Nordisk; PIONEER 6 ClinicalTrials.govnumber, NCT02692716.",
-          "ano": 2019,
-          "autores": "Mansoor Husain; Andreas L. Birkenfeld; Morten Donsmark; et al.",
-          "periodico": "New England Journal of Medicine",
-          "citacoes_totais": 1993,
+          "titulo": "Fructose-1,6-bisphosphatase 1 dephosphorylates IκBα and suppresses colorectal tumorigenesis.",
+          "abstract": "Emerging evidence demonstrates that some metabolic enzymes that phosphorylate soluble metabolites can also phosphorylate a variety of protein substrates as protein kinases to regulate cell cycle, apoptosis and many other fundamental cellular processes. However, whether a metabolic enzyme dephosphorylates protein as a protein phosphatase remains unknown. Here we reveal the gluconeogenic enzyme fructose 1,6-biphosphatase 1 (FBP1) that catalyzes the hydrolysis of fructose 1,6-bisphosphate (F-1,6-BP) to fructose 6-phosphate (F-6-P) as a protein phosphatase by performing a high-throughput screening of metabolic phosphatases with molecular docking followed by molecular dynamics (MD) simulations. Moreover, we identify IκBα as the substrate of FBP1-mediated dephosphorylation by performing phosphoproteomic analysis. Mechanistically, FBP1 directly interacts with and dephosphorylates the serine (S) 32/36 of IκBα upon TNFα stimulation, thereby inhibiting NF-κB activation. MD simulations indicate that the catalytic mechanism of FBP1-mediated IκBα dephosphorylation is similar to F-1,6-BP dephosphorylation, except for higher energetic barriers for IκBα dephosphorylation. Functionally, FBP1-dependent NF-κB inactivation suppresses colorectal tumorigenesis by sensitizing tumor cells to inflammatory stresses and preventing the mobilization of myeloid-derived suppressor cells. Our finding reveals a previously unrecognized role of FBP1 as a protein phosphatase and establishes the critical role of FBP1-mediated IκBα dephosphorylation in colorectal tumorigenesis.",
+          "ano": 2023,
+          "autores": "Wencheng Zhu; Huiying Chu; Yajuan Zhang; et al.",
+          "periodico": "Cell research",
+          "citacoes_totais": 0,
           "citacoes_influentes": 0,
-          "rank_fonte": 3,
+          "rank_fonte": 5,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "https://www.nejm.org/doi/pdf/10.1056/NEJMoa1901118?articleTools=true",
-          "url_texto_completo": "https://doi.org/10.1056/nejmoa1901118",
-          "url_artigo": "https://doi.org/10.1056/nejmoa1901118",
+          "url_pdf": "",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9977772/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/36646759/",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -295,35 +337,38 @@
           "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 6,
           "fontes_descoberta": [
-            "OpenAlex"
-          ]
-        },
-        {
-          "paper_id": "pmid_36578889",
-          "doi": "10.15605/jafes.037.02.14",
-          "fonte_origem": "PubMed",
-          "fontes_encontradas": [
             "PubMed"
           ],
-          "titulo": "Efficacy and Safety of Semaglutide for Weight Loss in Obesity Without Diabetes: A Systematic Review and Meta-Analysis.",
-          "abstract": "The weight loss benefit of semaglutide in patients with diabetes is well-documented, but its clinical utility in treating obesity among patients without diabetes is less described. We therefore assessed the efficacy and safety of subcutaneous semaglutide as treatment for obesity in patients without diabetes. A comprehensive search of PubMed/MEDLINE, Cochrane and Google scholar was performed to identify trials on the efficacy and safety of subcutaneous semaglutide on patients with obesity without diabetes. Primary outcome was expressed as percent mean weight difference. Secondary outcomes including risk for gastrointestinal adverse events, discontinuation of treatment and serious adverse events were expressed as risk ratios. These were calculated using the random effects model. The study included 4 randomized controlled trials having a total of 3,613 individuals with obesity without diabetes. The mean difference for weight reduction was -11.85%, favoring semaglutide [95% confidence interval (CI) (-12.81,-10.90), p<0.00001]. Secondary outcomes showed that the risk of developing gastrointestinal adverse events was 1.59 times more likely with semaglutide (RR 1.59, 95%CI [1.34, 1.88], p<0.00001). Risk for discontinuation due to adverse events was twice as likely in the semaglutide group (RR 2.19, 95%CI [1.36,3.55], p=0.001) and the risk for serious adverse events was 1.6 times more likely for semaglutide (RR1.60, 95%CI [1.24, 2.07], p=0.0003). Serious events were mostly of gastrointestinal and hepatobiliary disorders such as acute pancreatitis and cholelithiasis. Among individuals with obesity without type 2 diabetes, subcutaneous semaglutide is effective for weight loss with an 11.85% reduction from baseline compared to placebo. This supports the use of semaglutide for weight management in obesity. However, risk of gastrointestinal adverse events, discontinuation of treatment and serious adverse events were higher in the semaglutide group versus placebo.",
-          "ano": 2022,
-          "autores": "Hanna Clementine Tan; Oliver Allan Dampil; Maricar Mae Marquez",
-          "periodico": "Journal of the ASEAN Federation of Endocrine Societies",
-          "citacoes_totais": 0,
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
+        },
+        {
+          "paper_id": "oa_W3215723950",
+          "doi": "10.20473/amnt.v5i4.2021.387-394",
+          "fonte_origem": "OpenAlex",
+          "fontes_encontradas": [
+            "OpenAlex"
+          ],
+          "titulo": "Sugar Intake and Cancer: A Literature Review",
+          "abstract": "ABSTRACTBackground: Cancer is the second leading cause of death after heart disease globally (total death 9.6 million). Cancer prevalence is increasing in Indonesia from 1.4 per 1000 people in 2013 to 1.79 per 1000 people in 2018. Diet is linked with cancer prognosis, particularly carbohydrate intake which stimulates insulin signals that can be potent mitogens.Purpose: This literature review aims to examine sugar intake and cancer incidence.Method: This literature review (traditional review) using the keywords “cancer”,” sugar”, “carbohydrate”, “insulin” and “hyperinsulinemia” in the Sciencedirect database and Google search engine. The inclusion criteria were peer-review articles or documents from credible national and international institutions, the literature uses English or Bahasa (Indonesian Language). The exclusion criteria were that the literature had similar content or redundant with other literature.Result: Sugar increases insulin resistance which enhances the levels of bioactive IGF-I that contribute to raising the risk of cancer. Prolonged hyperinsulinemia reduces the production of growth-promoting factors such as IGFBP-1 and IGFBP-2 which normally bind to and inhibit the action of IGF-I with resultant increases in the levels of free, bio-active IGF-I, and concomitant changes in the cellular environment that favor cancer development, proliferation, and metastatic cancer cells.Conclusion: The mechanism of insulin and IGF-1 stimulate and accelerate cancer cell proliferation may explain the relationship between sugar intake and cancer incidence. Adopting a balanced diet, changing or decreasing sugar intake with healthier food coupled with increased physical activity reduces the risk of cancer.",
+          "ano": 2021,
+          "autores": "Nikmah Utami Dewi; Rian Diana",
+          "periodico": "Amerta Nutrition",
+          "citacoes_totais": 3,
           "citacoes_influentes": 0,
-          "rank_fonte": 4,
+          "rank_fonte": 5,
           "tipos": [
-            "MetaAnalysis",
-            "SystematicReview",
             "JournalArticle"
           ],
-          "tipo_principal": "MetaAnalysis",
-          "desenho_estudo_rotulo": "Meta-análise",
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9758543/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/36578889/",
+          "url_pdf": "https://e-journal.unair.ac.id/AMNT/article/download/22842/16352",
+          "url_texto_completo": "https://doi.org/10.20473/amnt.v5i4.2021.387-394",
+          "url_artigo": "https://doi.org/10.20473/amnt.v5i4.2021.387-394",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -334,38 +379,43 @@
             "motivos_exclusao": [],
             "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
           },
-          "categoria_selecao": "sintese_evidencia",
-          "categoria_selecao_rotulo": "Revisão sistemática / meta-análise",
-          "criterio_selecao": "Revisão sistemática/meta-análise elegível.",
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 7,
           "fontes_descoberta": [
-            "PubMed"
-          ]
+            "OpenAlex"
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W3102426258",
-          "doi": "10.1056/nejmoa2028395",
+          "paper_id": "oa_W4200193092",
+          "doi": "10.1038/s41419-021-04414-z",
           "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
             "OpenAlex"
           ],
-          "titulo": "A Placebo-Controlled Trial of Subcutaneous Semaglutide in Nonalcoholic Steatohepatitis",
-          "abstract": "BACKGROUND: Nonalcoholic steatohepatitis (NASH) is a common disease that is associated with increased morbidity and mortality, but treatment options are limited. The efficacy and safety of the glucagon-like peptide-1 receptor agonist semaglutide in patients with NASH is not known. METHODS: We conducted a 72-week, double-blind phase 2 trial involving patients with biopsy-confirmed NASH and liver fibrosis of stage F1, F2, or F3. Patients were randomly assigned, in a 3:3:3:1:1:1 ratio, to receive once-daily subcutaneous semaglutide at a dose of 0.1, 0.2, or 0.4 mg or corresponding placebo. The primary end point was resolution of NASH with no worsening of fibrosis. The confirmatory secondary end point was an improvement of at least one fibrosis stage with no worsening of NASH. The analyses of these end points were performed only in patients with stage F2 or F3 fibrosis; other analyses were performed in all the patients. RESULTS: In total, 320 patients (of whom 230 had stage F2 or F3 fibrosis) were randomly assigned to receive semaglutide at a dose of 0.1 mg (80 patients), 0.2 mg (78 patients), or 0.4 mg (82 patients) or to receive placebo (80 patients). The percentage of patients in whom NASH resolution was achieved with no worsening of fibrosis was 40% in the 0.1-mg group, 36% in the 0.2-mg group, 59% in the 0.4-mg group, and 17% in the placebo group (P<0.001 for semaglutide 0.4 mg vs. placebo). An improvement in fibrosis stage occurred in 43% of the patients in the 0.4-mg group and in 33% of the patients in the placebo group (P = 0.48). The mean percent weight loss was 13% in the 0.4-mg group and 1% in the placebo group. The incidence of nausea, constipation, and vomiting was higher in the 0.4-mg group than in the placebo group (nausea, 42% vs. 11%; constipation, 22% vs. 12%; and vomiting, 15% vs. 2%). Malignant neoplasms were reported in 3 patients who received semaglutide (1%) and in no patients who received placebo. Overall, neoplasms (benign, malignant, or unspecified) were reported in 15% of the patients in the semaglutide groups and in 8% in the placebo group; no pattern of occurrence in specific organs was observed. CONCLUSIONS: This phase 2 trial involving patients with NASH showed that treatment with semaglutide resulted in a significantly higher percentage of patients with NASH resolution than placebo. However, the trial did not show a significant between-group difference in the percentage of patients with an improvement in fibrosis stage. (Funded by Novo Nordisk; ClinicalTrials.gov number, NCT02970942.).",
-          "ano": 2020,
-          "autores": "Philip N. Newsome; Kristine Buchholtz; Kenneth Cusi; et al.",
-          "periodico": "New England Journal of Medicine",
-          "citacoes_totais": 1994,
+          "titulo": "HP1a-mediated heterochromatin formation inhibits high dietary sugar-induced tumor progression",
+          "abstract": "High dietary sugar (HDS) is a modern dietary concern that involves excessive consumption of carbohydrates and added sugars, and increases the risk of metabolic disorders and associated cancers. However, epigenetic mechanisms by which HDS induces tumor progression remain unclear. Here, we investigate the role of heterochromatin, an important yet poorly understood part of the epigenome, in HDS-induced tumor progression of Drosophila Ras/Src and Ras/scrib tumor systems. We found that increased heterochromatin formation with overexpression of heterochromatin protein 1a (HP1a), specifically in tumor cells, not only decreases HDS-induced tumor growth/burden but also drastically improves survival of Drosophila with HDS and Ras/Src or Ras/scrib tumors. Moreover, HDS reduces heterochromatin levels in tumor cells. Mechanistically, we demonstrated that increased heterochromatin formation decreases wingless (wg) and Hippo (Hpo) signaling, thereby promoting apoptosis, via inhibition of Yorkie (Yki) nuclear accumulation and upregulation of apoptotic genes, and reduces DNA damage in tumor cells under HDS. Taken together, our work identified a novel epigenetic mechanism by which HP1a-mediated heterochromatin formation suppresses HDS-induced tumor progression likely by decreasing wingless and Hippo signaling, increasing apoptosis, and maintaining genome stability. Our model explains that the molecular, cellular, and organismal aspects of HDS-aggravated tumor progression are dependent on heterochromatin formation, and highlights heterochromatin as a therapeutic target for cancers associated with HDS-induced metabolic disorders.",
+          "ano": 2021,
+          "autores": "Che‐Wei Chang; Yu-Chia Shen; Shian‐Jang Yan",
+          "periodico": "Cell Death and Disease",
+          "citacoes_totais": 11,
           "citacoes_influentes": 0,
-          "rank_fonte": 4,
+          "rank_fonte": 6,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "https://www.nejm.org/doi/pdf/10.1056/NEJMoa2028395?articleTools=true",
-          "url_texto_completo": "https://doi.org/10.1056/nejmoa2028395",
-          "url_artigo": "https://doi.org/10.1056/nejmoa2028395",
+          "url_pdf": "https://www.nature.com/articles/s41419-021-04414-z.pdf",
+          "url_texto_completo": "https://doi.org/10.1038/s41419-021-04414-z",
+          "url_artigo": "https://doi.org/10.1038/s41419-021-04414-z",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -382,33 +432,37 @@
           "ordem_selecao": 8,
           "fontes_descoberta": [
             "OpenAlex"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "pmid_38952487",
-          "doi": "10.2147/dddt.s470826",
+          "paper_id": "pmid_16766260",
+          "doi": "10.1016/j.ccr.2006.05.012",
           "fonte_origem": "PubMed",
           "fontes_encontradas": [
             "PubMed"
           ],
-          "titulo": "Clinical Pharmacokinetics of Semaglutide: A Systematic Review.",
-          "abstract": "The aim of this review was to provide all the pharmacokinetic data for semaglutide in humans concerning its pharmacokinetics after subcutaneously and oral applications in healthy and diseased populations, to provide recommendations for clinical use. The PubMed and Embase databases were searched to screen studies associated with the pharmacokinetics of semaglutide. The pharmacokinetic parameters included area under the curve plasma concentrations (AUC), maximal plasma concentration (Cmax), time to Cmax, half-life (t1/2), and clearance. The systematic literature search retrieved 17 articles including data on pharmacokinetic profiles after subcutaneously and oral applications of semaglutide, and at least one of the above pharmacokinetic parameter was reported in all included studies. Semaglutide has a predictable pharmacokinetic profile with a long t1/2 that allows for once-weekly subcutaneous administration. The AUC and Cmax of both oral and subcutaneous semaglutide increased with dose. Food and various dosing conditions including water volume and dosing schedules can affect the oral semaglutide exposure. There are limited drug-drug interactions and no dosing adjustments in patients with upper gastrointestinal disease, renal impairment or hepatic impairment. Body weight may affect semaglutide exposure, but further studies are needed to confirm this. This review encompasses all the pharmacokinetic data for subcutaneous and oral semaglutide in both healthy and diseased participants. The existing pharmacokinetic data can assist in developing and evaluating pharmacokinetic models of semaglutide and will help clinicians predict semaglutide dosages. In addition, it can also help optimize future clinical trials.",
-          "ano": 2024,
-          "autores": "Xi-Ding Yang; Yong-Yu Yang",
-          "periodico": "Drug design, development and therapy",
+          "titulo": "Cancer's sweet tooth.",
+          "abstract": "Even in the presence of an adequate oxygen supply, many tumors metabolize the majority of the glucose they take up through glycolysis. It has been a long-held belief that this glycolytic phenotype is due to cancer-specific defects in mitochondrial oxidative phosphorylation. In this issue of Cancer Cell, Fantin et al. now report that most tumor cells have a substantial reserve capacity to produce ATP by oxidative phosphorylation when glycolysis is suppressed. These new data add to mounting evidence that the high rate of glycolysis exhibited by most tumors is required to support cell growth rather than to compensate for defect(s) in mitochondrial function.",
+          "ano": 2006,
+          "autores": "Thi Bui; Craig B Thompson",
+          "periodico": "Cancer cell",
           "citacoes_totais": 0,
           "citacoes_influentes": 0,
-          "rank_fonte": 5,
+          "rank_fonte": 7,
           "tipos": [
-            "JournalArticle",
-            "SystematicReview"
+            "JournalArticle"
           ],
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
-          "open_access": true,
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
+          "open_access": false,
           "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11215664/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38952487/",
+          "url_texto_completo": "",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/16766260/",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -419,38 +473,43 @@
             "motivos_exclusao": [],
             "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
           },
-          "categoria_selecao": "sintese_evidencia",
-          "categoria_selecao_rotulo": "Revisão sistemática / meta-análise",
-          "criterio_selecao": "Revisão sistemática/meta-análise elegível.",
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 9,
           "fontes_descoberta": [
             "PubMed"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W3177122952",
-          "doi": "10.1056/nejmoa2107519",
+          "paper_id": "oa_W2557531334",
+          "doi": "10.1186/s12937-016-0217-2",
           "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
             "OpenAlex"
           ],
-          "titulo": "Tirzepatide versus Semaglutide Once Weekly in Patients with Type 2 Diabetes",
-          "abstract": "BACKGROUND: Tirzepatide is a dual glucose-dependent insulinotropic polypeptide and glucagon-like peptide-1 (GLP-1) receptor agonist that is under development for the treatment of type 2 diabetes. The efficacy and safety of once-weekly tirzepatide as compared with semaglutide, a selective GLP-1 receptor agonist, are unknown. METHODS: In an open-label, 40-week, phase 3 trial, we randomly assigned 1879 patients, in a 1:1:1:1 ratio, to receive tirzepatide at a dose of 5 mg, 10 mg, or 15 mg or semaglutide at a dose of 1 mg. At baseline, the mean glycated hemoglobin level was 8.28%, the mean age 56.6 years, and the mean weight 93.7 kg. The primary end point was the change in the glycated hemoglobin level from baseline to 40 weeks. RESULTS: The estimated mean change from baseline in the glycated hemoglobin level was -2.01 percentage points, -2.24 percentage points, and -2.30 percentage points with 5 mg, 10 mg, and 15 mg of tirzepatide, respectively, and -1.86 percentage points with semaglutide; the estimated differences between the 5-mg, 10-mg, and 15-mg tirzepatide groups and the semaglutide group were -0.15 percentage points (95% confidence interval [CI], -0.28 to -0.03; P = 0.02), -0.39 percentage points (95% CI, -0.51 to -0.26; P<0.001), and -0.45 percentage points (95% CI, -0.57 to -0.32; P<0.001), respectively. Tirzepatide at all doses was noninferior and superior to semaglutide. Reductions in body weight were greater with tirzepatide than with semaglutide (least-squares mean estimated treatment difference, -1.9 kg, -3.6 kg, and -5.5 kg, respectively; P<0.001 for all comparisons). The most common adverse events were gastrointestinal and were primarily mild to moderate in severity in the tirzepatide and semaglutide groups (nausea, 17 to 22% and 18%; diarrhea, 13 to 16% and 12%; and vomiting, 6 to 10% and 8%, respectively). Of the patients who received tirzepatide, hypoglycemia (blood glucose level, <54 mg per deciliter) was reported in 0.6% (5-mg group), 0.2% (10-mg group), and 1.7% (15-mg group); hypoglycemia was reported in 0.4% of those who received semaglutide. Serious adverse events were reported in 5 to 7% of the patients who received tirzepatide and in 3% of those who received semaglutide. CONCLUSIONS: In patients with type 2 diabetes, tirzepatide was noninferior and superior to semaglutide with respect to the mean change in the glycated hemoglobin level from baseline to 40 weeks. (Funded by Eli Lilly; SURPASS-2 ClinicalTrials.gov number, NCT03987919.).",
-          "ano": 2021,
-          "autores": "Juan P. Frías; Melanie J. Davies; Julio Rosenstock; et al.",
-          "periodico": "New England Journal of Medicine",
-          "citacoes_totais": 2004,
+          "titulo": "An overview on the role of dietary phenolics for the treatment of cancers",
+          "abstract": "Plant derived phenolic compounds have been shown to inhibit the initiation and progression of cancers by modulating genes regulating key processes such as: (a) oncogenic transformation of normal cells; (b) growth and development of tumors; and (c) angiogenesis and metastasis. Recent studies focusing on identifying the molecular basis of plant phenolics-induced cancer cell death have demonstrated down-regulation of: (a) oncogenic survival kinases such as PI3K and Akt; (b) cell proliferation regulators that include Erk1/2, D-type Cyclins, and Cyclin Dependent Kinases (CDKs); (c) transcription factors such as NF-kβ, NRF2 and STATs; (d) histone deacetylases HDAC1 and HDAC2; and (e) angiogenic factors VEGF, FGFR1 and MIC-1. Furthermore, while inhibiting oncogenic proteins, the phenolic compounds elevate the expression of tumor suppressor proteins p53, PTEN, p21, and p27. In addition, plant phenolic compounds and the herbal extracts rich in phenolic compounds modulate the levels of reactive oxygen species (ROS) in cells thereby regulate cell proliferation, survival and apoptosis. Furthermore, recent studies have demonstrated that phenolic compounds undergo transformation in gut microbiota thereby acquire additional properties that promote their biological activities. In vitro observations, preclinical and epidemiological studies have shown the involvement of plant phenolic acids in retarding the cancer growth. However, to date, there is no clinical trial as such testing the role of plant phenolic compounds for inhibiting tumor growth in humans. More over, several variations in response to phenolic acid rich diets-mediated treatment among individuals have also been reported, raising concerns about whether phenolic acids could be used for treating cancers. Therefore, we have made an attempt to (a) address the key structural features of phenolic acids required for exhibiting potent anti-cancer activity; (b) review the reported findings about the mechanisms of action of phenolic compounds and their transformation by gut microbiota; and",
+          "ano": 2016,
+          "autores": "Preethi G. Anantharaju; C Prathima; Manjunath Gubbanna Vimalambike; et al.",
+          "periodico": "Nutrition Journal",
+          "citacoes_totais": 517,
           "citacoes_influentes": 0,
-          "rank_fonte": 5,
+          "rank_fonte": 8,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://figshare.com/articles/journal_contribution/Tirzepatide_versus_Semaglutide_Once_Weekly_in_Patients_with_Type_2_Diabetes/16972132",
-          "url_artigo": "https://doi.org/10.1056/nejmoa2107519",
+          "url_pdf": "https://nutritionj.biomedcentral.com/track/pdf/10.1186/s12937-016-0217-2",
+          "url_texto_completo": "https://doi.org/10.1186/s12937-016-0217-2",
+          "url_artigo": "https://doi.org/10.1186/s12937-016-0217-2",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -467,32 +526,37 @@
           "ordem_selecao": 10,
           "fontes_descoberta": [
             "OpenAlex"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W4386154055",
-          "doi": "10.1056/nejmoa2306963",
+          "paper_id": "oa_W2756015392",
+          "doi": "10.3389/fimmu.2017.01159",
           "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
             "OpenAlex"
           ],
-          "titulo": "Semaglutide in Patients with Heart Failure with Preserved Ejection Fraction and Obesity",
-          "abstract": "BACKGROUND: Heart failure with preserved ejection fraction is increasing in prevalence and is associated with a high symptom burden and functional impairment, especially in persons with obesity. No therapies have been approved to target obesity-related heart failure with preserved ejection fraction. METHODS: We randomly assigned 529 patients who had heart failure with preserved ejection fraction and a body-mass index (the weight in kilograms divided by the square of the height in meters) of 30 or higher to receive once-weekly semaglutide (2.4 mg) or placebo for 52 weeks. The dual primary end points were the change from baseline in the Kansas City Cardiomyopathy Questionnaire clinical summary score (KCCQ-CSS; scores range from 0 to 100, with higher scores indicating fewer symptoms and physical limitations) and the change in body weight. Confirmatory secondary end points included the change in the 6-minute walk distance; a hierarchical composite end point that included death, heart failure events, and differences in the change in the KCCQ-CSS and 6-minute walk distance; and the change in the C-reactive protein (CRP) level. RESULTS: The mean change in the KCCQ-CSS was 16.6 points with semaglutide and 8.7 points with placebo (estimated difference, 7.8 points; 95% confidence interval [CI], 4.8 to 10.9; P<0.001), and the mean percentage change in body weight was -13.3% with semaglutide and -2.6% with placebo (estimated difference, -10.7 percentage points; 95% CI, -11.9 to -9.4; P<0.001). The mean change in the 6-minute walk distance was 21.5 m with semaglutide and 1.2 m with placebo (estimated difference, 20.3 m; 95% CI, 8.6 to 32.1; P<0.001). In the analysis of the hierarchical composite end point, semaglutide produced more wins than placebo (win ratio, 1.72; 95% CI, 1.37 to 2.15; P<0.001). The mean percentage change in the CRP level was -43.5% with semaglutide and -7.3% with placebo (estimated treatment ratio, 0.61; 95% CI, 0.51 to 0.72; P<0.001). Serious adverse events were reported in 35 participants (13.3%) in the semaglutide group and 71 (26.7%) in the placebo group. CONCLUSIONS: In patients with heart failure with preserved ejection fraction and obesity, treatment with semaglutide (2.4 mg) led to larger reductions in symptoms and physical limitations, greater improvements in exercise function, and greater weight loss than placebo. (Funded by Novo Nordisk; STEP-HFpEF ClinicalTrials.gov number, NCT04788511.).",
-          "ano": 2023,
-          "autores": "Mikhail Kosiborod; Steen Z. Abildstrøm; Barry A. Borlaug; et al.",
-          "periodico": "New England Journal of Medicine",
-          "citacoes_totais": 1585,
+          "titulo": "Fructose: A Dietary Sugar in Crosstalk with Microbiota Contributing to the Development and Progression of Non-Alcoholic Liver Disease",
+          "abstract": "Fructose is one of the key dietary catalysts in the development of non-alcoholic fatty liver disease (NAFLD). NAFLD comprises a complex disease spectrum, including steatosis (fatty liver), non-alcoholic steatohepatitis, hepatocyte injury, inflammation, and fibrosis. It is also the hepatic manifestation of the metabolic syndrome, which covers abdominal obesity, insulin resistance, dyslipidemia, glucose intolerance, or type 2 diabetes mellitus. Commensal bacteria modulate the host immune system, protect against exogenous pathogens, and are gatekeepers in intestinal barrier function and maturation. Dysbalanced intestinal microbiota composition influences a variety of NAFLD-associated clinical conditions. Conversely, nutritional supplementation with probiotics and preobiotics impacting composition of gut microbiota can improve the outcome of NAFLD. In crosstalk with the host immune system, the gut microbiota is able to modulate inflammation, insulin resistance, and intestinal permeability. Moreover, the composition of microbiota of an individual is a kind of fingerprint highly influenced by diet. In addition, not only the microbiota itself but also its metabolites influence the metabolism and host immune system. The gut microbiota can produce vitamins and a variety of nutrients including short-chain fatty acids. Holding a healthy balance of the microbiota is therefore highly important. In the present review, we discuss the impact of long-term intake of fructose on the composition of the intestinal microbiota and its biological consequences in regard to liver homeostasis and disease. In particular, we will refer about fructose-induced alterations of the tight junction proteins affecting the gut permeability, leading to the translocation of bacteria and bacterial endotoxins into the blood circulation.",
+          "ano": 2017,
+          "autores": "Jessica Lambertz; Sabine Weiskirchen; Silvano Landert; et al.",
+          "periodico": "Frontiers in Immunology",
+          "citacoes_totais": 183,
           "citacoes_influentes": 0,
-          "rank_fonte": 6,
+          "rank_fonte": 9,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "https://www.nejm.org/doi/pdf/10.1056/NEJMoa2306963",
-          "url_texto_completo": "https://doi.org/10.1056/nejmoa2306963",
-          "url_artigo": "https://doi.org/10.1056/nejmoa2306963",
+          "url_pdf": "https://www.frontiersin.org/articles/10.3389/fimmu.2017.01159/pdf",
+          "url_texto_completo": "https://doi.org/10.3389/fimmu.2017.01159",
+          "url_artigo": "https://doi.org/10.3389/fimmu.2017.01159",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -509,33 +573,37 @@
           "ordem_selecao": 11,
           "fontes_descoberta": [
             "OpenAlex"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "pmid_38629387",
-          "doi": "10.1080/14656566.2024.2343092",
-          "fonte_origem": "PubMed",
+          "paper_id": "oa_W2098483493",
+          "doi": "10.1093/jnci/94.24.1854",
+          "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
-            "PubMed"
+            "OpenAlex"
           ],
-          "titulo": "A systematic review of the effect of semaglutide on lean mass: insights from clinical trials.",
-          "abstract": "Semaglutide, a glucagon-like peptide-1 receptor agonist, is associated with significant weight loss, yet its impact on lean body mass remains insufficiently understood. This review investigates the effect of semaglutide on lean mass in the context of obesity management. This study investigates through different databases (PubMed, Elsevier, and Google Scholar) from 2016 for randomized control trials (RCTs) or observational studies that assessed the use of semaglutide in overweight or obese patients, regardless of whether they have type 2 diabetes or not. The studies compared semaglutide to a placebo or alternative medications. Six studies with 1,541 overweight or obese adults were included, and significant weight reductions were observed primarily due to fat mass loss. While the lean mass remained stable in some cases, notable reductions ranging from almost 0% to 40% of total weight reduction were observed in others. Noteworthy decreases in lean mass were particularly evident in larger trials, yet the proportion of lean mass relative to total body mass increased, suggesting a positive overall outcome. Semaglutide displays potential for weight loss primarily through fat mass reduction. However, concerns arise from notable reductions in lean mass, especially in trials with a larger number of patients.",
-          "ano": 2024,
-          "autores": "Alexia Bikou; Foteini Dermiki-Gkana; Michail Penteris; et al.",
-          "periodico": "Expert opinion on pharmacotherapy",
-          "citacoes_totais": 0,
+          "titulo": "Inhibition of Human Cancer Cell Growth and Metastasis in Nude Mice by Oral Intake of Modified Citrus Pectin",
+          "abstract": "BACKGROUND: The role of dietary components in cancer progression and metastasis is an emerging field of clinical importance. Many stages of cancer progression involve carbohydrate-mediated recognition processes. We therefore studied the effects of high pH- and temperature-modified citrus pectin (MCP), a nondigestible, water-soluble polysaccharide fiber derived from citrus fruit that specifically inhibits the carbohydrate-binding protein galectin-3, on tumor growth and metastasis in vivo and on galectin-3-mediated functions in vitro. METHODS: In vivo tumor growth, angiogenesis, and metastasis were studied in athymic mice that had been fed with MCP in their drinking water and then injected orthotopically with human breast carcinoma cells (MDA-MB-435) into the mammary fat pad region or with human colon carcinoma cells (LSLiM6) into the cecum. Galectin-3-mediated functions during tumor angiogenesis in vitro were studied by assessing the effect of MCP on capillary tube formation by human umbilical vein endothelial cells (HUVECs) in Matrigel. The effects of MCP on galectin-3-induced HUVEC chemotaxis and on HUVEC binding to MDA-MB-435 cells in vitro were studied using Boyden chamber and labeling assays, respectively. The data were analyzed by two-sided Student's t test or Fisher's protected least-significant-difference test. RESULTS: Tumor growth, angiogenesis, and spontaneous metastasis in vivo were statistically significantly reduced in mice fed MCP. In vitro, MCP inhibited HUVEC morphogenesis (capillary tube formation) in a dose-dependent manner. In vitro, MCP inhibited the binding of galectin-3 to HUVECs: At concentrations of 0.1% and 0.25%, MCP inhibited the binding of galectin-3 (10 micro g/mL) to HUVECs by 72.1% (P =.038) and 95.8% (P =.025), respectively, and at a concentration of 0.25% it inhibited the binding of galectin-3 (1 micro g/mL) to HUVECs by 100% (P =.032). MCP blocked chemotaxis of HUVECs toward galectin-3 in a dose-dependent manner, reducing it by 68% at 0.005% (P<.001) and inhibiting it completely at 0.1% (P<.001). Finally, MCP also inhibited adhesion of MDA-MB-435 cells, which express galectin-3, to HUVECs in a dose-dependent manner. CONCLUSIONS: MCP, given orally, inhibits carbohydrate-mediated tumor growth, angiogenesis, and metastasis in vivo, presumably via its effects on galectin-3 function. These data stress the importance of dietary carbohydrate compounds as agents for the prevention and/or treatment of cancer.",
+          "ano": 2002,
+          "autores": "Pratima Nangia‐Makker; Victor A. Hogan; Yuichiro Honjo; et al.",
+          "periodico": "JNCI Journal of the National Cancer Institute",
+          "citacoes_totais": 424,
           "citacoes_influentes": 0,
-          "rank_fonte": 7,
+          "rank_fonte": 10,
           "tipos": [
-            "SystematicReview",
             "JournalArticle"
           ],
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
           "open_access": false,
           "url_pdf": "",
           "url_texto_completo": "",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38629387/",
+          "url_artigo": "https://doi.org/10.1093/jnci/94.24.1854",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -546,38 +614,43 @@
             "motivos_exclusao": [],
             "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
           },
-          "categoria_selecao": "sintese_evidencia",
-          "categoria_selecao_rotulo": "Revisão sistemática / meta-análise",
-          "criterio_selecao": "Revisão sistemática/meta-análise elegível.",
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 12,
           "fontes_descoberta": [
-            "PubMed"
-          ]
+            "OpenAlex"
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W4398781461",
-          "doi": "10.1056/nejmoa2403347",
+          "paper_id": "oa_W2132883361",
+          "doi": "10.1371/journal.pone.0099816",
           "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
             "OpenAlex"
           ],
-          "titulo": "Effects of Semaglutide on Chronic Kidney Disease in Patients with Type 2 Diabetes",
-          "abstract": "Background Patients with type 2 diabetes and chronic kidney disease are at high risk for kidney failure, cardiovascular events, and death. Whether treatment with semaglutide would mitigate these risks is unknown. Methods We randomly assigned patients with type 2 diabetes and chronic kidney disease (defined by an estimated glomerular filtration rate [eGFR] of 50 to 75 ml per minute per 1.73 m 2 of body-surface area and a urinary albumin-to-creatinine ratio [with albumin measured in milligrams and creatinine measured in grams] of >300 and <5000 or an eGFR of 25 to <50 ml per minute per 1.73 m 2 and a urinary albumin-to-creatinine ratio of >100 and <5000) to receive subcutaneous semaglutide at a dose of 1.0 mg weekly or placebo. The primary outcome was major kidney disease events, a composite of the onset of kidney failure (dialysis, transplantation, or an eGFR of <15 ml per minute per 1.73 m 2 ), at least a 50% reduction in the eGFR from baseline, or death from kidney-related or cardiovascular causes. Prespecified confirmatory secondary outcomes were tested hierarchically. Results Among the 3533 participants who underwent randomization (1767 in the semaglutide group and 1766 in the placebo group), median follow-up was 3.4 years, after early trial cessation was recommended at a prespecified interim analysis. The risk of a primary-outcome event was 24% lower in the semaglutide group than in the placebo group (331 vs. 410 first events; hazard ratio, 0.76; 95% confidence interval [CI], 0.66 to 0.88; P=0.0003). Results were similar for a composite of the kidney-specific components of the primary outcome (hazard ratio, 0.79; 95% CI, 0.66 to 0.94) and for death from cardiovascular causes (hazard ratio, 0.71; 95% CI, 0.56 to 0.89). The results for all confirmatory secondary outcomes favored semaglutide: the mean annual eGFR slope was less steep (indicating a slower decrease) by 1.16 ml per minute per 1.73 m 2 in the semaglutide group (P<0.001), the risk of major cardiovascular events 18% lower (hazard ratio, 0.82; 95% CI, 0.68 to 0.98; P=0.029), and the risk of death from any cause 20% lower (hazard ratio, 0.80; 95% CI, 0.67 to 0.95, P=0.01). Serious adverse events were reported in a lower percentage of participants in the semaglutide group than in the placebo group (49.6% vs. 53.8%). Conclusions Semaglutide reduced the risk of clinically important kidney outcomes and death from cardiovascular causes in patients with type 2 diabetes and chronic kidney disease. (Funded by Novo Nordisk; FLOW ClinicalTrials.gov number, NCT03819153 .)",
-          "ano": 2024,
-          "autores": "Vlado Perkovic; Katherine R. Tuttle; Peter Rossing; et al.",
-          "periodico": "New England Journal of Medicine",
-          "citacoes_totais": 1760,
+          "titulo": "Sugar-Sweetened Beverage Intake and Cancer Recurrence and Survival in CALGB 89803 (Alliance)",
+          "abstract": "BACKGROUND: In colon cancer patients, obesity, sedentary lifestyle, and high dietary glycemic load have been associated with increased risk of cancer recurrence. High sugar-sweetened beverage intake has been associated with obesity, diabetes, and cardio-metabolic diseases, but the influence on colon cancer survival is unknown. METHODS: We assessed the association between sugar-sweetened beverage consumption on cancer recurrence and mortality in 1,011 stage III colon cancer patients who completed food frequency questionnaires as part of a U.S. National Cancer Institute-sponsored adjuvant chemotherapy trial. Hazard ratios (HRs) and 95% confidence intervals (CIs) were calculated with Cox proportional hazard models. RESULTS: Patients consuming ≥ 2 servings of sugar-sweetened beverages per day experienced an adjusted HR for disease recurrence or mortality of 1.67 (95% CI, 1.04-2.68), compared with those consuming <2 servings per month (P(trend) = 0.02). The association of sugar-sweetened beverages on cancer recurrence or mortality appeared greater among patients who were both overweight (body mass index ≥ 2 5 kg/m(2)) and less physically active (metabolic equivalent task-hours per week <18) (HR = 2.22; 95% CI, 1.29-3.81, P(trend) = 0.0025). CONCLUSION: Higher sugar-sweetened beverage intake was associated with a significantly increased risk of cancer recurrence and mortality in stage III colon cancer patients.",
+          "ano": 2014,
+          "autores": "Michael A. Fuchs; Kaori Sato; Donna Niedzwiecki; et al.",
+          "periodico": "PLoS ONE",
+          "citacoes_totais": 84,
           "citacoes_influentes": 0,
-          "rank_fonte": 7,
+          "rank_fonte": 11,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://doi.org/10.1056/nejmoa2403347",
+          "open_access": true,
+          "url_pdf": "https://journals.plos.org/plosone/article/file?id=10.1371/journal.pone.0099816&type=printable",
+          "url_texto_completo": "https://doi.org/10.1371/journal.pone.0099816",
+          "url_artigo": "https://doi.org/10.1371/journal.pone.0099816",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -594,32 +667,37 @@
           "ordem_selecao": 13,
           "fontes_descoberta": [
             "OpenAlex"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W2924479779",
-          "doi": "10.3389/fendo.2019.00155",
+          "paper_id": "oa_W2295337505",
+          "doi": "10.3390/nu8030156",
           "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
             "OpenAlex"
           ],
-          "titulo": "The Discovery and Development of Liraglutide and Semaglutide",
-          "abstract": "The discovery of glucagon-like peptide-1 (GLP-1), an incretin hormone with important effects on glycemic control and body weight regulation, led to efforts to extend its half-life and make it therapeutically effective in people with type 2 diabetes (T2D). The development of short- and then long-acting GLP-1 receptor agonists (GLP-1RAs) followed. Our article charts the discovery and development of the long-acting GLP-1 analogs liraglutide and, subsequently, semaglutide. We examine the chemistry employed in designing liraglutide and semaglutide, the human and non-human studies used to investigate their cellular targets and pharmacological effects, and ongoing investigations into new applications and formulations of these drugs. Reversible binding to albumin was used for the systemic protraction of liraglutide and semaglutide, with optimal fatty acid and linker combinations identified to maximize albumin binding while maintaining GLP-1 receptor (GLP-1R) potency. GLP-1RAs mediate their effects via this receptor, which is expressed in the pancreas, gastrointestinal tract, heart, lungs, kidneys, and brain. GLP-1Rs in the pancreas and brain have been shown to account for the respective improvements in glycemic control and body weight that are evident with liraglutide and semaglutide. Both liraglutide and semaglutide also positively affect cardiovascular (CV) outcomes in individuals with T2D, although the precise mechanism is still being explored. Significant weight loss, through an effect to reduce energy intake, led to the approval of liraglutide (3.0 mg) for the treatment of obesity, an indication currently under investigation with semaglutide. Other ongoing investigations with semaglutide include the treatment of non-alcoholic fatty liver disease (NASH) and its use in an oral formulation for the treatment of T2D. In summary, rational design has led to the development of two long-acting GLP-1 analogs, liraglutide and semaglutide, that have made a vast contribution to the management of T2D in terms of improvements in glycemic control, body weight, blood pressure, lipids, beta-cell function, and CV outcomes. Furthermore, the development of an oral formulation for semaglutide may provide individuals with additional benefits in relation to treatment adherence. In addition to T2D, liraglutide is used in the treatment of obesity, while semaglutide is currently under investigation for use in obesity and NASH.",
-          "ano": 2019,
-          "autores": "Lotte Bjerre Knudsen; Jesper Lau",
-          "periodico": "Frontiers in Endocrinology",
-          "citacoes_totais": 954,
+          "titulo": "Dietary Natural Products for Prevention and Treatment of Liver Cancer",
+          "abstract": "Breast cancer is the most common cancer among females worldwide. Several epidemiological studies suggested the inverse correlation between the intake of vegetables and fruits and the incidence of breast cancer. Substantial experimental studies indicated that many dietary natural products could affect the development and progression of breast cancer, such as soy, pomegranate, mangosteen, citrus fruits, apple, grape, mango, cruciferous vegetables, ginger, garlic, black cumin, edible macro-fungi, and cereals. Their anti-breast cancer effects involve various mechanisms of action, such as downregulating ER-α expression and activity, inhibiting proliferation, migration, metastasis and angiogenesis of breast tumor cells, inducing apoptosis and cell cycle arrest, and sensitizing breast tumor cells to radiotherapy and chemotherapy. This review summarizes the potential role of dietary natural products and their major bioactive components in prevention and treatment of breast cancer, and special attention was paid to the mechanisms of action.",
+          "ano": 2016,
+          "autores": "Yue Zhou; Ya Li; Tong Zhou; et al.",
+          "periodico": "Nutrients",
+          "citacoes_totais": 411,
           "citacoes_influentes": 0,
-          "rank_fonte": 8,
+          "rank_fonte": 12,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "https://www.frontiersin.org/articles/10.3389/fendo.2019.00155/pdf",
-          "url_texto_completo": "https://doi.org/10.3389/fendo.2019.00155",
-          "url_artigo": "https://doi.org/10.3389/fendo.2019.00155",
+          "url_pdf": "https://www.mdpi.com/2072-6643/8/3/156/pdf?version=1457605201",
+          "url_texto_completo": "https://doi.org/10.3390/nu8030156",
+          "url_artigo": "https://doi.org/10.3390/nu8030156",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -636,34 +714,37 @@
           "ordem_selecao": 14,
           "fontes_descoberta": [
             "OpenAlex"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "pmid_28110911",
-          "doi": "10.1016/s2213-8587(17)30013-x",
+          "paper_id": "pmid_28054552",
+          "doi": "10.1038/ncomms13732",
           "fonte_origem": "PubMed",
           "fontes_encontradas": [
-            "OpenAlex",
             "PubMed"
           ],
-          "titulo": "Efficacy and safety of once-weekly semaglutide monotherapy versus placebo in patients with type 2 diabetes (SUSTAIN 1): a double-blind, randomised, placebo-controlled, parallel-group, multinational, multicentre phase 3a trial.",
-          "abstract": "Despite a broad range of pharmacological options for the treatment of type 2 diabetes, optimum glycaemic control remains challenging for many patients and new therapies are necessary. Semaglutide is a glucagon-like peptide-1 (GLP-1) analogue in phase 3 development for type 2 diabetes. We assessed the efficacy, safety, and tolerability of semaglutide monotherapy, compared with placebo, in treatment-naive patients with type 2 diabetes who had insufficient glycaemic control with diet and exercise alone. We did a double-blind, randomised, parallel-group, international, placebo-controlled phase 3a trial (SUSTAIN 1) at 72 sites in Canada, Italy, Japan, Mexico, Russia, South Africa, UK, and USA (including hospitals, clinical research units, and private offices). Eligible participants were treatment-naive individuals aged 18 years or older with type 2 diabetes treated with only diet and exercise alone for at least 30 days before screening, with a baseline HbA1c of 7·0%-10·0% (53-86 mmol/mol). We randomly assigned participants (2:2:1:1) to either once-weekly subcutaneously injected semaglutide (0·5 mg or 1·0 mg), or volume-matched placebo (0·5 mg or 1·0 mg), for 30 weeks via prefilled PDS290 pen-injectors. Participants did their own injections and were encouraged to administer them on the same day of each week in the same area of their body; the time of day and proximity of meal times was not specified. We did the randomisation with an interactive voice or web response system. Investigators, participants, and the funder of the study remained masked throughout the trial. The primary endpoint was the change in mean HbA1c from baseline to week 30, and the confirmatory secondary endpoint was the change in mean bodyweight from baseline to week 30. We assessed efficacy and safety in the modified intention-to-treat population (ie, all participants who were exposed to at least one dose of study drug); both placebo groups were pooled for assessment. This trial was registered with ClinicalTrials.gov, number NCT02054897. Between February 3, 2014, and August 21, 2014, we randomly assigned 388 participants to treatment; 387 received at least one dose of study medication (128 0·5 mg semaglutide, 130 1·0 mg semaglutide, 129 placebo). 17 (13%) of those assigned to 0·5 mg semaglutide, 16 (12%) assigned to 1·0 mg semaglutide, and 14 (11%) assigned to placebo discontinued treatment; the main reason for discontinuation was gastrointestinal adverse events such as nausea. Mean baseline HbA1c was 8·05% (SD 0·85); at week 30, HbA1c significantly decreased by 1·45% (95% CI -1·65 to -1·26) with 0·5 mg semaglutide (estimated treatment difference vs placebo -1·43%, 95% CI -1·71 to -1·15; p<0·0001), significantly decreased by 1·55% (-1·74 to -1·36) with 1·0 mg semaglutide (estimated treatment difference vs placebo -1·53%, -1·81 to -1·25; p<0·0001), and non-significantly decreased by 0·02% (-0·23 to 0·18) with placebo. Mean baseline bodyweight was 91·93 kg (SD 23·83); at week 30, bodyweight significantly decreased by 3·73 kg (95% CI -4·54 to -2·91) with 0·5 mg semaglutide (estimated treatment difference vs placebo -2·75 kg, 95% CI -3·92 to -1·58; p<0·0001), significantly decreased by 4·53 kg (-5·34 to -3·72) with 1·0 mg semaglutide (estimated treatment difference vs placebo -3·56 kg, -4·74 to -2·38; p<0·0001), and non-significantly decreased by 0·98 kg (-1·82 to -0·13) with placebo. No deaths were reported in any of the study groups and most reported adverse events were of mild or moderate severity. The most frequently reported adverse events in both semaglutide groups were gastrointestinal in nature: nausea was reported in 26 (20%) who received 0·5 mg semaglutide, 31 (24%) who received 1·0 mg semaglutide, and 10 (8%) who received placebo, and diarrhoea was reported in 16 (13%) who received 0·5 mg semaglutide, 14 (11%) who received 1·0 mg semaglutide, and three (2%) who received placebo. Semaglutide significantly improved HbA1c and bodyweight in patients with type 2 diabetes compared with placebo, and showed a similar safety profile to currently available GLP-1 receptor agonists, representing a potential treatment option for such patients. Novo Nordisk A/S, Denmark.",
+          "titulo": "c-Src phosphorylation and activation of hexokinase promotes tumorigenesis and metastasis.",
+          "abstract": "It is well known that c-Src has important roles in tumorigenesis. However, it remains unclear whether c-Src contributes to metabolic reprogramming. Here we find that c-Src can interact with and phosphorylate hexokinases HK1 and HK2, the rate-limiting enzymes in glycolysis. Tyrosine phosphorylation dramatically increases their catalytic activity and thus enhances glycolysis. Mechanistically, c-Src phosphorylation of HK1 at Tyr732 robustly decreases its Km and increases its Vmax by disrupting its dimer formation. Mutation in c-Src phosphorylation site of either HK1 or HK2 remarkably abrogates the stimulating effects of c-Src on glycolysis, cell proliferation, migration, invasion, tumorigenesis and metastasis. Due to its lower Km for glucose, HK1 rather than HK2 is required for tumour cell survival when glucose is scarce. Importantly, HK1-Y732 phosphorylation level remarkably correlates with the incidence and metastasis of various clinical cancers and may serve as a marker to predict metastasis risk of primary cancers.",
           "ano": 2017,
-          "autores": "Christopher Sorli; Shin-Ichi Harashima; George M Tsoukas; et al.",
-          "periodico": "The lancet. Diabetes & endocrinology",
-          "citacoes_totais": 731,
+          "autores": "Jia Zhang; Suili Wang; Bin Jiang; et al.",
+          "periodico": "Nature communications",
+          "citacoes_totais": 0,
           "citacoes_influentes": 0,
-          "rank_fonte": 8,
+          "rank_fonte": 13,
           "tipos": [
-            "JournalArticle",
-            "RCT"
+            "JournalArticle"
           ],
-          "tipo_principal": "RCT",
-          "desenho_estudo_rotulo": "Ensaio clínico randomizado",
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
           "url_pdf": "",
-          "url_texto_completo": "https://cronfa.swan.ac.uk/Record/cronfa31739",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/28110911/",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC5227066/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/28054552/",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -679,34 +760,38 @@
           "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 15,
           "fontes_descoberta": [
-            "OpenAlex",
             "PubMed"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W3138431202",
-          "doi": "10.1001/jama.2021.3224",
+          "paper_id": "oa_W2759355325",
+          "doi": "10.3390/ijms18102050",
           "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
             "OpenAlex"
           ],
-          "titulo": "Effect of Continued Weekly Subcutaneous Semaglutide vs Placebo on Weight Loss Maintenance in Adults With Overweight or Obesity",
-          "abstract": "Importance: The effect of continuing vs withdrawing treatment with semaglutide, a glucagon-like peptide 1 receptor agonist, on weight loss maintenance in people with overweight or obesity is unknown. Objective: To compare continued once-weekly treatment with subcutaneous semaglutide, 2.4 mg, with switch to placebo for weight maintenance (both with lifestyle intervention) in adults with overweight or obesity after a 20-week run-in with subcutaneous semaglutide titrated to 2.4 mg weekly. Design, Setting, and Participants: Randomized, double-blind, 68-week phase 3a withdrawal study conducted at 73 sites in 10 countries from June 2018 to March 2020 in adults with body mass index of at least 30 (or ≥27 with ≥1 weight-related comorbidity) and without diabetes. Interventions: A total of 902 participants received once-weekly subcutaneous semaglutide during run-in. After 20 weeks (16 weeks of dose escalation; 4 weeks of maintenance dose), 803 participants (89.0%) who reached the 2.4-mg/wk semaglutide maintenance dose were randomized (2:1) to 48 weeks of continued subcutaneous semaglutide (n = 535) or switched to placebo (n = 268), plus lifestyle intervention in both groups. Main Outcomes and Measures: The primary end point was percent change in body weight from week 20 to week 68; confirmatory secondary end points were changes in waist circumference, systolic blood pressure, and physical functioning (assessed using the Short Form 36 Version 2 Health Survey, Acute Version [SF-36]). Results: Among 803 study participants who completed the 20-week run-in period (with a mean weight loss of 10.6%) and were randomized (mean age, 46 [SD, 12] years; 634 [79%] women; mean body weight, 107.2 kg [SD, 22.7 kg]), 787 participants (98.0%) completed the trial and 741 (92.3%) completed treatment. With continued semaglutide, mean body weight change from week 20 to week 68 was -7.9% vs +6.9% with the switch to placebo (difference, -14.8 [95% CI, -16.0 to -13.5] percentage points; P < .001). Waist circumference (-9.7 cm [95% CI, -10.9 to -8.5 cm]), systolic blood pressure (-3.9 mm Hg [95% CI, -5.8 to -2.0 mm Hg]), and SF-36 physical functioning score (2.5 [95% CI, 1.6-3.3]) also improved with continued subcutaneous semaglutide vs placebo (all P < .001). Gastrointestinal events were reported in 49.1% of participants who continued subcutaneous semaglutide vs 26.1% with placebo; similar proportions discontinued treatment because of adverse events with continued semaglutide (2.4%) and placebo (2.2%). Conclusions and Relevance: Among adults with overweight or obesity who completed a 20-week run-in period with subcutaneous semaglutide, 2.4 mg once weekly, maintaining treatment with semaglutide compared with switching to placebo resulted in continued weight loss over the following 48 weeks. Trial Registration: ClinicalTrials.gov Identifier: NCT03548987.",
-          "ano": 2021,
-          "autores": "Domenica Rubino; Domenica Rubino; Niclas Abrahamsson; et al.",
-          "periodico": "JAMA",
-          "citacoes_totais": 1349,
+          "titulo": "Molecular Mechanisms and Pathways as Targets for Cancer Prevention and Progression with Dietary Compounds",
+          "abstract": "A unique feature of bioactive food ingredients is their broad antioxidant function. Antioxidants having a wide spectrum of chemical structure and activity beyond basic nutrition; display different health benefits by the prevention and progression of chronic diseases. Functional food components are capable of enhancing the natural antioxidant defense system by scavenging reactive oxygen and nitrogen species, protecting and repairing DNA damage, as well as modulating the signal transduction pathways and gene expression. Major pathways affected by bioactive food ingredients include the pro-inflammatory pathways regulated by nuclear factor kappa B (NF-κB), as well as those associated with cytokines and chemokines. The present review summarizes the importance of plant bioactives and their roles in the regulation of inflammatory pathways. Bioactives influence several physiological processes such as gene expression, cell cycle regulation, cell proliferation, cell migration, etc., resulting in cancer prevention. Cancer initiation is associated with changes in metabolic pathways such as glucose metabolism, and the effect of bioactives in normalizing this process has been provided. Initiation and progression of inflammatory bowel diseases (IBD) which increase the chances of developing of colorectal cancers can be downregulated by plant bioactives. Several aspects of the potential roles of microRNAs and epigenetic modifications in the development of cancers have also been presented.",
+          "ano": 2017,
+          "autores": "Nagisa Nosrati; Marica Bakovic; Gopinadhan Paliyath",
+          "periodico": "International Journal of Molecular Sciences",
+          "citacoes_totais": 88,
           "citacoes_influentes": 0,
-          "rank_fonte": 9,
+          "rank_fonte": 13,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "https://jamanetwork.com/journals/jama/articlepdf/2777886/jama_rubino_2021_oi_210023_1618250221.55359.pdf",
-          "url_texto_completo": "https://doi.org/10.1001/jama.2021.3224",
-          "url_artigo": "https://doi.org/10.1001/jama.2021.3224",
+          "url_pdf": "https://www.mdpi.com/1422-0067/18/10/2050/pdf?version=1506332471",
+          "url_texto_completo": "https://doi.org/10.3390/ijms18102050",
+          "url_artigo": "https://doi.org/10.3390/ijms18102050",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -723,33 +808,37 @@
           "ordem_selecao": 16,
           "fontes_descoberta": [
             "OpenAlex"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "pmid_38574433",
-          "doi": "10.1016/j.redox.2024.103129",
-          "fonte_origem": "PubMed",
+          "paper_id": "oa_W4221110286",
+          "doi": "10.3390/cancers14071724",
+          "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
-            "OpenAlex",
-            "PubMed"
+            "OpenAlex"
           ],
-          "titulo": "Semaglutide attenuates doxorubicin-induced cardiotoxicity by ameliorating BNIP3-Mediated mitochondrial dysfunction.",
-          "abstract": "AIMS: Doxorubicin is a powerful chemotherapeutic agent for cancer, whose use is limited due to its potential cardiotoxicity. Semaglutide (SEMA), a novel analog of glucagon-like peptide-1 (GLP-1), has received widespread attention for the treatment of diabetes. However, increasing evidence has highlighted its potential therapeutic benefits on cardiac function. Therefore, the objective of this study was to examine the efficacy of semaglutide in ameliorating doxorubicin-induced cardiotoxicity. METHODS AND RESULTS: Doxorubicin-induced cardiotoxicity is an established model to study cardiac function. Cardiac function was studied by transthoracic echocardiography and invasive hemodynamic monitoring. The results showed that semaglutide significantly ameliorated doxorubicin-induced cardiac dysfunction. RNA sequencing suggested that Bnip3 is the candidate gene that impaired the protective effect of semaglutide in doxorubicin-induced cardiotoxicity. To determine the role of BNIP3 on the effect of semaglutide in doxorubicin-induced cardiotoxicity, BNIP3 with adeno-associated virus serotype 9 (AAV9) expressing cardiac troponin T (cTnT) promoter was injected into tail vein of C57/BL6J mice to overexpress BNIP3, specifically in the heart. Overexpression of BNIP3 prevented the improvement in cardiac function caused by semaglutide. In vitro experiments showed that semaglutide, via PI3K/AKT pathway, reduced BNIP3 expression in the mitochondria, improving mitochondrial function. CONCLUSION: Semaglutide ameliorates doxorubicin-induced mitochondrial and cardiac dysfunction via PI3K/AKT pathway, by reducing BNIP3 expression in mitochondria. The improvement in mitochondrial function reduces doxorubicin-mediated cardiac injury and improves cardiac function. Therefore, semaglutide is a potential therapy to reduce doxorubicin-induced acute cardiotoxicity.",
-          "ano": 2024,
-          "autores": "Xiaoping Li; Wenbin Luo; Yang Tang; et al.",
-          "periodico": "Redox biology",
-          "citacoes_totais": 67,
+          "titulo": "Dietary Fat Intake: Associations with Dietary Patterns and Postmenopausal Breast Cancer—A Case-Control Study",
+          "abstract": "The aim of this study was to assess the associations of dietary fat intake with BC occurrence and dietary patterns. This case-control study involved 420 women aged 40−79 years from northeastern Poland, including 190 newly diagnosed BC cases. Dietary data were collected using a food frequency questionnaire (62-item FFQ-6®). The Quick Food Scan of the National Cancer Institute and the Percentage Energy from Fat Screener scoring procedures were used to estimate the percentage energy from dietary fat (Pfat). The odds of BC occurrence was three times higher in the Pfat > 32%. The Pfat > 32% was positively associated with the ‘Non-Healthy’ DP and inversely associated with the Polish-aMED® score, ‘Prudent’ DP, and ‘Margarine and Sweetened Dairy’ DP. This case-control study suggests that a higher dietary fat intake (>32%) may contribute to an increased occurrence of peri- and postmenopausal breast cancer in women. Given the obtained results, an unhealthy dietary pattern characterized by the consumption of highly processed, high in sugar foods and animal fat foods should be avoided to reduce fat intake. Instead, the frequent consumption of low-processed plant foods, fish, and moderate consumption of low-fat dairy should be recommended since this pro-healthy diet is inversely associated with dietary fat intake.",
+          "ano": 2022,
+          "autores": "Beata Stasiewicz; Lidia Wądołowska; Maciej Biernacki; et al.",
+          "periodico": "Cancers",
+          "citacoes_totais": 10,
           "citacoes_influentes": 0,
-          "rank_fonte": 10,
+          "rank_fonte": 14,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11000183/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38574433/",
+          "url_pdf": "https://www.mdpi.com/2072-6694/14/7/1724/pdf?version=1649667825",
+          "url_texto_completo": "https://doi.org/10.3390/cancers14071724",
+          "url_artigo": "https://doi.org/10.3390/cancers14071724",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -765,34 +854,38 @@
           "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 17,
           "fontes_descoberta": [
-            "OpenAlex",
-            "PubMed"
-          ]
+            "OpenAlex"
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W4308053954",
-          "doi": "10.1056/nejmoa2208601",
+          "paper_id": "oa_W7130631893",
+          "doi": "",
           "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
             "OpenAlex"
           ],
-          "titulo": "Once-Weekly Semaglutide in Adolescents with Obesity",
-          "abstract": "BACKGROUND: A once-weekly, 2.4-mg dose of subcutaneous semaglutide, a glucagon-like peptide-1 receptor agonist, is used to treat obesity in adults, but assessment of the drug in adolescents has been lacking. METHODS: In this double-blind, parallel-group, randomized, placebo-controlled trial, we enrolled adolescents (12 to <18 years of age) with obesity (a body-mass index [BMI] in the 95th percentile or higher) or with overweight (a BMI in the 85th percentile or higher) and at least one weight-related coexisting condition. Participants were randomly assigned in a 2:1 ratio to receive once-weekly subcutaneous semaglutide (at a dose of 2.4 mg) or placebo for 68 weeks, plus lifestyle intervention. The primary end point was the percentage change in BMI from baseline to week 68; the secondary confirmatory end point was weight loss of at least 5% at week 68. RESULTS: A total of 201 participants underwent randomization, and 180 (90%) completed treatment. All but one of the participants had obesity. The mean change in BMI from baseline to week 68 was -16.1% with semaglutide and 0.6% with placebo (estimated difference, -16.7 percentage points; 95% confidence interval [CI], -20.3 to -13.2; P<0.001). At week 68, a total of 95 of 131 participants (73%) in the semaglutide group had weight loss of 5% or more, as compared with 11 of 62 participants (18%) in the placebo group (estimated odds ratio, 14.0; 95% CI, 6.3 to 31.0; P<0.001). Reductions in body weight and improvement with respect to cardiometabolic risk factors (waist circumference and levels of glycated hemoglobin, lipids [except high-density lipoprotein cholesterol], and alanine aminotransferase) were greater with semaglutide than with placebo. The incidence of gastrointestinal adverse events was greater with semaglutide than with placebo (62% vs. 42%). Five participants (4%) in the semaglutide group and no participants in the placebo group had cholelithiasis. Serious adverse events were reported in 15 of 133 participants (11%) in the semaglutide group and in 6 of 67 participants (9%) in the placebo group. CONCLUSIONS: Among adolescents with obesity, once-weekly treatment with a 2.4-mg dose of semaglutide plus lifestyle intervention resulted in a greater reduction in BMI than lifestyle intervention alone. (Funded by Novo Nordisk; STEP TEENS ClinicalTrials.gov number, NCT04102189.).",
-          "ano": 2022,
-          "autores": "Daniel Weghuber; Timothy Barrett; Margarita Barrientos‐Pérez; et al.",
-          "periodico": "New England Journal of Medicine",
-          "citacoes_totais": 693,
+          "titulo": "The interplay of dietary sugar, chronic inflammation, and bladder cancer",
+          "abstract": "High dietary sugar intake has emerged as a key modulator of systemic inflammation and metabolic dysregulation, both of which are associated with an increased risk of several chronic diseases, including cancer. Although bladder cancer is primarily driven by factors such as smoking and occupational exposures, metabolic dysregulation may also play a contributory role. Experimental studies indicate that elevated glucose levels promote proliferation, epithelial-mesenchymal transition, increase invasion, and reduce autophagy in bladder cancer cells. Epidemiological evidence suggests associations of high dietary glycaemic index/load and high sugar consumption with bladder cancer risk, although findings for these dietary factors remain heterogeneous. Furthermore, epidemiological data consistently demonstrate a positive association between diabetes mellitus and increased bladder cancer incidence and adverse clinical outcomes. Mechanistically, hyperglycaemia and accumulation of advanced glycation end products (AGEs) can activate inflammatory signalling pathways, including NF-κB, MAPK, and the NLRP3 inflammasome, leading to increased cytokine production, immune dysregulation, and oxidative stress. High dietary sugar intake has also been shown to alter gut microbiota composition, typically reducing short-chain fatty acid (SCFA)-producing bacteria and promoting intestinal permeability, endotoxaemia, and sustained immune activation through TLR4-dependent pathways. Within the bladder tumour microenvironment, systemic inflammatory disturbances enhance oncogenic signalling cascades such as COX-2, JAK/STAT3, and NF-κB, thereby fostering epithelial-mesenchymal transition, angiogenesis, and potential resistance to therapy. Evidence suggests that maintaining well-regulated blood sugar levels may help lower the risk of bladder cancer. Adopting lifestyle habits such as whole-food, fibre-rich diets, probiotics, and regular physical activity supports metabolic and microbial homeostasis, SCFA-mediated immune regulation, and inflammation reduction, thereby serving as a preventive strategy. This review aims to synthesise current evidence on the complex interplay between dietary sugar intake, gut microbiota dysregulation, systemic inflammation, and bladder cancer, and to highlight potential preventive dietary interventions.",
+          "ano": 2026,
+          "autores": "Larisa Tratnjek; Aleksandar Janev; Tadeja Kuret; et al.",
+          "periodico": "Repository of the University of Ljubljana (University of Ljubljana)",
+          "citacoes_totais": 0,
           "citacoes_influentes": 0,
-          "rank_fonte": 10,
+          "rank_fonte": 16,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
-          "url_pdf": "https://www.nejm.org/doi/pdf/10.1056/NEJMoa2208601?articleTools=true",
-          "url_texto_completo": "https://doi.org/10.1056/nejmoa2208601",
-          "url_artigo": "https://doi.org/10.1056/nejmoa2208601",
+          "url_pdf": "https://repozitorij.uni-lj.si/Dokument.php?lang=slv&id=228179&dn=",
+          "url_texto_completo": "https://repozitorij.uni-lj.si/Dokument.php?id=228148&dn=",
+          "url_artigo": "https://openalex.org/W7130631893",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -809,33 +902,37 @@
           "ordem_selecao": 18,
           "fontes_descoberta": [
             "OpenAlex"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "pmid_38613667",
-          "doi": "10.1007/s00125-024-06144-1",
+          "paper_id": "pmid_32511787",
+          "doi": "10.1002/pros.24028",
           "fonte_origem": "PubMed",
           "fontes_encontradas": [
             "PubMed"
           ],
-          "titulo": "Subcutaneously administered tirzepatide vs semaglutide for adults with type 2 diabetes: a systematic review and network meta-analysis of randomised controlled trials.",
-          "abstract": "We conducted a systematic review and network meta-analysis to compare the efficacy and safety of s.c. administered tirzepatide vs s.c. administered semaglutide for adults of both sexes with type 2 diabetes mellitus. We searched PubMed and Cochrane up to 11 November 2023 for RCTs with an intervention duration of at least 12 weeks assessing s.c. tirzepatide at maintenance doses of 5 mg, 10 mg or 15 mg once weekly, or s.c. semaglutide at maintenance doses of 0.5 mg, 1.0 mg or 2.0 mg once weekly, in adults with type 2 diabetes, regardless of background glucose-lowering treatment. Eligible trials compared any of the specified doses of tirzepatide and semaglutide against each other, placebo or other glucose-lowering drugs. Primary outcomes were changes in HbA1c and body weight from baseline. Secondary outcomes were achievement of HbA1c target of ≤48 mmol/mol (≤6.5%) or <53 mmol/mol (<7.0%), body weight loss of at least 10%, and safety outcomes including gastrointestinal adverse events and severe hypoglycaemia. We used version 2 of the Cochrane risk-of-bias tool (ROB 2) to assess the risk of bias, conducted frequentist random-effects network meta-analyses and evaluated confidence in effect estimates utilising the Confidence In Network Meta-Analysis (CINeMA) framework. A total of 28 trials with 23,622 participants (44.2% female) were included. Compared with placebo, tirzepatide 15 mg was the most efficacious treatment in reducing HbA1c (mean difference -21.61 mmol/mol [-1.96%]) followed by tirzepatide 10 mg (-20.19 mmol/mol [-1.84%]), semaglutide 2.0 mg (-17.74 mmol/mol [-1.59%]), tirzepatide 5 mg (-17.60 mmol/mol [-1.60%]), semaglutide 1.0 mg (-15.25 mmol/mol [-1.39%]) and semaglutide 0.5 mg (-12.00 mmol/mol [-1.09%]). In between-drug comparisons, all tirzepatide doses were comparable with semaglutide 2.0 mg and superior to semaglutide 1.0 mg and 0.5 mg. Compared with placebo, tirzepatide was more efficacious than semaglutide for reducing body weight, with reductions ranging from 9.57 kg (tirzepatide 15 mg) to 5.27 kg (tirzepatide 5 mg). Semaglutide had a less pronounced effect, with reductions ranging from 4.97 kg (semaglutide 2.0 mg) to 2.52 kg (semaglutide 0.5 mg). In between-drug comparisons, tirzepatide 15 mg, 10 mg and 5 mg demonstrated greater efficacy than semaglutide 2.0 mg, 1.0 mg and 0.5 mg, respectively. Both drugs increased incidence of gastrointestinal adverse events compared with placebo, while neither tirzepatide nor semaglutide increased the risk of serious adverse events or severe hypoglycaemia. Our data show that s.c. tirzepatide had a more pronounced effect on HbA1c and weight reduction compared with s.c. semaglutide in people with type 2 diabetes. Both drugs, particularly higher doses of tirzepatide, increased gastrointestinal adverse events. PROSPERO registration no. CRD42022382594.",
-          "ano": 2024,
-          "autores": "Thomas Karagiannis; Konstantinos Malandris; Ioannis Avgerinos; et al.",
-          "periodico": "Diabetologia",
+          "titulo": "Selenium-binding protein 1 alters energy metabolism in prostate cancer cells.",
+          "abstract": "The broad goal of the research described in this study was to investigate the contributions of selenium-binding protein 1 (SBP1) loss in prostate cancer development and outcome. SBP1 levels were altered in prostate cancer cell lines and the consequences on oxygen consumption, expression of proteins associated with energy metabolism, and cellular transformation and migration were investigated. The effects of exposing cells to the SBP1 reaction products, H2 O2 and H2 S were also assessed. In silico analyses identified potential HNF4α binding sites within the SBP1 promoter region and this was investigated using an inhibitor specific for that transcription factor. Using in silico analyses, it was determined that the promoter region of SBP1 contains putative binding sites for the HNF4α transcription factor. The potential for HNF4α to regulate SBP1 expression was supported by data indicating that HNF4α inhibition resulted in a dose-response increase in the levels of SBP1 messenger RNA and protein, identifying HNF4α as a novel negative regulator of SBP1 expression in prostate cancer cells. The consequences of altering the levels of SBP1 were investigated by ectopically expressing SBP1 in PC-3 prostate cancer cells, where SBP1 expression attenuated anchorage-independent cellular growth and migration in culture, both properties associated with transformation. SBP1 overexpression reduced oxygen consumption in these cells and increased the activation of AMP-activated protein kinase (AMPK), a major regulator of energy homeostasis. In addition, the reaction products of SBP1, H2 O2 , and H2 S also activated AMPK. Based on the obtained data, it is hypothesized that SBP1 negatively regulates oxidative phosphorylation (OXPHOS) in the healthy prostate cells by the production of H2 O2 and H2 S and consequential activation of AMPK. The reduction of SBP1 levels in prostate cancer can occur due to increased binding of HNF4α, acting as a transcriptional inhibitor to the SBP1 promoter. Consequently, there is a reduction in H2 O2 and H2 S-mediated signaling, inhibition of AMPK, and stimulation of OXPHOS and building blocks of biomolecules needed for tumor growth and progression. Other effects of SBP1 loss in tumor cells remain to be discovered.",
+          "ano": 2020,
+          "autores": "Mostafa Elhodaky; Lenny K Hong; Shrinidhi Kadkol; et al.",
+          "periodico": "The Prostate",
           "citacoes_totais": 0,
           "citacoes_influentes": 0,
-          "rank_fonte": 11,
+          "rank_fonte": 16,
           "tipos": [
-            "JournalArticle",
-            "SystematicReview"
+            "JournalArticle"
           ],
-          "tipo_principal": "SystematicReview",
-          "desenho_estudo_rotulo": "Revisão sistemática",
+          "tipo_principal": "JournalArticle",
+          "desenho_estudo_rotulo": "Artigo científico",
           "open_access": true,
           "url_pdf": "",
-          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11153294/",
-          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/38613667/",
+          "url_texto_completo": "https://pmc.ncbi.nlm.nih.gov/articles/PMC7473137/",
+          "url_artigo": "https://pubmed.ncbi.nlm.nih.gov/32511787/",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -846,38 +943,43 @@
             "motivos_exclusao": [],
             "observacao": "Triagem operacional de elegibilidade. Não representa nível de evidência nem avaliação automática da qualidade metodológica."
           },
-          "categoria_selecao": "sintese_evidencia",
-          "categoria_selecao_rotulo": "Revisão sistemática / meta-análise",
-          "criterio_selecao": "Revisão sistemática/meta-análise elegível.",
+          "categoria_selecao": "estudo_elegivel",
+          "categoria_selecao_rotulo": "Estudo científico elegível",
+          "criterio_selecao": "Estudo científico elegível; ordenado pela relevância retornada na busca.",
           "ordem_selecao": 19,
           "fontes_descoberta": [
             "PubMed"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         },
         {
-          "paper_id": "oa_W4409963211",
-          "doi": "10.1056/nejmoa2413258",
+          "paper_id": "oa_W3114457749",
+          "doi": "10.1111/cas.14777",
           "fonte_origem": "OpenAlex",
           "fontes_encontradas": [
             "OpenAlex"
           ],
-          "titulo": "Phase 3 Trial of Semaglutide in Metabolic Dysfunction–Associated Steatohepatitis",
-          "abstract": "BACKGROUND: Semaglutide, a glucagon-like peptide-1 receptor agonist, is a candidate for the treatment of metabolic dysfunction-associated steatohepatitis (MASH). METHODS: In this ongoing phase 3, multicenter, randomized, double-blind, placebo-controlled trial, we assigned 1197 patients with biopsy-defined MASH and fibrosis stage 2 or 3 in a 2:1 ratio to receive once-weekly subcutaneous semaglutide at a dose of 2.4 mg or placebo for 240 weeks. The results of a planned interim analysis conducted at week 72 involving the first 800 patients are reported here (part 1). The primary end points for part 1 were the resolution of steatohepatitis without worsening of liver fibrosis and reduction in liver fibrosis without worsening of steatohepatitis. RESULTS: Resolution of steatohepatitis without worsening of fibrosis occurred in 62.9% of the 534 patients in the semaglutide group and in 34.3% of the 266 patients in the placebo group (estimated difference, 28.7 percentage points; 95% confidence interval [CI], 21.1 to 36.2; P<0.001). A reduction in liver fibrosis without worsening of steatohepatitis was reported in 36.8% of the patients in the semaglutide group and in 22.4% of those in the placebo group (estimated difference, 14.4 percentage points; 95% CI, 7.5 to 21.3; P<0.001). Results for the three secondary outcomes that were included in the plan to adjust for multiple testing were as follows: combined resolution of steatohepatitis and reduction in liver fibrosis was reported in 32.7% of the patients in the semaglutide group and in 16.1% of those in the placebo group (estimated difference, 16.5 percentage points; 95% CI, 10.2 to 22.8; P<0.001). The mean change in body weight was -10.5% with semaglutide and -2.0% with placebo (estimated difference, -8.5 percentage points; 95% CI, -9.6 to -7.4; P<0.001). Mean changes in bodily pain scores did not differ significantly between the two groups. Gastrointestinal adverse events were more common in the semaglutide group. CONCLUSIONS: In patients with MASH and moderate or advanced liver fibrosis, once-weekly semaglutide at a dose of 2.4 mg improved liver histologic results. (Funded by Novo Nordisk; ClinicalTrials.gov number, NCT04822181.).",
-          "ano": 2025,
-          "autores": "Arun J. Sanyal; Philip N. Newsome; Iris Kliers; et al.",
-          "periodico": "New England Journal of Medicine",
-          "citacoes_totais": 911,
+          "titulo": "Dietary intervention as a therapeutic for cancer",
+          "abstract": "Cancer metabolism is influenced by availability of nutrients in the microenvironment and can to some extent be manipulated by dietary modifications that target oncogenic metabolism. As yet, few dietary interventions have been scientifically proven to mitigate disease progression or enhance any other kind of therapy in human cancer. However, recent advances in the understanding of cancer metabolism enable us to predict or devise effective dietary interventions that might antagonize tumor growth. In fact, evidence emerging from preclinical models suggests that appropriate combinations of specific cancer therapies with dietary interventions could critically impact therapeutic efficacy. Here, we review the potential benefits of precision nutrition approaches in augmenting the efficacy of cancer treatment.",
+          "ano": 2020,
+          "autores": "Mami Morita; Kei Kudo; Hiroshi Shima; et al.",
+          "periodico": "Cancer Science",
+          "citacoes_totais": 23,
           "citacoes_influentes": 0,
-          "rank_fonte": 11,
+          "rank_fonte": 17,
           "tipos": [
             "JournalArticle"
           ],
           "tipo_principal": "JournalArticle",
           "desenho_estudo_rotulo": "Artigo científico",
-          "open_access": false,
-          "url_pdf": "",
-          "url_texto_completo": "",
-          "url_artigo": "https://doi.org/10.1056/nejmoa2413258",
+          "open_access": true,
+          "url_pdf": "https://onlinelibrary.wiley.com/doi/pdfdirect/10.1111/cas.14777",
+          "url_texto_completo": "https://doi.org/10.1111/cas.14777",
+          "url_artigo": "https://doi.org/10.1111/cas.14777",
           "triagem_elegibilidade": {
             "elegivel": true,
             "criterios": {
@@ -894,10 +996,19 @@
           "ordem_selecao": 20,
           "fontes_descoberta": [
             "OpenAlex"
-          ]
+          ],
+          "origem_busca": {
+            "tipo": "pergunta",
+            "entrada_original": "Comer açúcar alimenta o câncer?",
+            "pergunta_formal": "Qual é a associação entre o consumo de açúcares na dieta e o desenvolvimento, crescimento ou progressão de neoplasias?"
+          }
         }
       ]
     }
   },
-  "total_artigos": 20
+  "total_artigos": 20,
+  "total_por_origem": {
+    "temas": 0,
+    "perguntas": 20
+  }
 }

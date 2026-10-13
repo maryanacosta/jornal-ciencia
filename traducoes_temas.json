@@ -52,5 +52,11 @@
     "rotulo_pt": "Semaglutida",
     "tradutor": "Google Translate via deep-translator",
     "salvo_em": "2026-09-12T20:11:19-03:00"
+  },
+  "saúde": {
+    "tema_original": "Saúde",
+    "rotulo_pt": "Saúde",
+    "tradutor": "Google Cloud Translation Basic v2",
+    "salvo_em": "2026-10-08T19:49:58-03:00"
   }
 }

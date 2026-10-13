@@ -1,5 +1,451 @@
 [
   {
+    "paper_id": "pmid_34019293",
+    "data": "2026-10-13T10:55:29-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_34019293",
+    "data": "2026-10-13T10:07:59-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2955165061",
+    "data": "2026-10-13T10:03:20-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 100.0,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "oa_W2955165061",
+    "data": "2026-10-13T10:03:15-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2955165061",
+    "data": "2026-10-13T09:56:39-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2955165061",
+    "data": "2026-10-13T09:51:20-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2955165061",
+    "data": "2026-10-12T20:34:58-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2955165061",
+    "data": "2026-10-12T20:29:57-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2955165061",
+    "data": "2026-10-12T20:28:47-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W4402438427",
+    "data": "2026-10-12T20:26:47-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 95.83,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "oa_W4402438427",
+    "data": "2026-10-12T20:26:45-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W4402438427",
+    "data": "2026-10-12T20:23:37-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2152917714",
+    "data": "2026-10-12T20:15:54-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 100.0,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "oa_W2152917714",
+    "data": "2026-10-12T20:15:52-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2152917714",
+    "data": "2026-10-12T20:15:25-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2104885682",
+    "data": "2026-10-11T15:47:29-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 95.83,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "oa_W2104885682",
+    "data": "2026-10-11T15:47:28-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2104885682",
+    "data": "2026-10-11T15:44:24-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2104885682",
+    "data": "2026-10-11T15:40:09-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "oa_W2104885682",
+    "data": "2026-10-11T15:38:54-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_30831578",
+    "data": "2026-10-11T15:28:43-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 100.0,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_30831578",
+    "data": "2026-10-11T15:28:42-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_30831578",
+    "data": "2026-10-11T11:36:44-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_34049735",
+    "data": "2026-10-10T21:48:33-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 95.0,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_34049735",
+    "data": "2026-10-10T21:48:31-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_34049735",
+    "data": "2026-10-10T20:05:41-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_34049735",
+    "data": "2026-10-10T20:02:36-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_34049735",
+    "data": "2026-10-10T20:00:26-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_37565693",
+    "data": "2026-10-10T19:50:34-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 95.0,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_37565693",
+    "data": "2026-10-10T19:50:33-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_37565693",
+    "data": "2026-10-09T18:09:41-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38913335",
+    "data": "2026-10-08T22:13:30-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 100.0,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_38913335",
+    "data": "2026-10-08T22:13:28-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38913335",
+    "data": "2026-10-08T22:08:31-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_36219756",
+    "data": "2026-10-08T22:02:01-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 95.83,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_36219756",
+    "data": "2026-10-08T22:02:00-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_36219756",
+    "data": "2026-10-08T21:55:51-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_37753597",
+    "data": "2026-10-08T21:53:52-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 100.0,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_37753597",
+    "data": "2026-10-08T21:53:51-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_37753597",
+    "data": "2026-10-08T20:09:08-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38401423",
+    "data": "2026-10-08T20:07:31-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 100.0,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_38401423",
+    "data": "2026-10-08T20:07:30-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38401423",
+    "data": "2026-10-08T20:04:37-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_40658954",
+    "data": "2026-10-08T19:57:40-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 93.75,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_40658954",
+    "data": "2026-10-08T19:57:38-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_40658954",
+    "data": "2026-10-08T19:54:09-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38613667",
+    "data": "2026-09-14T18:14:26-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38613667",
+    "data": "2026-09-14T18:11:17-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38613667",
+    "data": "2026-09-14T16:43:03-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38613667",
+    "data": "2026-09-13T15:00:57-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38613667",
+    "data": "2026-09-13T14:58:06-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38629387",
+    "data": "2026-09-13T14:55:01-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 93.75,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_38629387",
+    "data": "2026-09-13T14:55:00-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38629387",
+    "data": "2026-09-13T14:49:37-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38629387",
+    "data": "2026-09-13T14:46:39-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38629387",
+    "data": "2026-09-13T13:29:10-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38952487",
+    "data": "2026-09-13T12:29:51-03:00",
+    "acao": "publicado",
+    "detalhes": {
+      "fidelidade_intelectual": 100.0,
+      "override": false,
+      "justificativa": ""
+    }
+  },
+  {
+    "paper_id": "pmid_38952487",
+    "data": "2026-09-13T12:29:49-03:00",
+    "acao": "rascunho_editado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38952487",
+    "data": "2026-09-13T12:13:46-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38952487",
+    "data": "2026-09-13T12:06:01-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38952487",
+    "data": "2026-09-13T12:00:31-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38952487",
+    "data": "2026-09-13T11:57:39-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38952487",
+    "data": "2026-09-13T11:30:04-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38952487",
+    "data": "2026-09-13T11:23:18-03:00",
+    "acao": "rascunho_gerado",
+    "detalhes": {}
+  },
+  {
+    "paper_id": "pmid_38952487",
+    "data": "2026-09-13T11:21:42-03:00",
+    "acao": "rascunho_excluido",
+    "detalhes": {}
+  },
+  {
     "paper_id": "pmid_38952487",
     "data": "2026-09-13T11:08:39-03:00",
     "acao": "rascunho_gerado",

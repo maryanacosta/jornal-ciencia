@@ -36,26 +36,25 @@
 
   <main class="page" id="conteudo-principal">
     <div class="content-layout">
-      <aside class="topics-sidebar" id="painel-temas" aria-label="Filtrar notícias por tema">
-        <div class="topics-sidebar-head">
-          <div>
-            <span class="topics-kicker">Explorar</span>
-            <h2>Temas</h2>
-          </div>
-
-          <button
-            class="topics-toggle"
-            id="alternar-temas"
-            type="button"
-            aria-expanded="false"
-            aria-controls="lista-temas"
-          >
-            <span>Ver temas</span>
+      <aside class="topics-sidebar" id="painel-temas" aria-label="Explorar por temas e perguntas">
+        <div class="sidebar-top">
+          <span class="topics-kicker">Explorar</span>
+          <button class="topics-toggle" id="alternar-temas" type="button"
+                  aria-expanded="false" aria-controls="listas-exploracao">
+            <span id="rotulo-alternar-exploracao">Ver opções</span>
             <i class="fa-solid fa-chevron-down" aria-hidden="true"></i>
           </button>
         </div>
-
-        <nav class="topic-list" id="lista-temas" aria-label="Temas disponíveis"></nav>
+        <div id="listas-exploracao">
+          <section class="sidebar-section" aria-labelledby="titulo-temas">
+            <h2 id="titulo-temas"><i class="fa-solid fa-layer-group" aria-hidden="true"></i> Temas</h2>
+            <nav class="topic-list" id="lista-temas" aria-label="Selecionar tema"></nav>
+          </section>
+          <section class="sidebar-section sidebar-section-questions" aria-labelledby="titulo-perguntas">
+            <h2 id="titulo-perguntas"><i class="fa-regular fa-circle-question" aria-hidden="true"></i> Perguntas</h2>
+            <nav class="topic-list" id="lista-perguntas" aria-label="Selecionar pergunta"></nav>
+          </section>
+        </div>
       </aside>
 
       <div class="news-content">

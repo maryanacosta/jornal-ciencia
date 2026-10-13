@@ -1,0 +1,39 @@
+{
+  "n_artigos": 40,
+  "modelo": "bert-base-multilingual-cased",
+  "idioma": "pt",
+  "idf": false,
+  "rescale_with_baseline": false,
+  "hash_configuracao_bertscore": "bert-base-multilingual-cased_L9_no-idf_version=0.3.12(hug_trans=5.17.0)",
+  "referencia": "resumo_cientifico_traduzido; fallback texto_fonte_pt/abstract_pt",
+  "nivel_1": "divulgacao_cientifica",
+  "nivel_2": "leitura_facilitada",
+  "observacao": "BERTScore mede preservação/semelhança semântica. Não deve ser interpretado isoladamente como medida de factualidade.",
+  "textos_com_alerta_de_comprimento": 3,
+  "nivel_1_resultados": {
+    "precision_media": 0.770762,
+    "precision_dp": 0.036595,
+    "recall_media": 0.779943,
+    "recall_dp": 0.035316,
+    "f1_media": 0.775221,
+    "f1_dp": 0.034927,
+    "f1_min": 0.721586,
+    "f1_max": 0.849018
+  },
+  "nivel_2_resultados": {
+    "precision_media": 0.722077,
+    "precision_dp": 0.030342,
+    "recall_media": 0.714939,
+    "recall_dp": 0.03134,
+    "f1_media": 0.718417,
+    "f1_dp": 0.02998,
+    "f1_min": 0.665573,
+    "f1_max": 0.780446
+  },
+  "comparacao_n2_vs_n1": {
+    "delta_medio_f1": -0.056804,
+    "n_n2_maior_que_n1": 0,
+    "n_n1_maior_que_n2": 40,
+    "n_empates": 0
+  }
+}

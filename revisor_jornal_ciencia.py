@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-revisor.py — painel editorial simples do Jornal Cienc.IA · Google + fallback OPUS-MT
+revisor.py — painel editorial simples do Jornal Cienc.IA · tradução-base exclusivamente Google
 
 Uma única tela para:
 - acompanhar publicados, para aprovar, pendentes e rejeitados;
@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import ast
 import hashlib
+import html
 import json
 import math
 import os
@@ -30,10 +31,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
+import requests
 import streamlit as st
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 ARQUIVO_DIR = Path(__file__).resolve().parent
 BASE_DIR = ARQUIVO_DIR
@@ -63,29 +65,24 @@ GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 LLM_TENTATIVAS_TRANSITORIAS = max(1, int(os.getenv("LLM_TENTATIVAS_TRANSITORIAS", "4")))
 PIPELINE_TENTATIVAS_ETAPA = max(1, int(os.getenv("PIPELINE_TENTATIVAS_ETAPA", "4")))
 
-# Tradução-base: Google Translate permanece como método principal.
-# OPUS-MT entra somente como fallback técnico quando o Google fica indisponível
-# após as tentativas previstas. Nenhuma LLM geral é usada como tradutor.
+# Tradução-base: exclusivamente Google.
+# 1) Cloud Translation Basic v2 oficial, quando GOOGLE_TRANSLATE_API_KEY estiver configurada.
+# 2) Google Translate via deep-translator como segunda rota Google.
+# Se ambas falharem, o rascunho é interrompido. Nenhum outro tradutor é utilizado.
 TRADUCAO_RETRY_SEGUNDOS = (0, 3, 8, 20)
 GOOGLE_TRADUCAO_MAX_CHARS = max(1000, min(4500, int(os.getenv("GOOGLE_TRADUCAO_MAX_CHARS", "3800"))))
 GOOGLE_TRADUCAO_INTERVALO_SEGUNDOS = max(0.25, float(os.getenv("GOOGLE_TRADUCAO_INTERVALO_SEGUNDOS", "1.1")))
+GOOGLE_TRANSLATE_API_KEY = (
+    os.getenv("GOOGLE_TRANSLATE_API_KEY", "").strip()
+    or os.getenv("GOOGLE_CLOUD_TRANSLATION_API_KEY", "").strip()
+)
+GOOGLE_CLOUD_TRANSLATE_URL = "https://translation.googleapis.com/language/translate/v2"
 _GOOGLE_TRADUCAO_LOCK = threading.Lock()
 _GOOGLE_ULTIMA_CHAMADA = 0.0
 
-# OPUS-MT é um modelo de tradução neural especializado (Marian NMT), não uma LLM geral.
-# O modelo é carregado apenas se o fallback for realmente necessário.
-OPUS_MT_MODEL = os.getenv(
-    "OPUS_MT_MODEL",
-    "Helsinki-NLP/opus-mt-tc-big-en-pt",
-)
-OPUS_MT_MAX_INPUT_TOKENS = max(
-    128, min(480, int(os.getenv("OPUS_MT_MAX_INPUT_TOKENS", "430")))
-)
-OPUS_MT_BATCH_SIZE = max(1, min(16, int(os.getenv("OPUS_MT_BATCH_SIZE", "4"))))
-
 
 def _aguardar_janela_google() -> None:
-    """Serializa chamadas ao endpoint gratuito para evitar rajadas no mesmo processo."""
+    """Serializa a rota gratuita/deep-translator para reduzir rajadas no mesmo processo."""
     global _GOOGLE_ULTIMA_CHAMADA
     with _GOOGLE_TRADUCAO_LOCK:
         agora = time.monotonic()
@@ -96,7 +93,7 @@ def _aguardar_janela_google() -> None:
 
 
 def _quebrar_texto_google(texto: str) -> List[str]:
-    """Divide somente quando necessário para respeitar o limite prático do Google."""
+    """Divide somente quando necessário, mantendo blocos seguros para as rotas Google."""
     texto = str(texto or "").strip()
     if not texto:
         return []
@@ -109,7 +106,6 @@ def _quebrar_texto_google(texto: str) -> List[str]:
     atual = ""
 
     for unidade in unidades:
-        # Proteção para uma unidade excepcionalmente maior que o limite.
         partes = [unidade[i:i + limite] for i in range(0, len(unidade), limite)] if len(unidade) > limite else [unidade]
         for parte in partes:
             candidato = f"{atual} {parte}".strip() if atual else parte
@@ -123,129 +119,96 @@ def _quebrar_texto_google(texto: str) -> List[str]:
     return blocos
 
 
-def _traduzir_google_bloco(bloco: str, idioma_origem: str) -> str:
+def _traduzir_google_cloud_bloco(bloco: str, idioma_origem: str) -> str:
+    """Cloud Translation - Basic v2, rota oficial do Google."""
+    if not GOOGLE_TRANSLATE_API_KEY:
+        raise RuntimeError("GOOGLE_TRANSLATE_API_KEY não configurada.")
+
+    payload: Dict[str, Any] = {
+        "q": bloco,
+        "target": "pt",
+        "format": "text",
+    }
+    if idioma_origem and idioma_origem != "auto":
+        payload["source"] = idioma_origem
+
+    resposta = requests.post(
+        GOOGLE_CLOUD_TRANSLATE_URL,
+        headers={
+            "X-goog-api-key": GOOGLE_TRANSLATE_API_KEY,
+            "Content-Type": "application/json; charset=utf-8",
+        },
+        json=payload,
+        timeout=45,
+    )
+
+    if resposta.status_code != 200:
+        detalhe = ""
+        try:
+            detalhe = str((resposta.json().get("error") or {}).get("message") or "")
+        except Exception:
+            detalhe = resposta.text[:500]
+        raise RuntimeError(
+            f"Google Cloud Translation HTTP {resposta.status_code}: {detalhe or 'erro sem detalhe'}"
+        )
+
+    dados = resposta.json()
+    traducoes = ((dados.get("data") or {}).get("translations") or [])
+    if not traducoes:
+        raise RuntimeError("Google Cloud Translation retornou resposta sem tradução.")
+
+    traduzido = str(traducoes[0].get("translatedText") or "").strip()
+    return html.unescape(traduzido)
+
+
+def _traduzir_google_deep_bloco(bloco: str, idioma_origem: str) -> str:
+    """Segunda rota Google, via deep-translator."""
     from deep_translator import GoogleTranslator
 
     _aguardar_janela_google()
     return GoogleTranslator(source=idioma_origem, target="pt").translate(bloco)
 
 
-@st.cache_resource(show_spinner=False)
-def _carregar_opus_mt():
-    """Carrega uma única instância do tradutor neural inglês -> português."""
-    try:
-        import torch
-        from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
-    except Exception as exc:
-        raise RuntimeError(
-            "Dependências do tradutor local ausentes. Execute no mesmo ambiente do Streamlit: "
-            "python -m pip install -U transformers sentencepiece torch. "
-            f"Detalhe: {type(exc).__name__}: {exc}"
-        ) from exc
-
-    tokenizer = AutoTokenizer.from_pretrained(OPUS_MT_MODEL)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
-    dtype = torch.float16 if device == "cuda" else torch.float32
-    model = AutoModelForSeq2SeqLM.from_pretrained(OPUS_MT_MODEL, torch_dtype=dtype)
-    model.to(device)
-    model.eval()
-    return tokenizer, model, device
-
-
-def _quantidade_tokens_opus(texto: str, tokenizer: Any) -> int:
-    return len(tokenizer(str(texto or ""), add_special_tokens=True)["input_ids"])
-
-
-def _quebrar_unidade_opus(unidade: str, tokenizer: Any, limite: int) -> List[str]:
-    """Quebra uma unidade excepcionalmente longa sem truncar silenciosamente o conteúdo."""
-    palavras = str(unidade or "").split()
-    if not palavras:
-        return []
-
-    partes: List[str] = []
-    atual: List[str] = []
-    for palavra in palavras:
-        candidato = " ".join(atual + [palavra])
-        if atual and _quantidade_tokens_opus(candidato, tokenizer) > limite:
-            partes.append(" ".join(atual))
-            atual = [palavra]
-        else:
-            atual.append(palavra)
-    if atual:
-        partes.append(" ".join(atual))
-    return partes
-
-
-def _quebrar_texto_para_opus(texto: str, tokenizer: Any) -> List[str]:
-    """Divide o texto por parágrafos/frases respeitando o limite real de tokens do Marian."""
-    texto = str(texto or "").strip()
-    if not texto:
-        return []
-
-    limite = OPUS_MT_MAX_INPUT_TOKENS
-    paragrafos = [p.strip() for p in re.split(r"\n{2,}", texto) if p.strip()]
-    blocos: List[str] = []
-
-    for paragrafo in paragrafos:
-        frases = [
-            f.strip()
-            for f in re.split(r"(?<=[.!?])\s+", paragrafo)
-            if f.strip()
-        ] or [paragrafo]
-
-        unidades: List[str] = []
-        for frase in frases:
-            if _quantidade_tokens_opus(frase, tokenizer) <= limite:
-                unidades.append(frase)
-            else:
-                unidades.extend(_quebrar_unidade_opus(frase, tokenizer, limite))
-
-        atual = ""
-        for unidade in unidades:
-            candidato = f"{atual} {unidade}".strip() if atual else unidade
-            if atual and _quantidade_tokens_opus(candidato, tokenizer) > limite:
-                blocos.append(atual)
-                atual = unidade
-            else:
-                atual = candidato
-        if atual:
-            blocos.append(atual)
-
-    return blocos
-
-
-def _traduzir_opus_mt_local(texto: str) -> Tuple[str, int]:
-    """Traduz inglês -> português localmente, sem chamadas de API e sem rate limit."""
-    import torch
-
-    tokenizer, model, device = _carregar_opus_mt()
-    blocos = _quebrar_texto_para_opus(texto, tokenizer)
-    if not blocos:
-        return "", 0
-
+def _executar_rota_google(
+    blocos: List[str],
+    idioma_origem: str,
+    nome_rota: str,
+    tradutor_bloco: Any,
+    tentativas: Tuple[int, ...],
+) -> Tuple[str, List[str]]:
+    """Traduz o texto inteiro por uma única rota Google; nunca mistura rotas no mesmo abstract."""
     traduzidos: List[str] = []
-    for inicio in range(0, len(blocos), OPUS_MT_BATCH_SIZE):
-        lote = blocos[inicio:inicio + OPUS_MT_BATCH_SIZE]
-        entradas = tokenizer(
-            lote,
-            return_tensors="pt",
-            padding=True,
-            truncation=False,
-        )
-        entradas = {chave: valor.to(device) for chave, valor in entradas.items()}
-        with torch.inference_mode():
-            saidas = model.generate(
-                **entradas,
-                max_length=512,
-                num_beams=4,
-                early_stopping=True,
-            )
-        traduzidos.extend(
-            texto_saida.strip()
-            for texto_saida in tokenizer.batch_decode(saidas, skip_special_tokens=True)
-        )
+    erros: List[str] = []
 
-    return "\n\n".join(t for t in traduzidos if t), len(blocos)
+    for indice_bloco, bloco in enumerate(blocos, start=1):
+        sucesso = False
+        for numero_tentativa, atraso in enumerate(tentativas, start=1):
+            if atraso:
+                time.sleep(atraso)
+            try:
+                resposta = limpar_texto_editorial(tradutor_bloco(bloco, idioma_origem))
+                if resposta and fonte_cientifica_valida(resposta):
+                    traduzidos.append(resposta)
+                    sucesso = True
+                    break
+                erros.append(
+                    f"{nome_rota}, bloco {indice_bloco}/{len(blocos)}, tentativa {numero_tentativa}: "
+                    "resposta vazia ou inválida"
+                )
+            except Exception as exc:
+                erros.append(
+                    f"{nome_rota}, bloco {indice_bloco}/{len(blocos)}, tentativa {numero_tentativa}: "
+                    f"{type(exc).__name__}: {exc}"
+                )
+
+        if not sucesso:
+            return "", erros
+
+    final = limpar_texto_editorial("\n\n".join(traduzidos))
+    if not final or not fonte_cientifica_valida(final):
+        erros.append(f"{nome_rota}: tradução final vazia ou inválida")
+        return "", erros
+    return final, erros
 
 
 # Os temas continuam salvos no idioma original para preservar a rastreabilidade.
@@ -303,7 +266,7 @@ def _rotulo_tema_traduzido_valido(valor: Any) -> bool:
 
 
 def traduzir_tema_exibicao(tema: Any) -> str:
-    """Traduz rótulos de tema com Google e usa OPUS-MT apenas em falha externa."""
+    """Traduz o rótulo do tema usando somente rotas Google; em falha, exibe o original."""
     bruto = re.sub(r"\s+", " ", str(tema or "geral").replace("_", " ")).strip()
     if not bruto:
         return "Geral"
@@ -319,21 +282,28 @@ def traduzir_tema_exibicao(tema: Any) -> str:
     salvo = cache.get(chave)
     if isinstance(salvo, dict):
         rotulo_salvo = str(salvo.get("rotulo_pt") or "").strip()
-        if rotulo_salvo and _rotulo_tema_traduzido_valido(rotulo_salvo):
+        tradutor_salvo = str(salvo.get("tradutor") or "")
+        if (
+            rotulo_salvo
+            and _rotulo_tema_traduzido_valido(rotulo_salvo)
+            and (not tradutor_salvo or "Google" in tradutor_salvo)
+        ):
             return rotulo_salvo
     elif isinstance(salvo, str) and _rotulo_tema_traduzido_valido(salvo):
         return salvo.strip()
 
-    # Tema não faz parte da tradução-base experimental, então usamos tentativas curtas
-    # para não atrasar a montagem da interface.
-    erro_google = ""
-    try:
+    rotas = []
+    if GOOGLE_TRANSLATE_API_KEY:
+        rotas.append(("Google Cloud Translation Basic v2", _traduzir_google_cloud_bloco))
+    rotas.append(("Google Translate via deep-translator", _traduzir_google_deep_bloco))
+
+    entrada = f"Health topic: {bruto}"
+    for nome_rota, funcao in rotas:
         for atraso in TEMA_TRADUCAO_RETRY_SEGUNDOS:
             if atraso:
                 time.sleep(atraso)
             try:
-                resposta = _traduzir_google_bloco(f"Health topic: {bruto}", "auto")
-                resposta = re.sub(r"\s+", " ", str(resposta or "")).strip()
+                resposta = re.sub(r"\s+", " ", str(funcao(entrada, "auto") or "")).strip()
                 if not _rotulo_tema_traduzido_valido(resposta):
                     continue
                 traduzido = resposta.split(":", 1)[1].strip() if ":" in resposta else resposta
@@ -345,39 +315,16 @@ def traduzir_tema_exibicao(tema: Any) -> str:
                 cache[chave] = {
                     "tema_original": bruto,
                     "rotulo_pt": rotulo,
-                    "tradutor": "Google Translate via deep-translator",
+                    "tradutor": nome_rota,
                     "salvo_em": agora_iso(),
                 }
                 salvar_json_atomico(TRADUCOES_TEMAS, cache)
                 return rotulo
-            except Exception as exc:
-                erro_google = f"{type(exc).__name__}: {exc}"
-    except Exception as exc:
-        erro_google = f"{type(exc).__name__}: {exc}"
+            except Exception:
+                continue
 
-    # Fallback local: se o modelo ainda não estiver disponível, apenas exibe o tema original.
-    try:
-        resposta, _ = _traduzir_opus_mt_local(f"Health topic: {bruto}")
-        resposta = re.sub(r"\s+", " ", str(resposta or "")).strip()
-        if not _rotulo_tema_traduzido_valido(resposta):
-            return _rotulo_tema_fallback(bruto)
-        traduzido = resposta.split(":", 1)[1].strip() if ":" in resposta else resposta
-        if traduzido.lower() in SIGLAS_TEMA_PT:
-            traduzido = SIGLAS_TEMA_PT[traduzido.lower()]
-        rotulo = _rotulo_tema_fallback(traduzido)
-        if not _rotulo_tema_traduzido_valido(rotulo):
-            return _rotulo_tema_fallback(bruto)
-        cache[chave] = {
-            "tema_original": bruto,
-            "rotulo_pt": rotulo,
-            "tradutor": f"OPUS-MT local ({OPUS_MT_MODEL}) — fallback após falha do Google Translate",
-            "motivo_fallback": erro_google[:1000],
-            "salvo_em": agora_iso(),
-        }
-        salvar_json_atomico(TRADUCOES_TEMAS, cache)
-        return rotulo
-    except Exception:
-        return _rotulo_tema_fallback(bruto)
+    # Tema é apenas interface; falha de tradução não bloqueia o painel.
+    return _rotulo_tema_fallback(bruto)
 
 
 st.set_page_config(
@@ -836,15 +783,17 @@ def traduzir_com_google(
     texto: str,
     artigo: Dict[str, Any],
 ) -> Tuple[str, str, Optional[str], bool]:
-    """Tradução-base: Google Translate principal; OPUS-MT é fallback técnico.
+    """Cria a tradução-base exclusivamente com Google Translate.
 
-    Regras metodológicas:
-    - Google Translate permanece como método principal;
-    - nenhuma LLM geral é usada como tradutor;
-    - o Google mantém as 4 tentativas já previstas (0, +3 s, +8 s, +20 s);
-    - se qualquer bloco do Google falhar definitivamente, sua saída parcial é descartada;
-    - nesse caso, o OPUS-MT traduz o texto COMPLETO, evitando misturar tradutores no mesmo abstract;
-    - cache e rascunho registram qual tradutor efetivamente produziu a tradução-base.
+    Ordem:
+    1. Google Cloud Translation Basic v2, quando GOOGLE_TRANSLATE_API_KEY existe;
+    2. Google Translate via deep-translator;
+    3. se as duas rotas Google falharem, interrompe a geração.
+
+    Nenhum OPUS-MT, Gemini, Groq ou outra LLM é usado como tradutor.
+    Um mesmo abstract também nunca mistura as duas rotas Google: se a primeira rota
+    falha em qualquer bloco, sua tradução parcial é descartada e a segunda recomeça
+    o abstract completo.
     """
     texto = limpar_texto_editorial(texto)
     if not texto:
@@ -862,17 +811,26 @@ def traduzir_com_google(
     if not isinstance(cache, dict):
         cache = {}
 
-    # Reaproveita Google antigo e fallback OPUS desta estratégia híbrida.
-    # Um cache OPUS de uma versão que o usava como método principal é ignorado,
-    # para que esta versão volte a tentar o Google primeiro.
+    # Política de cache da tradução:
+    # - com GOOGLE_TRANSLATE_API_KEY configurada, somente reutiliza cache produzido
+    #   pela API oficial Google Cloud Translation;
+    # - sem a chave, pode reutilizar cache do deep-translator;
+    # - caches OPUS ou de qualquer outro tradutor são sempre ignorados.
+    # Isso evita que um artigo continue usando uma tradução antiga do fallback
+    # depois que a API oficial foi configurada.
     registro = cache.get(chave)
     if isinstance(registro, dict):
         traducao_salva = limpar_texto_editorial(registro.get("traducao_pt"))
         tradutor_salvo = str(registro.get("tradutor") or "")
-        cache_compativel = (
-            "Google Translate" in tradutor_salvo
-            or (OPUS_MT_MODEL in tradutor_salvo and "fallback" in tradutor_salvo.lower())
-        )
+
+        if GOOGLE_TRANSLATE_API_KEY:
+            cache_compativel = tradutor_salvo.startswith("Google Cloud Translation")
+        else:
+            cache_compativel = (
+                tradutor_salvo.startswith("Google Translate via deep-translator")
+                or tradutor_salvo.startswith("Google Cloud Translation")
+            )
+
         if (
             registro.get("hash_fonte") == hash_fonte
             and cache_compativel
@@ -881,125 +839,66 @@ def traduzir_com_google(
         ):
             return traducao_salva, tradutor_salvo, None, True
 
-    erros_google: List[str] = []
-    blocos_google = _quebrar_texto_google(texto)
-    google_ok = True
-    traduzidos_google: List[str] = []
+    blocos = _quebrar_texto_google(texto)
+    if not blocos:
+        return "", "Google Translate", "Fonte vazia após preparação para tradução.", False
 
-    try:
-        import deep_translator  # noqa: F401  # valida dependência antes de iniciar
-    except Exception as exc:
-        google_ok = False
-        erros_google.append(
-            "deep-translator indisponível: "
-            f"{type(exc).__name__}: {exc}"
-        )
+    erros: List[str] = []
+    rotas = []
+    if GOOGLE_TRANSLATE_API_KEY:
+        rotas.append((
+            "Google Cloud Translation Basic v2 (NMT)",
+            _traduzir_google_cloud_bloco,
+        ))
+    rotas.append((
+        "Google Translate via deep-translator",
+        _traduzir_google_deep_bloco,
+    ))
 
-    if google_ok:
-        for indice_bloco, bloco in enumerate(blocos_google, start=1):
-            traducao_bloco = ""
-            sucesso_bloco = False
-            for numero_tentativa, atraso in enumerate(TRADUCAO_RETRY_SEGUNDOS, start=1):
-                if atraso:
-                    time.sleep(atraso)
-                try:
-                    resposta = _traduzir_google_bloco(bloco, idioma_origem)
-                    resposta = limpar_texto_editorial(resposta)
-                    if resposta and fonte_cientifica_valida(resposta):
-                        traducao_bloco = resposta
-                        sucesso_bloco = True
-                        break
-                    erros_google.append(
-                        f"bloco {indice_bloco}/{len(blocos_google)}, tentativa {numero_tentativa}: "
-                        "resposta vazia ou página de erro do servidor"
-                    )
-                except Exception as exc:
-                    erros_google.append(
-                        f"bloco {indice_bloco}/{len(blocos_google)}, tentativa {numero_tentativa}: "
-                        f"{type(exc).__name__}: {exc}"
-                    )
+    for nome_rota, funcao in rotas:
+        try:
+            traducao, erros_rota = _executar_rota_google(
+                blocos,
+                idioma_origem,
+                nome_rota,
+                funcao,
+                TRADUCAO_RETRY_SEGUNDOS,
+            )
+        except Exception as exc:
+            traducao = ""
+            erros_rota = [f"{nome_rota}: {type(exc).__name__}: {exc}"]
 
-            if not sucesso_bloco:
-                google_ok = False
-                traduzidos_google = []  # não misturamos tradução parcial com fallback
-                break
-            traduzidos_google.append(traducao_bloco)
-
-    if google_ok and traduzidos_google:
-        resposta_final = limpar_texto_editorial("\n\n".join(traduzidos_google))
-        if resposta_final and fonte_cientifica_valida(resposta_final):
-            nome_tradutor = "Google Translate via deep-translator"
+        erros.extend(erros_rota)
+        if traducao and fonte_cientifica_valida(traducao):
             cache[chave] = {
                 "paper_id": str(paper_id or ""),
                 "hash_fonte": hash_fonte,
                 "idioma_origem": idioma_origem,
-                "traducao_pt": resposta_final,
-                "tradutor": nome_tradutor,
-                "fallback_utilizado": False,
-                "blocos_traducao": len(blocos_google),
+                "traducao_pt": traducao,
+                "tradutor": nome_rota,
+                "fallback_utilizado": nome_rota.startswith("Google Translate via deep-translator") and bool(GOOGLE_TRANSLATE_API_KEY),
+                "tradutor_principal": "Google Cloud Translation Basic v2 (NMT)" if GOOGLE_TRANSLATE_API_KEY else "Google Translate via deep-translator",
+                "blocos_traducao": len(blocos),
                 "salvo_em": agora_iso(),
             }
             salvar_json_atomico(TRADUCOES_BASE, cache)
-            return resposta_final, nome_tradutor, None, False
+            return traducao, nome_rota, None, False
 
-    # Google falhou: traduzimos o abstract inteiro com OPUS-MT.
-    # Esta etapa só é permitida para inglês ou quando a origem não veio informada.
-    if idioma_origem not in {"en", "auto"}:
-        detalhe_google = " | ".join(erros_google[-8:])
-        return (
-            "",
-            "Google Translate",
-            "Google Translate ficou indisponível e o fallback OPUS-MT desta versão "
-            f"suporta inglês→português; idioma detectado/informado: {idioma_origem}. "
-            + detalhe_google,
-            False,
-        )
-
-    try:
-        resposta_opus, quantidade_blocos_opus = _traduzir_opus_mt_local(texto)
-        resposta_opus = limpar_texto_editorial(resposta_opus)
-    except Exception as exc:
-        detalhe_google = " | ".join(erros_google[-8:])
-        return (
-            "",
-            f"OPUS-MT local ({OPUS_MT_MODEL}) — fallback do Google Translate",
-            "Google Translate ficou indisponível e o fallback local OPUS-MT também não pôde ser executado. "
-            "No mesmo ambiente virtual do Streamlit, instale o fallback com: "
-            "python -m pip install -U transformers sentencepiece torch. "
-            f"Erro OPUS-MT: {type(exc).__name__}: {exc}. "
-            f"Últimos erros do Google: {detalhe_google}",
-            False,
-        )
-
-    if not resposta_opus or not fonte_cientifica_valida(resposta_opus):
-        detalhe_google = " | ".join(erros_google[-8:])
-        return (
-            "",
-            f"OPUS-MT local ({OPUS_MT_MODEL}) — fallback do Google Translate",
-            "Google Translate ficou indisponível e a tradução produzida pelo fallback OPUS-MT "
-            "foi considerada inválida. Nenhuma tradução parcial foi salva. "
-            f"Últimos erros do Google: {detalhe_google}",
-            False,
-        )
-
-    nome_tradutor = (
-        f"OPUS-MT local ({OPUS_MT_MODEL}) — fallback após indisponibilidade do Google Translate"
+    detalhe = " | ".join(erros[-10:])
+    orientacao = (
+        "Configure GOOGLE_TRANSLATE_API_KEY para usar a API oficial Cloud Translation Basic v2. "
+        if not GOOGLE_TRANSLATE_API_KEY
+        else "A API oficial e a rota deep-translator falharam. "
     )
-    cache[chave] = {
-        "paper_id": str(paper_id or ""),
-        "hash_fonte": hash_fonte,
-        "idioma_origem": idioma_origem,
-        "traducao_pt": resposta_opus,
-        "tradutor": nome_tradutor,
-        "fallback_utilizado": True,
-        "tradutor_principal": "Google Translate via deep-translator",
-        "motivo_fallback": " | ".join(erros_google[-8:])[:5000],
-        "blocos_google_tentados": len(blocos_google),
-        "blocos_opus": quantidade_blocos_opus,
-        "salvo_em": agora_iso(),
-    }
-    salvar_json_atomico(TRADUCOES_BASE, cache)
-    return resposta_opus, nome_tradutor, None, False
+    return (
+        "",
+        "Google Translate",
+        "Google Translate indisponível nas rotas configuradas. "
+        "Para preservar a metodologia, nenhum outro tradutor foi utilizado e o rascunho não foi gerado. "
+        + orientacao
+        + (f"Detalhes: {detalhe}" if detalhe else ""),
+        False,
+    )
 
 
 def _erro_transitorio_llm(erro: Exception | str) -> bool:
@@ -1734,7 +1633,10 @@ def normalizar_item_editorial(item: Dict[str, Any]) -> Tuple[Dict[str, Any], boo
     tema_original = atualizado.get("tema_original") or atualizado.get("tema")
     if tema_original:
         atualizado["tema_original"] = tema_original
-        atualizado["tema_exibicao"] = traduzir_tema_exibicao(tema_original)
+        atualizado["tema_exibicao"] = (
+            "Saúde" if str(tema_original).strip() == "Saúde"
+            else traduzir_tema_exibicao(tema_original)
+        )
 
     if resumo:
         atualizado["abstract_pt"] = resumo
@@ -5410,22 +5312,92 @@ def renderizar_rastreabilidade_fidelidade(rascunho: Dict[str, Any]) -> None:
 # -----------------------------------------------------------------------------
 
 def carregar_artigos() -> List[Dict]:
+    """Importa buscas por TEMAS (legadas) e por PERGUNTAS (coletor v5.3).
+
+    Mantém a pergunta escrita em português como metadado de proveniência, sem
+    confundi-la com o tema científico e sem mudar o processo de geração dos textos.
+    Um mesmo paper_id encontrado em mais de uma busca entra uma única vez na fila.
+    """
     dados = carregar_json(ENTRADA, {})
-    artigos: List[Dict] = []
     if not isinstance(dados, dict):
-        return artigos
-    temas = dados.get("temas", {})
-    if not isinstance(temas, dict):
-        return artigos
-    for tema, bloco in temas.items():
-        if not isinstance(bloco, dict):
+        return []
+
+    artigos_por_id: Dict[str, Dict] = {}
+    for secao in ("temas", "perguntas"):
+        grupos = dados.get(secao) or {}
+        if not isinstance(grupos, dict):
             continue
-        for item in somente_dicionarios(bloco.get("artigos", [])):
-            artigo = dict(item)
-            artigo["_tema"] = tema
-            artigo["_orfao"] = False
-            artigos.append(artigo)
-    return artigos
+
+        for entrada, bloco in grupos.items():
+            if not isinstance(bloco, dict):
+                continue
+            preparacao = bloco.get("preparacao_busca") or {}
+            if not isinstance(preparacao, dict):
+                preparacao = {}
+
+            for item in somente_dicionarios(bloco.get("artigos", [])):
+                artigo = dict(item)
+                origem = artigo.get("origem_busca") or {}
+                if not isinstance(origem, dict):
+                    origem = {}
+
+                if secao == "perguntas":
+                    # O JSON do coletor já possui essa origem em cada artigo.
+                    # Os fallbacks permitem ler exportações intermediárias.
+                    origem = {
+                        **origem,
+                        "tipo": "pergunta",
+                        "entrada_original": (
+                            origem.get("entrada_original")
+                            or preparacao.get("entrada_original")
+                            or entrada
+                        ),
+                        "pergunta_formal": (
+                            origem.get("pergunta_formal")
+                            or preparacao.get("pergunta_formal")
+                            or ""
+                        ),
+                    }
+                    artigo["_pergunta"] = origem["entrada_original"]
+                    # Uma dúvida cotidiana não deve virar rótulo de tema.
+                    # Conserva o tema do artigo, se disponível, ou usa um
+                    # agrupamento geral enquanto não houver classificação.
+                    artigo["_tema"] = artigo.get("tema") or "Saúde"
+                else:
+                    artigo["_tema"] = entrada
+                    # A página identifica PERGUNTAS pela existência de
+                    # entrada_original em origem_busca; não incluir esse
+                    # campo nos temas evita classificações incorretas.
+                    if origem.get("tipo") != "pergunta":
+                        origem = {}
+
+                artigo["origem_busca"] = origem
+                artigo["_preparacao_busca"] = dict(preparacao)
+                artigo["_orfao"] = False
+
+                paper_id = str(artigo.get("paper_id") or "").strip()
+                if not paper_id:
+                    continue
+
+                anterior = artigos_por_id.get(paper_id)
+                if anterior is None:
+                    artigo["origens_busca"] = ([dict(origem)] if origem else [])
+                    artigos_por_id[paper_id] = artigo
+                    continue
+
+                # Duas consultas podem encontrar o mesmo estudo: guardamos
+                # todas as origens, sem criar dois cartões e chaves repetidas.
+                origens = anterior.setdefault("origens_busca", [])
+                if origem and origem not in origens:
+                    origens.append(dict(origem))
+                if secao == "perguntas":
+                    anterior["origem_busca"] = dict(origem)
+                    anterior["_pergunta"] = origem["entrada_original"]
+                    anterior["_preparacao_busca"] = dict(preparacao)
+                elif anterior.get("_tema") == "Saúde":
+                    anterior["_tema"] = entrada
+
+    return list(artigos_por_id.values())
 
 
 def categoria_fonte(artigo: Dict) -> str:
@@ -5530,10 +5502,16 @@ def criar_rascunho(artigo: Dict, titulo_pt: str) -> None:
         "titulo_pt": titulo_pt,
         "ano": artigo.get("ano"),
         "autores": artigo.get("autores", ""),
+        # A pergunta continua rastreável até noticias.json, sem alterar o
+        # abstract, a avaliação da fidelidade nem o título gerado.
+        "origem_busca": dict(artigo.get("origem_busca") or {}),
+        "origens_busca": list(artigo.get("origens_busca") or []),
+        "preparacao_busca": dict(artigo.get("_preparacao_busca") or {}),
         "tema": artigo.get("_tema", artigo.get("tema", "geral")),
         "tema_original": artigo.get("_tema", artigo.get("tema", "geral")),
-        "tema_exibicao": traduzir_tema_exibicao(
-            artigo.get("_tema", artigo.get("tema", "geral"))
+        "tema_exibicao": (
+            "Saúde" if artigo.get("_tema") == "Saúde"
+            else traduzir_tema_exibicao(artigo.get("_tema", artigo.get("tema", "geral")))
         ),
         "tipos": artigo.get("tipos", []),
         "citacoes_totais": artigo.get("citacoes_totais", artigo.get("citacoes", 0)),
@@ -5609,13 +5587,13 @@ def renderizar_modelos_usados(rascunho: Dict[str, Any]) -> None:
     avaliacao = rascunho.get("avaliacao_fidelidade_intelectual") or {}
     tradutor_registrado = str(rascunho.get("modelo_traducao") or "")
     if tradutor_registrado and not (
-        "Google Translate" in tradutor_registrado
-        or (tradutor_registrado.startswith("OPUS-MT local") and "fallback" in tradutor_registrado.lower())
+        "Google" in tradutor_registrado
         or tradutor_registrado == "Fonte original em português"
     ):
-        st.warning(
-            "Este rascunho foi criado com uma estratégia de tradução diferente da versão atual. "
-            "A metodologia corrente usa Google Translate como método principal e OPUS-MT somente como fallback técnico."
+        st.error(
+            "Este rascunho foi criado com um tradutor diferente do Google e não é compatível "
+            "com a metodologia atual. Exclua o rascunho e gere novamente para refazer todo o "
+            "pipeline usando uma tradução-base do Google."
         )
     alinhamentos = [
         (avaliacao.get(chave) or {}).get("alinhamento_semantico") or {}
@@ -5756,7 +5734,7 @@ def renderizar_metricas_editoriais(registro: Dict[str, Any], titulo: str = "Mét
         st.markdown("**Ferramentas e modelos efetivamente usados**")
         renderizar_modelos_usados(registro)
         st.caption(f"Modelo de recuperação semântica configurado: {MINILM_MODEL}")
-        st.caption(f"Tradução-base: Google Translate; fallback técnico: OPUS-MT local ({OPUS_MT_MODEL}).")
+        st.caption("Tradução-base: exclusivamente Google (Cloud Translation oficial quando configurada; deep-translator como segunda rota Google).")
 
 
 def bloco_contador(numero: int, rotulo: str) -> None:
@@ -5789,6 +5767,10 @@ for noticia in publicados_lista:
             "ano": noticia.get("ano"),
             "autores": noticia.get("autores", ""),
             "_tema": noticia.get("tema", "geral"),
+            "_pergunta": (noticia.get("origem_busca") or {}).get("entrada_original", "")
+                if isinstance(noticia.get("origem_busca"), dict) else "",
+            "origem_busca": noticia.get("origem_busca", {}),
+            "origens_busca": noticia.get("origens_busca", []),
             "tipos": noticia.get("tipos", []),
             "citacoes_totais": noticia.get("citacoes_totais", 0),
             "categoria_selecao": noticia.get("categoria_selecao", ""),
@@ -5816,14 +5798,19 @@ contagens = {
 # Sidebar simples, próxima da primeira versão.
 with st.sidebar:
     st.markdown("## 📰 Jornal Cienc.IA")
-    st.caption("Painel editorial simples · versão 7.3")
+    st.caption("Painel editorial")
     st.divider()
     st.markdown(f"**🟢 Publicados:** {contagens['publicado']}")
     st.markdown(f"**🔵 Para aprovar:** {contagens['rascunho']}")
     st.markdown(f"**🟡 Pendentes:** {contagens['pendente']}")
     st.markdown(f"**🔴 Rejeitados:** {contagens['rejeitado']}")
     st.divider()
-    st.caption(f"Tradução-base: Google Translate → fallback OPUS-MT · {OPUS_MT_MODEL}")
+    if GOOGLE_TRANSLATE_API_KEY:
+        st.caption("Tradução-base principal: Google Cloud Translation")
+        st.caption("Fallback técnico: Google via deep-translator")
+        st.caption("Cache: apenas traduções da API oficial são reutilizadas")
+    else:
+        st.caption("Tradução-base: Google via deep-translator")
     st.caption(f"LLM principal: {GEMINI_MODEL}")
     st.caption(f"Fallback Gemini: {GEMINI_FALLBACK_MODEL}")
     if os.getenv("GROQ_API_KEY"):
@@ -5832,6 +5819,7 @@ with st.sidebar:
     filtro = st.selectbox(
         "Mostrar",
         ["Para aprovar", "Pendentes", "Publicados", "Rejeitados", "Todos"],
+        index=1 if contagens["pendente"] and not contagens["rascunho"] else 0,
     )
     busca = st.text_input("Buscar por título", placeholder="Digite uma palavra...")
     if st.button("🔄 Recarregar dados", width="stretch"):
@@ -5871,6 +5859,7 @@ for artigo in artigos:
         str(artigo.get("titulo", "")),
         str(artigo.get("autores", "")),
         str(artigo.get("_tema", "")),
+        str(artigo.get("_pergunta", "")),
     ]).lower()
     if estado_filtro and estado != estado_filtro:
         continue
@@ -5904,6 +5893,11 @@ for artigo, estado in lista_visivel:
             f'Seleção: {selecao_txt}{complemento_ordem}</div>',
             unsafe_allow_html=True,
         )
+        origem_artigo = artigo.get("origem_busca") or {}
+        if isinstance(origem_artigo, dict) and origem_artigo.get("tipo") == "pergunta":
+            st.caption(f"❓ Pergunta original: {origem_artigo.get('entrada_original', '')}")
+            if origem_artigo.get("pergunta_formal"):
+                st.caption(f"Formulação científica: {origem_artigo['pergunta_formal']}")
 
         with st.expander("Ver resumo e fonte"):
             st.write(artigo.get("abstract", "Resumo não disponível."))
@@ -5920,7 +5914,7 @@ for artigo, estado in lista_visivel:
             with b1:
                 if st.button("✨ Gerar rascunho", key=f"gerar_{pid}", type="primary", width="stretch"):
                     try:
-                        with st.spinner("Traduzindo com Google Translate (OPUS-MT como fallback) e gerando a ficha factual e as três versões de leitura..."):
+                        with st.spinner("Traduzindo exclusivamente com Google Translate e gerando a ficha factual e as três versões de leitura..."):
                             criar_rascunho(artigo, titulo_pt)
                     except Exception as exc:
                         st.error(
