@@ -1167,3 +1167,22 @@ input:focus-visible {
 .sidebar-section-questions {
     padding-bottom: 32px;
 }
+
+/* =========================================================
+   ROLAGEM DA PÁGINA — MENU LATERAL
+   O painel acompanha a rolagem principal no desktop.
+   As perguntas aparecem por completo, sem barra interna.
+   A lista de temas mantém rolagem própria por ter muitos itens.
+   ========================================================= */
+@media (min-width: 821px) {
+  .topics-sidebar {
+    position: static;
+    top: auto;
+    overflow: visible;
+  }
+
+  .topics-sidebar #lista-perguntas {
+    max-height: none;
+    overflow: visible;
+  }
+}
